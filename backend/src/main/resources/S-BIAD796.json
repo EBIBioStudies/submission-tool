@@ -1,0 +1,196 @@
+{
+  "accno" : "S-BIAD796",
+  "attributes" : [ {
+    "name" : "Template",
+    "value" : "BioImages.v4"
+  }, {
+    "name" : "ReleaseDate",
+    "value" : "2023-07-04"
+  }, {
+    "name" : "AttachTo",
+    "value" : "BioImages"
+  } ],
+  "section" : {
+    "type" : "Study",
+    "attributes" : [ {
+      "name" : "Title",
+      "value" : "The Opto-inflammasome in zebrafish: a tool to study cell and tissue responses to speck formation and cell death "
+    }, {
+      "name" : "Position 2",
+      "value" : "This attribute is not in the BIA template"
+    }, {
+      "name" : "Description",
+      "value" : "The datasets contains all raw data sets used for the publication: The Opto-inflammasome in zebrafish: a tool to study cell and tissue responses to speck formation and cell death. All images are confocal images and are taken from living zebrafish larvae of different transgenic lines."
+    }, {
+      "name" : "Keywords",
+      "value" : "Inflammasome, cell death, Zebrafish, Periderm, Keratinocyte, ASC, apoptosis, Extrusion"
+    }, {
+      "name" : "License",
+      "value" : "CC BY 4.0",
+      "valqual" : [ {
+        "name" : "URL",
+        "value" : "https://creativecommons.org/licenses/by/4.0/legalcode"
+      } ]
+    }, {
+      "name" : "Funding statement",
+      "value" : "EMBO"
+    },{
+      "name" : "Position 7 (last)",
+      "value" : "This attribute is not in the BIA template"
+    }
+    ],
+    "subsections" : [ {
+      "type" : "author",
+      "attributes" : [ {
+        "name" : "Name",
+        "value" : "Eva Hasel de Carvalho"
+      }, {
+        "name" : "E-mail",
+        "value" : "eva.hasel@cos.uni-heidelberg.de"
+      }, {
+        "name" : "Role",
+        "value" : "first author"
+      }, {
+        "name" : "ORCID",
+        "value" : "0000-0002-3067-2874"
+      }, {
+        "name" : "affiliation",
+        "value" : "o1",
+        "reference" : true
+      } ]
+    }, {
+      "type" : "author",
+      "attributes" : [ {
+        "name" : "Name",
+        "value" : "Maria Leptin"
+      }, {
+        "name" : "E-mail",
+        "value" : "Maria.leptin@embl.de"
+      }, {
+        "name" : "Role",
+        "value" : "corresponding author"
+      }, {
+        "name" : "affiliation",
+        "value" : "o1",
+        "reference" : true
+      } ]
+    }, {
+      "accno" : "o1",
+      "type" : "organisation",
+      "attributes" : [ {
+        "name" : "Name",
+        "value" : "European Molecular Biology Laboratory"
+      } ]
+    }, {
+      "type" : "Publication",
+      "attributes" : [ {
+        "name" : "Title",
+        "value" : "The Opto-inflammasome in zebrafish: a tool to study cell and tissue responses to speck formation and cell death "
+      }, {
+        "name" : "Authors",
+        "value" : "Eva Hasel de Carvalho, Shivani Dharmadhikari, Kateryna Shkarina, Jingwei Rachel Xiong, Bruno Reversade,Petr Broz, Maria Leptin"
+      }, {
+        "name" : "DOI",
+        "value" : "https://doi.org/10.1101/2022.10.19.512883"
+      }, {
+        "name" : "Year",
+        "value" : "2023"
+      } ]
+    }, {
+      "type" : "Funding",
+      "attributes" : [ {
+        "name" : "Agency",
+        "value" : "EMBO"
+      } ]
+    }, {
+      "accno" : "Biosample-1",
+      "type" : "Biosample",
+      "attributes" : [ {
+        "name" : "Title",
+        "value" : "tg(mCherry-Cry2olig-ASC)"
+      }, {
+        "name" : "Organism",
+        "value" : "Danio rerio (zebrafish)"
+      }, {
+        "name" : "Description",
+        "value" : "Transgenic zebrafish larva"
+      }, {
+        "name" : "Biological entity",
+        "value" : "3 days post fertilization zebrafish larva"
+      } ]
+    }, {
+      "accno" : "Specimen-2",
+      "type" : "Specimen",
+      "attributes" : [ {
+        "name" : "Title",
+        "value" : "Specimen 1-21"
+      }, {
+        "name" : "Sample preparation protocol",
+        "value" : "Larva was "
+      } ]
+    }, {
+      "accno" : "Image acquisition-3",
+      "type" : "Image acquisition",
+      "attributes" : [ {
+        "name" : "Title",
+        "value" : "Microscope"
+      }, {
+        "name" : "Imaging instrument",
+        "value" : "Zeiss NLO- confocal microscope"
+      }, {
+        "name" : "Image acquisition parameters",
+        "value" : "40x Objective "
+      }, {
+        "name" : "Imaging method",
+        "value" : "confocal microscopy"
+      } ]
+    }, {
+      "accno" : "Image correlation-4",
+      "type" : "Image correlation",
+      "attributes" : [ {
+        "name" : "Title",
+        "value" : "not used"
+      } ]
+    }, {
+      "accno" : "Image analysis-5",
+      "type" : "Image analysis",
+      "attributes" : [ {
+        "name" : "Title",
+        "value" : "Image Analysis"
+      }, {
+        "name" : "Image analysis overview",
+        "value" : "Raw data used to analyse in the publication"
+      } ]
+    }, {
+      "accno" : "Study Component-4",
+      "type" : "Study Component",
+      "attributes" : [ {
+        "name" : "Name",
+        "value" : "Opto-ASC induction in zebrafish skin"
+      }, {
+        "name" : "Description",
+        "value" : "we created a tool to induce speck formation and cell death by blue light. We investigated the cell and tissue reactions to optogenetic activation of the inflammasome and identified key players in the corresponding cell death cascade in keratinocytes. "
+      }, {
+        "name" : "File List",
+        "value" : "File_list_Opto-ASC_final2.json"
+      } ],
+      "subsections" : [ {
+        "type" : "Associations",
+        "attributes" : [ {
+          "name" : "Biosample",
+          "value" : "tg(mCherry-Cry2olig-ASC)"
+        }, {
+          "name" : "Specimen",
+          "value" : "Specimen 1-21"
+        }, {
+          "name" : "Image acquisition",
+          "value" : "Microscope"
+        }, {
+          "name" : "Image correlation",
+          "value" : "not used"
+        } ]
+      } ]
+    } ]
+  },
+  "type" : "submission"
+}
