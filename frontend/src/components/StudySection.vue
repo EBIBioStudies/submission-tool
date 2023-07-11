@@ -1,13 +1,9 @@
 <script setup>
-import RecursiveSection from './Section.vue';
+import Section from './Section.vue';
 
 defineProps(['section', 'sectionType']);
 </script>
 
 <template>
-  <RecursiveSection
-    :section="section"
-    :sectionType="sectionType"
-    :collapsed="false"
-  />
+  <Section :section="section" :sectionType="sectionType" :depth="0" />
 </template>

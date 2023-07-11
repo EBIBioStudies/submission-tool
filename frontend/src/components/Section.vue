@@ -1,14 +1,19 @@
 <script setup>
 import { getCurrentInstance, nextTick, ref } from 'vue';
-import AttributeList from './AttributeList.vue';
+import Attributes from './Attributes.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
-const props = defineProps(['section', 'sectionType', 'collapsed']);
+const props = defineProps(['section', 'sectionType', 'depth']);
+defineEmits(['delete']);
 
 const attributesComponent = ref(null);
 const sectionsComponent = ref(null);
 const thisSection = ref(props.section);
-const refreshKey = ref(0);
+
+// hack: variable to trigger re-rendering of attributes when needed
+// TODO: figure out how to avoid this
+const attributesRefreshKey = ref(0);
+const sectionsRefreshKey = ref(0);
 
 const getSectionType = (subsection) => {
   const subsections = [
@@ -21,9 +26,9 @@ const getSectionType = (subsection) => {
 };
 
 const canRender = (sec) => {
-  return ['author', 'organisation'].indexOf(sec.type?.toLowerCase()) < 0;
+  return ['organisation'].indexOf(sec.type?.toLowerCase()) < 0;
 };
-const isCollapsed = ref(props.collapsed);
+const isCollapsed = ref(props.depth >= 2);
 
 const addSubsection = async (aSection) => {
   aSection.subsections = aSection.subsections || [];
@@ -32,7 +37,7 @@ const addSubsection = async (aSection) => {
       (props.section.accno ?? Date.now()) +
       '-' +
       (props.section.subsections.length + 1),
-    type: 'New Section',
+    type: '',
     attributes: [{ name: '', value: '' }],
     subsections: [],
   });
@@ -48,6 +53,7 @@ const addSubsection = async (aSection) => {
 const addAttribute = async (aSection) => {
   aSection.attributes = aSection.attributes || [];
   aSection.attributes.push({ name: '', value: '' });
+  attributesRefreshKey.value += 1;
   await nextTick();
   const added = [
     ...componentInstance.refs.attributesComponent.$.ctx.$el.querySelectorAll(
@@ -60,30 +66,21 @@ const addAttribute = async (aSection) => {
 
 const deleteAttribute = async (index) => {
   thisSection.value.attributes.splice(index, 1);
-  refreshKey.value += 1;
+  attributesRefreshKey.value += 1;
 };
 
 const componentInstance = getCurrentInstance();
+
+const deleteSubSection = async (someSubSections, index) => {
+  thisSection.value.subsections = someSubSections.filter((v, i) => i !== index);
+  sectionsRefreshKey.value += 1;
+};
 
 function toggle() {
   isCollapsed.value = !isCollapsed.value;
 }
 </script>
 
-<script>
-export default {
-  data() {
-    return {
-      refreshKey: 0,
-    };
-  },
-  methods: {
-    forceRefresh() {
-      this.refreshKey += 1;
-    },
-  },
-};
-</script>
 <template>
   <div v-if="canRender(props.section)">
     <!-- section title -->
@@ -94,13 +91,22 @@ export default {
           :icon="'fa-caret-' + (isCollapsed ? 'right' : 'down')"
         ></font-awesome-icon>
         <span v-if="sectionType?.name" class="ms-2">{{ section.type }}</span>
-        <input
-          v-else
-          class="ms-2"
-          @click.stop=""
-          type="text"
-          v-model="section.type"
-        />
+        <span v-else>
+          <input
+            class="ms-2"
+            @click.stop=""
+            type="text"
+            placeholder="Enter section type"
+            v-model="section.type" />
+          <font-awesome-icon
+            class="icon ps-2"
+            role="button"
+            size="sm"
+            @click="$emit('delete')"
+            @click.stop=""
+            icon="fa-trash"
+          ></font-awesome-icon
+        ></span>
       </span>
     </div>
 
@@ -108,21 +114,27 @@ export default {
       <div v-if="!isCollapsed">
         <!-- section body -->
         <div class="has-child-section slide-in">
-          <AttributeList
-            :key="refreshKey"
+          <!-- attributes -->
+          <Attributes
+            :key="attributesRefreshKey"
             ref="attributesComponent"
             :attributes="section.attributes"
             :fieldTypes="sectionType?.fieldTypes || sectionType?.columnTypes"
             @delete="deleteAttribute"
           />
-          <Section
-            :section="subsection"
-            :sectionType="getSectionType(subsection)"
-            ref="sectionsComponent"
-            v-for="(subsection, i) in section.subsections"
-            v-bind:key="i"
-            collapsed="true"
-          />
+          <!-- subsection -->
+          <div :key="sectionsRefreshKey">
+            <Section
+              :section="subsection"
+              :sectionType="getSectionType(subsection)"
+              :depth="props.depth + 1"
+              ref="sectionsComponent"
+              v-for="(subsection, i) in section.subsections"
+              @delete="deleteSubSection(section.subsections, i)"
+              v-bind:key="i"
+              collapsed="true"
+            />
+          </div>
         </div>
 
         <!-- add menu -->
@@ -135,7 +147,7 @@ export default {
             @click="isCollapsed = false"
           >
             <font-awesome-icon
-              icon="fa-square-plus"
+              icon="fa-regular fa-square-plus"
               class="section-control"
             ></font-awesome-icon>
           </div>
