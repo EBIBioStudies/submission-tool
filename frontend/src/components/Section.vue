@@ -26,7 +26,7 @@ const getSectionType = (subsection) => {
 };
 
 const canRender = (sec) => {
-  return ['organisation'].indexOf(sec.type?.toLowerCase()) < 0;
+  return ['author', 'organisation'].indexOf(sec.type?.toLowerCase()) < 0;
 };
 const isCollapsed = ref(props.depth >= 2);
 
@@ -158,7 +158,7 @@ function toggle() {
                   class="icon"
                   icon="fa-solid fa-toggle-off"
                 ></font-awesome-icon>
-                Attribute</a
+                New Attribute</a
               >
             </li>
             <!--          <li><a class="dropdown-item btn"><i class="fa-solid fa-table icon"></i> Table</a></li>-->
@@ -168,11 +168,17 @@ function toggle() {
                   class="icon"
                   icon="fa-caret-right"
                 ></font-awesome-icon>
-                Section</a
+                New Section</a
               >
             </li>
           </ul>
         </div>
+        <!--        {{-->
+        <!--          [-->
+        <!--            ...(sectionType?.sectionTypes ?? []),-->
+        <!--            ...(sectionType?.tableTypes ?? []),-->
+        <!--          ].map((t) => t.name)-->
+        <!--        }}-->
       </div>
     </transition>
   </div>

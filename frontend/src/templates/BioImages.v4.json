@@ -71,7 +71,7 @@
         "description": "Add keywords<br><a href=\"/bioimage-archive/help-submission-form/#keywords\">Examples</a>",
         "display": "required",
         "controlType": {
-          "name": "selectr",
+          "name": "select",
           "multiple": true
         },
         "helpContextual": {

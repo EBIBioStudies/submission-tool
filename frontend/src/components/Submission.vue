@@ -6,9 +6,12 @@ defineProps(['submission', 'template']);
 
 <template>
   <div>
-    <div class="accession">Accession: {{ submission.accno }}</div>
-    <div v-for="attribute in submission.attributes" :key="attribute.id">
-      <div>{{ attribute.name }} : {{ attribute.value }}</div>
+    <div class="accession">{{ submission.accno }}</div>
+    <div v-for="(attribute, i) in submission.attributes" :key="i">
+      <div>
+        {{ attribute.name }} :
+        {{ attribute.value }}
+      </div>
     </div>
     <StudySection
       :section="submission.section"
@@ -22,6 +25,7 @@ defineProps(['submission', 'template']);
 .accession {
   font-size: 2em;
 }
+
 .submission {
   padding: 1em;
 }
