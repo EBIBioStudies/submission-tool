@@ -15,6 +15,9 @@
         role="button"
         >Edit</router-link
       >
+      <router-link :to="`/new`" class="btn btn-primary" role="button"
+        >New</router-link
+      >
     </div>
   </div>
 </template>

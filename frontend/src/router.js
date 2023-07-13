@@ -12,6 +12,12 @@ const routes = [
     component: () => import('./Edit.vue'),
     props: true,
   },
+  {
+    path: '/new',
+    name: 'New',
+    component: () => import('./New.vue'),
+    props: true,
+  },
 ];
 
 const router = createRouter({

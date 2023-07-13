@@ -51,6 +51,7 @@ const singleSelectValues = computed(() => {
     getAttributesFromFieldType(props.fieldType),
     getAttributesNotInFieldType(props.fieldType, props.parent),
   );
+  if (merged.length === 0) return null;
   return merged;
 });
 
