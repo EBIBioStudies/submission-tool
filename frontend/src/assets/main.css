@@ -41,6 +41,6 @@
   display: inline-block;
 }
 
-span.branch.spacer {
+.branch.spacer:before {
   border-color: transparent  !important;
 }

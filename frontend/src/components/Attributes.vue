@@ -5,7 +5,11 @@ import Attribute from './Attribute.vue';
 const props = defineProps(['attributes', 'fieldTypes']);
 const emits = defineEmits(['deleteAttribute', 'createTag', 'deleteTag']);
 const attributeList = ref(props.attributes);
-const processedAttributes = new Set();
+
+const duplicateAttributes = attributeList.value?.filter(
+  (value, index, array) =>
+    array.find((v, i) => v.name === value.name) !== value,
+);
 
 // const nonTemplateAttributes = computed(() => {
 //   const fieldTypeNames = props.fieldTypes?.map((f) => f.name) ?? [];
@@ -30,8 +34,9 @@ const processedAttributes = new Set();
 //   return attr;
 // };
 
+const processed = (attribute) => duplicateAttributes.includes(attribute);
+
 const getFieldType = (attribute) => {
-  processedAttributes.add(attribute.name);
   return props.fieldTypes?.find((f) => f.name === attribute?.name);
 };
 
@@ -56,11 +61,8 @@ addMissingAttributes();
 
 <template>
   <div>
-    <div v-for="(attribute, index) in attributeList">
-      <div
-        class="input-group pb-2 branch"
-        v-if="!processedAttributes.has(attribute.name)"
-      >
+    <div v-for="(attribute, index) in attributeList" :key="index">
+      <div class="input-group pb-2 branch" v-if="!processed(attribute)">
         <Attribute
           :key="index"
           :attribute="attribute"
