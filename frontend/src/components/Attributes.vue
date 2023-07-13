@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from 'vue';
 import Attribute from './Attribute.vue';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 const props = defineProps(['attributes', 'fieldTypes']);
 const emits = defineEmits(['deleteAttribute', 'createTag', 'deleteTag']);
@@ -59,7 +58,7 @@ addMissingAttributes();
   <div>
     <div v-for="(attribute, index) in attributeList" :key="'att' + index">
       <div
-        class="input-group ps-2 pb-2"
+        class="input-group pb-2 branch"
         v-if="!processedAttributes.has(attribute.name)"
       >
         <Attribute
@@ -68,24 +67,20 @@ addMissingAttributes();
           :parent="attributeList"
           @createTag="(v) => emits('createTag', v)"
           @deleteTag="(v) => emits('deleteTag', v)"
+          @deleteAttribute="(v) => emits('deleteAttribute', index)"
         />
-        <span class="btn-group-vertical">
-          <font-awesome-icon
-            class="icon"
-            role="button"
-            @click="$emit('deleteAttribute', index)"
-            v-if="getFieldType(attribute)?.display !== 'required'"
-            icon="fa-trash"
-          ></font-awesome-icon>
-          <font-awesome-icon
-            class="icon"
-            role="button"
-            v-else
-            inverse
-            icon="fa-trash"
-          ></font-awesome-icon>
-        </span>
       </div>
     </div>
   </div>
 </template>
+
+<style>
+.input-group:before {
+  color: var(--bs-border-color);
+}
+
+.branch:before {
+  content: '_';
+  color: var(--bs-border-color);
+}
+</style>

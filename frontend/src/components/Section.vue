@@ -48,10 +48,11 @@ const addSubsection = async (aSection) => {
   const added = [...componentInstance.refs.sectionsComponent].pop().$.ctx.$el;
   added.scrollIntoView();
   await nextTick();
-  // TODO: Fix bug - New section added to study is collapsed
-  added.querySelector('.section-title').click();
-  await nextTick();
-  added.querySelector('input.input-group-text').focus();
+  added.querySelector('.section-title input').focus();
+
+  // New section added to first is always collapsed
+  if (added.classList.contains('collapsed'))
+    added.querySelector('.section-title').click();
 };
 
 const deleteSubSection = async (someSubSections, index) => {
@@ -112,10 +113,18 @@ const componentInstance = getCurrentInstance();
 </script>
 
 <template>
-  <div v-if="canRender(props.section)" class="section-block">
+  <div
+    v-if="canRender(props.section)"
+    class="section-block"
+    :class="{ collapsed: isCollapsed }"
+  >
     <!-- section title -->
     <div>
-      <span class="text-start btn btn-lg section-title" @click="toggle()">
+      <span :class="[depth > 0 ? 'branch' : 'spacer']"></span>
+      <span
+        class="input-group-text text-start btn btn-lg ps-1 mt-2 section-title"
+        @click="toggle()"
+      >
         <font-awesome-icon
           class="section-control"
           :icon="'fa-caret-' + (isCollapsed ? 'right' : 'down')"
@@ -143,7 +152,7 @@ const componentInstance = getCurrentInstance();
     <transition name="slide">
       <div v-if="!isCollapsed">
         <!-- section body -->
-        <div class="has-child-section slide-in">
+        <div class="has-child-section ms-3 slide-in">
           <!-- attributes -->
           <Attributes
             :key="attributesRefreshKey"
@@ -164,7 +173,6 @@ const componentInstance = getCurrentInstance();
               v-for="(subsection, i) in section.subsections"
               @delete="deleteSubSection(section.subsections, i)"
               v-bind:key="i"
-              collapsed="true"
             />
           </div>
         </div>
@@ -221,7 +229,9 @@ const componentInstance = getCurrentInstance();
   content: ' ';
   margin-top: 1em;
 }
-
+.spacer {
+  margin-left: 4pt;
+}
 .section-block:nth-child(even) {
 }
 </style>

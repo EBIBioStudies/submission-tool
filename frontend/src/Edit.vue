@@ -1,6 +1,7 @@
 <template>
   <div class="container">
     <div class="row">
+      <div class="col"></div>
       <Submission class="col-8" :submission="submission" :template="template" />
       <div id="json" class="json col"></div>
     </div>

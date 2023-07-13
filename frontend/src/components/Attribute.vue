@@ -4,7 +4,7 @@ import Multiselect from '@vueform/multiselect';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 const props = defineProps(['attribute', 'fieldType', 'parent']);
-const emits = defineEmits(['createTag', 'deleteTag']);
+const emits = defineEmits(['createTag', 'deleteTag', 'deleteAttribute']);
 const thisAttribute = ref(props.attribute);
 const thisMultivalueAttribute = ref(
   props.parent
@@ -146,7 +146,7 @@ const onDeleteTag = (newTag) => {
     :createOption="fieldType?.controlType?.enableValueAdd ?? true"
     :allowAbsent="fieldType?.controlType?.enableValueAdd ?? true"
     :options="singleSelectValues"
-    noOptionsText="Press Enter to add a new value"
+    noOptionsText="Type and press ↵ to add"
     @create="onCreateTag"
     @deselect="onDeleteTag"
     @select="onCreateTag"
@@ -179,6 +179,19 @@ const onDeleteTag = (newTag) => {
     :placeholder="fieldType?.controlType?.placeholder"
     v-model="thisAttribute.value"
   />
+
+  <!-- delete icon -->
+  <div
+    class="input-group-text btn-group-vertical"
+    v-if="fieldType?.display !== 'required'"
+  >
+    <font-awesome-icon
+      class="icon fa-sm"
+      role="button"
+      icon="fa-trash"
+      @click="emits('deleteAttribute', attribute)"
+    ></font-awesome-icon>
+  </div>
 </template>
 
 <style scoped>
