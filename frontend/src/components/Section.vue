@@ -28,8 +28,10 @@ const getSectionType = (subsection) => {
 const canRender = (sec) => {
   return ['author', 'organisation'].indexOf(sec.type?.toLowerCase()) < 0;
 };
-const isCollapsed = ref(props.depth >= 2);
+const isCollapsed = ref((props?.depth ?? 0) >= 2);
 
+// children are not allowed to change properties of a parent
+// all section/attributes updates thus need to be at this level
 const addSubsection = async (aSection) => {
   aSection.subsections = aSection.subsections || [];
   aSection.subsections.push({
@@ -41,13 +43,20 @@ const addSubsection = async (aSection) => {
     attributes: [{ name: '', value: '' }],
     subsections: [],
   });
+  // wait till the UI is updated and the focus the first attribute name
   await nextTick();
   const added = [...componentInstance.refs.sectionsComponent].pop().$.ctx.$el;
   added.scrollIntoView();
   await nextTick();
+  // TODO: Fix bug - New section added to study is collapsed
   added.querySelector('.section-title').click();
   await nextTick();
   added.querySelector('input.input-group-text').focus();
+};
+
+const deleteSubSection = async (someSubSections, index) => {
+  thisSection.value.subsections = someSubSections.filter((v, i) => i !== index);
+  sectionsRefreshKey.value += 1;
 };
 
 const addAttribute = async (aSection) => {
@@ -69,20 +78,41 @@ const deleteAttribute = async (index) => {
   attributesRefreshKey.value += 1;
 };
 
-const componentInstance = getCurrentInstance();
+const createTag = (msg) => {
+  thisSection.value.attributes = thisSection.value.attributes || [];
+  // insert next to the last attribute with the same name
+  // just to keep the structure cleaner
+  let lastIndex = thisSection.value.attributes
+    .map((a) => a.name)
+    .lastIndexOf(msg.name);
+  lastIndex =
+    lastIndex === -1 ? thisSection.value.attributes.length : lastIndex;
 
-const deleteSubSection = async (someSubSections, index) => {
-  thisSection.value.subsections = someSubSections.filter((v, i) => i !== index);
-  sectionsRefreshKey.value += 1;
+  // fill in the value if it's the last tag -- add a new one otherwise
+  if (thisSection.value.attributes[lastIndex].value === '') {
+    thisSection.value.attributes[lastIndex].value = msg.value;
+  } else {
+    thisSection.value.attributes.splice(lastIndex + 1, 0, {
+      name: msg.name,
+      value: msg.value,
+    });
+  }
+  attributesRefreshKey.value += 1;
 };
 
-function toggle() {
+const deleteTag = (msg) => {
+  deleteAttribute(msg.index);
+};
+
+const toggle = () => {
   isCollapsed.value = !isCollapsed.value;
-}
+};
+
+const componentInstance = getCurrentInstance();
 </script>
 
 <template>
-  <div v-if="canRender(props.section)">
+  <div v-if="canRender(props.section)" class="section-block">
     <!-- section title -->
     <div>
       <span class="text-start btn btn-lg section-title" @click="toggle()">
@@ -97,7 +127,7 @@ function toggle() {
             @click.stop=""
             type="text"
             placeholder="Enter section type"
-            v-model="section.type" />
+            v-model="thisSection.type" />
           <font-awesome-icon
             class="icon ps-2"
             role="button"
@@ -120,7 +150,9 @@ function toggle() {
             ref="attributesComponent"
             :attributes="section.attributes"
             :fieldTypes="sectionType?.fieldTypes || sectionType?.columnTypes"
-            @delete="deleteAttribute"
+            @deleteAttribute="deleteAttribute"
+            @createTag="createTag"
+            @deleteTag="deleteTag"
           />
           <!-- subsection -->
           <div :key="sectionsRefreshKey">
@@ -183,3 +215,13 @@ function toggle() {
     </transition>
   </div>
 </template>
+
+<style>
+.section-block {
+  content: ' ';
+  margin-top: 1em;
+}
+
+.section-block:nth-child(even) {
+}
+</style>

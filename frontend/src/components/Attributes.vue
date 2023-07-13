@@ -4,8 +4,9 @@ import Attribute from './Attribute.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 const props = defineProps(['attributes', 'fieldTypes']);
-defineEmits(['delete']);
+const emits = defineEmits(['deleteAttribute', 'createTag', 'deleteTag']);
 const attributeList = ref(props.attributes);
+const processedAttributes = new Set();
 
 // const nonTemplateAttributes = computed(() => {
 //   const fieldTypeNames = props.fieldTypes?.map((f) => f.name) ?? [];
@@ -30,8 +31,10 @@ const attributeList = ref(props.attributes);
 //   return attr;
 // };
 
-const getFieldType = (attribute) =>
-  props.fieldTypes?.find((f) => f.name === attribute?.name);
+const getFieldType = (attribute) => {
+  processedAttributes.add(attribute.name);
+  return props.fieldTypes?.find((f) => f.name === attribute?.name);
+};
 
 const addMissingAttributes = () => {
   for (let i = 0; i < props.fieldTypes?.length; i++) {
@@ -55,16 +58,22 @@ addMissingAttributes();
 <template>
   <div>
     <div v-for="(attribute, index) in attributeList" :key="'att' + index">
-      <div class="input-group ps-2 pb-2">
+      <div
+        class="input-group ps-2 pb-2"
+        v-if="!processedAttributes.has(attribute.name)"
+      >
         <Attribute
           :attribute="attribute"
           :field-type="getFieldType(attribute)"
+          :parent="attributeList"
+          @createTag="(v) => emits('createTag', v)"
+          @deleteTag="(v) => emits('deleteTag', v)"
         />
         <span class="btn-group-vertical">
           <font-awesome-icon
             class="icon"
             role="button"
-            @click="$emit('delete', index)"
+            @click="$emit('deleteAttribute', index)"
             v-if="getFieldType(attribute)?.display !== 'required'"
             icon="fa-trash"
           ></font-awesome-icon>

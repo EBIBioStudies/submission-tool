@@ -31,7 +31,11 @@
       },
       {
         "name": "Keywords",
-        "value": "Inflammasome, cell death, Zebrafish, Periderm, Keratinocyte, ASC, apoptosis, Extrusion"
+        "value": "Inflammasome"
+      },
+      {
+        "name": "Keywords",
+        "value": "cell death"
       },
       {
         "name": "License",

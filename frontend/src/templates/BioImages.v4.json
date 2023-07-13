@@ -99,7 +99,7 @@
         "name": "License",
         "uniqueValues": false,
         "controlType": {
-          "name": "selectvalquals",
+          "name": "select",
           "defaultValue": "CC0",
           "values": [
             {

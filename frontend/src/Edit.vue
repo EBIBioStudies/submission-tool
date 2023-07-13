@@ -1,12 +1,8 @@
 <template>
   <div class="container">
     <div class="row">
-      <SubmissionSection
-        class="col-8"
-        v-model:submission="submission"
-        :template="template"
-      />
-      <div class="json col">{{ submission }}</div>
+      <Submission class="col-8" :submission="submission" :template="template" />
+      <div id="json" class="json col"></div>
     </div>
   </div>
 </template>
@@ -21,33 +17,32 @@
 </style>
 
 <script setup>
-import { ref } from 'vue';
+import { computed, ref, watch, watchEffect } from 'vue';
 
 import BioImages from './templates/BioImages.v4.json';
-import SubmissionSection from './components/Submission.vue';
+import Submission from './components/Submission.vue';
 
 const props = defineProps(['accession']);
-
 const submission = ref({});
 const template = ref({});
 const allTemplates = [BioImages];
 
-const fetchData = () => {
-  fetch(`http://localhost:8080/study/${props.accession}`)
-    .then((response) => response.json())
-    .then((data) => {
-      submission.value = data;
-      const templateNode = data?.attributes?.find(
-        (n) => n?.name?.toLowerCase() === 'template',
-      );
-      template.value = allTemplates.find(
-        (t) => t?.name?.toLowerCase() === templateNode?.value?.toLowerCase(),
-      );
-    })
-    .catch((error) => {
-      console.error('Error fetching JSON data:', error);
-    });
-};
-
-fetchData();
+watchEffect(async () => {
+  const response = await fetch(
+    `http://localhost:8080/study/${props.accession}`,
+  );
+  submission.value = await response.json();
+  const templateNode = submission.value?.attributes?.find(
+    (n) => n?.name?.toLowerCase() === 'template',
+  );
+  template.value = allTemplates.find(
+    (t) => t?.name?.toLowerCase() === templateNode?.value?.toLowerCase(),
+  );
+});
+const updatedSubmission = computed(() =>
+  JSON.stringify(submission.value, null, 2),
+);
+watch(updatedSubmission, async (sub) => {
+  document.getElementById('json').innerText = updatedSubmission.value;
+});
 </script>
