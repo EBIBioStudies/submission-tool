@@ -120,7 +120,7 @@ const componentInstance = getCurrentInstance();
   >
     <!-- section title -->
     <div>
-      <span :class="[depth > 0 ? 'branch' : 'spacer']"></span>
+      <span :class="[depth > 0 ? 'branch' : 'branch spacer']"></span>
       <span
         class="input-group-text text-start btn btn-lg ps-1 mt-2 section-title"
         @click="toggle()"
@@ -225,13 +225,6 @@ const componentInstance = getCurrentInstance();
 </template>
 
 <style>
-.section-block {
-  content: ' ';
-  margin-top: 1em;
-}
-.spacer {
-  margin-left: 4pt;
-}
 .section-block:nth-child(even) {
 }
 </style>

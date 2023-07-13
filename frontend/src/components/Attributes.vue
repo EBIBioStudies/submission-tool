@@ -56,12 +56,13 @@ addMissingAttributes();
 
 <template>
   <div>
-    <div v-for="(attribute, index) in attributeList" :key="'att' + index">
+    <div v-for="(attribute, index) in attributeList">
       <div
         class="input-group pb-2 branch"
         v-if="!processedAttributes.has(attribute.name)"
       >
         <Attribute
+          :key="index"
           :attribute="attribute"
           :field-type="getFieldType(attribute)"
           :parent="attributeList"
@@ -73,14 +74,3 @@ addMissingAttributes();
     </div>
   </div>
 </template>
-
-<style>
-.input-group:before {
-  color: var(--bs-border-color);
-}
-
-.branch:before {
-  content: '_';
-  color: var(--bs-border-color);
-}
-</style>

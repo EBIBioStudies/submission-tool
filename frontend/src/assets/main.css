@@ -18,7 +18,7 @@
 }
 
 .has-child-section {
-    border-left: 0.1em solid #eeeeee;
+    border-left: 2px solid  var(--bs-border-color);
 }
 .add-control {
     margin: -0.3em 0 0 1em;
@@ -30,4 +30,17 @@
 .icon {
     min-width: 20pt;
     opacity: 0.3;
+}
+
+.branch:before {
+  content: ' ';
+  width: 6px;
+  margin-top: 1.2em;
+  color: transparent;
+  border-top: 2px solid var(--bs-border-color);
+  display: inline-block;
+}
+
+span.branch.spacer {
+  border-color: transparent  !important;
 }

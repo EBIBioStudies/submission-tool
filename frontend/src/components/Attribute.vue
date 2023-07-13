@@ -62,7 +62,7 @@ const onChangeSelect = (newValue, control) => {
 
 const onCreateTag = (newTag) => {
   // TODO: handle valqual
-  const obj = { name: props.fieldType.name, value: newTag.value ?? newTag };
+  const obj = { name: props.attribute.name, value: newTag.value ?? newTag };
   emits('createTag', obj);
   return false; // ignore the event, it will be rendered by the parent
 };
@@ -95,14 +95,12 @@ const onDeleteTag = (newTag) => {
     <span class="text-muted" v-if="fieldType">{{ fieldType.name }}</span>
     <span v-else>
       <input
-        class="input-group-text text-start d-inline-block"
+        type="text"
+        class="form-control"
         v-model="thisAttribute.name"
         placeholder="Attribute name"
-      /><font-awesome-icon
-        class="icon"
-        icon="fa-edit"
-        transform="shrink-4"
-      ></font-awesome-icon>
+        style="margin-left: -1em"
+      />
     </span>
   </label>
 
@@ -135,8 +133,9 @@ const onDeleteTag = (newTag) => {
   <!-- tags  -->
   <Multiselect
     v-else-if="
-      fieldType?.controlType?.name === 'select' &&
-      fieldType?.controlType?.multiple
+      (fieldType?.controlType?.name === 'select' &&
+        fieldType?.controlType?.multiple) ||
+      thisMultivalueAttribute.length > 1
     "
     v-model="thisMultivalueAttribute"
     mode="tags"
