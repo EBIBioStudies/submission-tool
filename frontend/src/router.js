@@ -13,9 +13,9 @@ const routes = [
     props: true,
   },
   {
-    path: '/new',
+    path: '/edit',
     name: 'New',
-    component: () => import('./New.vue'),
+    component: () => import('./Edit.vue'),
     props: true,
   },
 ];

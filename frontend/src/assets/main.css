@@ -1,35 +1,38 @@
 .logo {
-    width: 200px;
+  width: 200px;
 }
 
 .slide-leave-active,
 .slide-enter-active {
-    transition: all 0.1s ease-out;
+  transition: all 0.1s ease-out;
 }
 
 .slide-enter-from {
-    transform: translateY(-10px);
-    opacity: 0;
+  transform: translateY(-10px);
+  opacity: 0;
 }
 
 .slide-leave-to {
-    transform: translateY(-10px);
-    opacity: 0;
+  transform: translateY(-10px);
+  opacity: 0;
 }
 
 .has-child-section {
-    border-left: 2px solid  var(--bs-border-color);
+  border-left: 2px solid var(--bs-border-color);
 }
+
 .add-control {
-    margin: -0.3em 0 0 1em;
+  margin: 0 0 0 -0.1em;
+  top: 4px;
 }
+
 .section-control {
-    color: #8f8f8f;
+  color: #8f8f8f;
 }
 
 .icon {
-    min-width: 20pt;
-    opacity: 0.3;
+  min-width: 20pt;
+  opacity: 0.3;
 }
 
 .branch:before {
@@ -42,5 +45,5 @@
 }
 
 .branch.spacer:before {
-  border-color: transparent  !important;
+  border-color: transparent !important;
 }

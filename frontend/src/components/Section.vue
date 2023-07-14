@@ -2,6 +2,7 @@
 import { getCurrentInstance, nextTick, ref } from 'vue';
 import Attributes from './Attributes.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import SectionTable from './SectionTable.vue';
 
 const props = defineProps(['section', 'sectionType', 'depth']);
 defineEmits(['delete']);
@@ -15,7 +16,8 @@ const thisSection = ref(props.section);
 const attributesRefreshKey = ref(0);
 const sectionsRefreshKey = ref(0);
 
-const getSectionType = (subsection) => {
+const getSectionType = (aSubsection) => {
+  const subsection = Array.isArray(aSubsection) ? aSubsection[0] : aSubsection;
   const subsections = [
     ...(props.sectionType?.sectionTypes ?? []),
     ...(props.sectionType?.tableTypes ?? []),
@@ -26,7 +28,11 @@ const getSectionType = (subsection) => {
 };
 
 const canRender = (sec) => {
-  return ['author', 'organisation'].indexOf(sec.type?.toLowerCase()) < 0;
+  return (
+    ['author', 'organisation', 'organization'].indexOf(
+      sec.type?.toLowerCase(),
+    ) < 0
+  );
 };
 const isCollapsed = ref((props?.depth ?? 0) >= 2);
 
@@ -101,14 +107,8 @@ const createTag = (msg) => {
   attributesRefreshKey.value += 1;
 };
 
-const deleteTag = (msg) => {
-  deleteAttribute(msg.index);
-};
-
-const toggle = () => {
-  isCollapsed.value = !isCollapsed.value;
-};
-
+const deleteTag = (msg) => deleteAttribute(msg.index);
+const toggle = () => (isCollapsed.value = !isCollapsed.value);
 const componentInstance = getCurrentInstance();
 </script>
 
@@ -149,9 +149,9 @@ const componentInstance = getCurrentInstance();
       </span>
     </div>
 
+    <!-- section content -->
     <transition name="slide">
       <div v-if="!isCollapsed">
-        <!-- section body -->
         <div class="has-child-section ms-3 slide-in">
           <!-- attributes -->
           <Attributes
@@ -163,62 +163,65 @@ const componentInstance = getCurrentInstance();
             @createTag="createTag"
             @deleteTag="deleteTag"
           />
-          <!-- subsection -->
-          <div :key="sectionsRefreshKey">
-            <Section
-              :section="subsection"
-              :sectionType="getSectionType(subsection)"
-              :depth="props.depth + 1"
-              ref="sectionsComponent"
-              v-for="(subsection, i) in section.subsections"
-              @delete="deleteSubSection(section.subsections, i)"
-              v-bind:key="i"
-            />
-          </div>
-        </div>
 
-        <!-- add menu -->
-        <div class="dropdown add-control">
-          <div
-            class="align-text-bottom"
-            role="button"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-            @click="isCollapsed = false"
-          >
-            <font-awesome-icon
-              icon="fa-regular fa-square-plus"
-              class="section-control"
-            ></font-awesome-icon>
+          <div :key="sectionsRefreshKey">
+            <div v-for="(subsection, i) in section.subsections" v-bind:key="i">
+              <!-- subsection -->
+              <Section
+                v-if="!Array.isArray(subsection)"
+                ref="sectionsComponent"
+                :section="subsection"
+                :sectionType="getSectionType(subsection)"
+                :depth="props.depth + 1"
+                @delete="deleteSubSection(section.subsections, i)"
+              />
+              <!-- Table -->
+              <SectionTable v-else :rows="subsection" />
+            </div>
+            <!-- Menu -->
+            <div class="dropdown add-control">
+              <div
+                class="align-text-bottom"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+                @click="isCollapsed = false"
+              >
+                <font-awesome-icon
+                  icon="fa-regular fa-square-plus"
+                  class="section-control fa-lg"
+                ></font-awesome-icon>
+              </div>
+              <ul class="dropdown-menu">
+                <li>
+                  <a class="dropdown-item btn" @click="addAttribute(section)">
+                    <font-awesome-icon
+                      class="icon"
+                      icon="fa-solid fa-toggle-off"
+                    ></font-awesome-icon>
+                    New Attribute</a
+                  >
+                </li>
+                <!--          <li><a class="dropdown-item btn"><i class="fa-solid fa-table icon"></i> Table</a></li>-->
+                <li>
+                  <a class="dropdown-item btn" @click="addSubsection(section)">
+                    <font-awesome-icon
+                      class="icon"
+                      icon="fa-caret-right"
+                    ></font-awesome-icon>
+                    New Section</a
+                  >
+                </li>
+              </ul>
+            </div>
+            <!--        {{-->
+            <!--          [-->
+            <!--            ...(sectionType?.sectionTypes ?? []),-->
+            <!--            ...(sectionType?.tableTypes ?? []),-->
+            <!--          ].map((t) => t.name)-->
+            <!--        }}-->
           </div>
-          <ul class="dropdown-menu">
-            <li>
-              <a class="dropdown-item btn" @click="addAttribute(section)">
-                <font-awesome-icon
-                  class="icon"
-                  icon="fa-solid fa-toggle-off"
-                ></font-awesome-icon>
-                New Attribute</a
-              >
-            </li>
-            <!--          <li><a class="dropdown-item btn"><i class="fa-solid fa-table icon"></i> Table</a></li>-->
-            <li>
-              <a class="dropdown-item btn" @click="addSubsection(section)">
-                <font-awesome-icon
-                  class="icon"
-                  icon="fa-caret-right"
-                ></font-awesome-icon>
-                New Section</a
-              >
-            </li>
-          </ul>
         </div>
-        <!--        {{-->
-        <!--          [-->
-        <!--            ...(sectionType?.sectionTypes ?? []),-->
-        <!--            ...(sectionType?.tableTypes ?? []),-->
-        <!--          ].map((t) => t.name)-->
-        <!--        }}-->
       </div>
     </transition>
   </div>
