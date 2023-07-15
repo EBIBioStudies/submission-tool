@@ -81,7 +81,12 @@ const updatedSubmission = computed(() =>
   JSON.stringify(submission.value, null, 2),
 );
 watch(updatedSubmission, async (sub) => {
-  document.getElementById('json').innerText = updatedSubmission.value;
+  document.getElementById('json').innerText = JSON.stringify(
+    JSON.parse(updatedSubmission.value).section.subsections[0],
+    null,
+    4,
+  );
+  // updatedSubmission.value;
 });
 
 function populate(section, tmpl) {

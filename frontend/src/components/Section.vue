@@ -15,6 +15,7 @@ const thisSection = ref(props.section);
 // TODO: figure out how to avoid this
 const attributesRefreshKey = ref(0);
 const sectionsRefreshKey = ref(0);
+const tableRefreshKey = ref(0);
 
 const getSectionType = (aSubsection) => {
   const subsection = Array.isArray(aSubsection) ? aSubsection[0] : aSubsection;
@@ -107,6 +108,20 @@ const createTag = (msg) => {
   attributesRefreshKey.value += 1;
 };
 
+const swapRows = (event, rows) => {
+  const temp = rows[event.oldIndex];
+  rows[event.oldIndex] = rows[event.newIndex];
+  rows[event.newIndex] = temp;
+};
+
+const updateColumnName = (subsection, update) => {
+  subsection.forEach(
+    (row) =>
+      (row.attributes.find((att) => att.name === update.old).name = update.new),
+  );
+  sectionsRefreshKey.value += 1;
+};
+
 const deleteTag = (msg) => deleteAttribute(msg.index);
 const toggle = () => (isCollapsed.value = !isCollapsed.value);
 const componentInstance = getCurrentInstance();
@@ -176,7 +191,12 @@ const componentInstance = getCurrentInstance();
                 @delete="deleteSubSection(section.subsections, i)"
               />
               <!-- Table -->
-              <SectionTable v-else :rows="subsection" />
+              <SectionTable
+                v-else
+                :rows="subsection"
+                @rowsSwapped="(e) => swapRows(e, subsection)"
+                @columnUpdated="(msg) => updateColumnName(subsection, msg)"
+              />
             </div>
             <!-- Menu -->
             <div class="dropdown add-control">
