@@ -2,6 +2,8 @@
 import { computed, ref } from 'vue';
 import Multiselect from '@vueform/multiselect';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import DatePicker from 'vue-datepicker-next';
+import 'vue-datepicker-next/index.css';
 
 const props = defineProps(['attribute', 'fieldType', 'parent']);
 const emits = defineEmits(['createTag', 'deleteTag', 'deleteAttribute']);
@@ -170,6 +172,17 @@ const onDeleteTag = (newTag) => {
       </div>
     </template>
   </Multiselect>
+
+  <!--date-->
+  <datePicker
+    v-if="fieldType?.valueType?.name === 'date'"
+    class="form-control"
+    v-model:value="thisAttribute.value"
+    defaultValue="thisAttribute.value"
+    valueType="format"
+    placeholder="Select date"
+    format="YYYY-MM-DD"
+  />
 
   <!-- default / text -->
   <input

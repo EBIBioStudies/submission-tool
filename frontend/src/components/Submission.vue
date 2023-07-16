@@ -1,6 +1,5 @@
 <script setup>
 import StudySection from './StudySection.vue';
-
 defineProps(['submission', 'template']);
 </script>
 

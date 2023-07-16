@@ -35,7 +35,13 @@ watchEffect(async () => {
     const response = await fetch(
       `http://localhost:8080/study/${props.accession}`,
     );
-    submission.value = await response.json();
+    const submissionJson = await response.json();
+    const releaseDate = submissionJson?.attributes?.find(
+      (attr) => attr.name === 'ReleaseDate',
+    );
+    // insert the release date as a second attribute
+    submissionJson?.section?.attributes.splice(1, 0, releaseDate);
+    submission.value = submissionJson;
     const templateNode = submission.value?.attributes?.find(
       (n) => n?.name?.toLowerCase() === 'template',
     );
@@ -68,7 +74,7 @@ watchEffect(async () => {
     };
     const tmpl = thisTemplate.sectionType;
     draft.section = { type: tmpl.name };
-    populate(draft.section, tmpl);
+    buildTemplate(draft.section, tmpl);
     submission.value = draft;
     template.value = allTemplates.find(
       (t) => t?.name?.toLowerCase() === thisTemplate.name.toLowerCase(),
@@ -81,15 +87,13 @@ const updatedSubmission = computed(() =>
   JSON.stringify(submission.value, null, 2),
 );
 watch(updatedSubmission, async (sub) => {
-  document.getElementById('json').innerText = JSON.stringify(
-    JSON.parse(updatedSubmission.value).section.subsections[0],
-    null,
-    4,
-  );
-  // updatedSubmission.value;
+  const draft = JSON.parse(updatedSubmission.value);
+  // Remove ReleaseDate from Study. It remains in the Submission
+  draft.section.attributes.splice(1, 1);
+  document.getElementById('json').innerText = JSON.stringify(draft, null, 2);
 });
 
-function populate(section, tmpl) {
+function buildTemplate(section, tmpl) {
   // fill attributes
   section.attributes = [];
   [...(tmpl?.fieldTypes ?? []), ...(tmpl?.columnTypes ?? [])].forEach(
@@ -108,7 +112,7 @@ function populate(section, tmpl) {
     (sectionTemplate) => {
       const subsection = { type: sectionTemplate.name };
       section.subsections.push(subsection);
-      populate(subsection, sectionTemplate);
+      buildTemplate(subsection, sectionTemplate);
     },
   );
 }
