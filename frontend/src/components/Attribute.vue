@@ -79,6 +79,14 @@ const onDeleteTag = (newTag) => {
   emits('deleteTag', obj);
   return false; // ignore the event, it will be rendered by the parent
 };
+
+const withinThreeYears = (date) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return (
+    date < today || date > new Date(today).setFullYear(today.getFullYear() + 3)
+  );
+};
 </script>
 
 <template>
@@ -182,6 +190,7 @@ const onDeleteTag = (newTag) => {
     valueType="format"
     placeholder="Select date"
     format="YYYY-MM-DD"
+    :disabledDate="withinThreeYears"
   />
 
   <!-- default / text -->
