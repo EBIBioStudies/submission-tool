@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 const props = defineProps(['rows']);
 const emits = defineEmits(['rowsSwapped', 'columnUpdated']);
+const rowSectionType = props.rows[0].type;
 const headerMap = new Map();
 props.rows.forEach((row) =>
   row?.attributes?.forEach((attr) => {
@@ -12,7 +13,7 @@ props.rows.forEach((row) =>
     headerMap.get(attr.name).push(attr);
   }),
 );
-const keys = [' ', ...headerMap.keys()];
+const keys = [' ', ...headerMap.keys(), ' '];
 const headers = ref(keys);
 const theseRows = ref(props.rows);
 
@@ -42,13 +43,27 @@ const swapColumn = (event) => {
 };
 
 const addColumn = (event) => {
-  headers.value.push('Column ' + headers.value.length);
+  headers.value.push('Column ' + headers.value.length - 1);
   theseRows.value.forEach((row) =>
     row.attributes.push({ name: '', value: '' }),
   );
 };
 
+const addRow = (event) => {
+  const row = { type: rowSectionType, attributes: [] };
+  headers.value.forEach((header, i) => {
+    if (i === 0 || i === headers.value.length - 1) return;
+    row.attributes.push({ name: header, value: '' });
+  });
+  theseRows.value.push(row);
+};
+
+const deleteRow = (index) => {
+  theseRows.value.splice(index, 1);
+};
+
 const updateColumnName = (event, index) => {
+  if (index === headers.value.length - 1) return;
   const oldValue = headers.value[index];
   const newValue = event.target.value;
   emits('columnUpdated', { old: oldValue, new: newValue, index: index });
@@ -65,13 +80,13 @@ const updateColumnName = (event, index) => {
           @end="swapColumn"
         >
           <template #item="{ element: header, index: i }">
-            <th :class="{ fixed: i === 0 }">
+            <th :class="{ fixed: i === 0 || i === headers?.length - 1 }">
               <!--span class="grip">{{ header }}</span-->
               <input
                 class="form-control form-control-sm"
                 type="text"
                 :value="header"
-                v-if="i > 0"
+                v-if="i > 0 && i < headers.length - 1"
                 @change.stop="(e) => updateColumnName(e, i)"
               />
             </th>
@@ -84,13 +99,15 @@ const updateColumnName = (event, index) => {
         item-key="name"
         @end="(e) => emits('rowsSwapped', e)"
       >
-        <template #item="{ element: row }">
+        <template #item="{ element: row, index: index }">
           <tr>
             <td class="grip">
               <font-awesome-icon icon="fa-solid fa-grip-vertical" />
             </td>
             <td
-              v-for="(col, j) in [...headers].filter((v, i) => i > 0)"
+              v-for="(col, j) in [...headers].filter(
+                (v, i) => i > 0 && i < headers.length - 1,
+              )"
               :key="j"
             >
               <input
@@ -99,12 +116,22 @@ const updateColumnName = (event, index) => {
                 v-model="getCell(row, col).value"
               />
             </td>
+            <td class="grip">
+              <font-awesome-icon
+                class="fa-sm"
+                role="button"
+                icon="fa-trash"
+                @click="deleteRow(index)"
+              ></font-awesome-icon>
+            </td>
           </tr>
         </template>
       </draggable>
     </table>
     <div>
-      <button class="btn btn-outline-secondary btn-sm">Add Row</button>
+      <button class="btn btn-outline-secondary btn-sm" @click="addRow">
+        Add Row
+      </button>
       <button
         class="btn btn-outline-secondary btn-sm float-end"
         @click="addColumn"
