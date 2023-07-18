@@ -25,7 +25,7 @@ const refresh = ref(0);
 // Add all column to the first row. We will use it to control column dragging
 const getCell = (row, col) => {
   let attribute = row?.attributes.find(
-    (att) => att?.name?.toLowerCase() === col.toLowerCase(),
+    (att) => att?.name?.toLowerCase() === col?.toLowerCase(),
   );
   if (!attribute) {
     attribute = { name: col, value: '' };
@@ -45,9 +45,10 @@ const reorderColumns = (event) => {
 };
 
 const addColumn = (event) => {
-  headers.value.push('Column ' + headers.value.length - 1);
+  const columnName = 'Column ' + (headers.value.length - 1);
+  headers.value.splice(-1, 0, columnName);
   theseRows.value.forEach((row) =>
-    row.attributes.push({ name: '', value: '' }),
+    row.attributes.push({ name: columnName, value: '' }),
   );
 };
 
@@ -68,6 +69,7 @@ const updateColumnName = (event, index) => {
   if (index === headers.value.length - 1) return;
   const oldValue = headers.value[index];
   const newValue = event.target.value;
+  if (headers.value.find((n) => n === newValue)) return;
   emits('columnUpdated', { old: oldValue, new: newValue, index: index });
 };
 </script>
