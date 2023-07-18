@@ -4,8 +4,12 @@ import draggable from 'vuedraggable';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 const props = defineProps(['rows']);
-const emits = defineEmits(['rowsSwapped', 'columnUpdated']);
-const rowSectionType = props.rows[0].type;
+const emits = defineEmits([
+  'rowsReordered',
+  'columnUpdated',
+  'columnsReordered',
+]);
+const rowSectionType = '' + props.rows[0].type;
 const headerMap = new Map();
 props.rows.forEach((row) =>
   row?.attributes?.forEach((attr) => {
@@ -13,20 +17,15 @@ props.rows.forEach((row) =>
     headerMap.get(attr.name).push(attr);
   }),
 );
-const keys = [' ', ...headerMap.keys(), ' '];
+const keys = ['', ...headerMap.keys(), ''];
 const headers = ref(keys);
 const theseRows = ref(props.rows);
+const refresh = ref(0);
 
 // Add all column to the first row. We will use it to control column dragging
-// headers.value.forEach((col) => {
-//   console.log(`Finding ${col}`);
-//   const att = theseRows?.value[0]?.attributes?.find((att) => att.name === col);
-//   console.log(att);
-// });
-
 const getCell = (row, col) => {
-  let attribute = row.attributes.find(
-    (att) => att.name.toLowerCase() === col.toLowerCase(),
+  let attribute = row?.attributes.find(
+    (att) => att?.name?.toLowerCase() === col.toLowerCase(),
   );
   if (!attribute) {
     attribute = { name: col, value: '' };
@@ -35,11 +34,14 @@ const getCell = (row, col) => {
   return attribute;
 };
 
-const swapColumn = (event) => {
-  const temp = theseRows.value[0].attributes[event.oldIndex + 1];
-  theseRows.value[0].attributes[event.oldIndex + 1] =
-    theseRows.value[0].attributes[event.newIndex + 1];
-  theseRows.value[0].attributes[event.newIndex + 1] = temp;
+const reorderColumns = (event) => {
+  const atts = theseRows.value[0].attributes;
+  headers.value.forEach((header, i) => {
+    if (header === '') return;
+    const index = atts.findIndex((a) => a.name === header);
+    const deleted = atts.splice(index, 1);
+    atts.splice(i - 1, 0, deleted[0]);
+  });
 };
 
 const addColumn = (event) => {
@@ -70,14 +72,14 @@ const updateColumnName = (event, index) => {
 };
 </script>
 <template>
-  <div class="ps-3">
+  <div class="ps-3" :key="refresh">
     <table class="table table-responsive">
       <thead>
         <draggable
           v-model="headers"
           tag="tr"
           :item-key="(key) => key"
-          @end="swapColumn"
+          @end.stop="reorderColumns"
         >
           <template #item="{ element: header, index: i }">
             <th :class="{ fixed: i === 0 || i === headers?.length - 1 }">
@@ -97,7 +99,7 @@ const updateColumnName = (event, index) => {
         v-model="theseRows"
         tag="tbody"
         item-key="name"
-        @end="(e) => emits('rowsSwapped', e)"
+        @end="(e) => emits('rowsReordered', e)"
       >
         <template #item="{ element: row, index: index }">
           <tr>
@@ -162,5 +164,13 @@ const updateColumnName = (event, index) => {
 span.grip {
   color: #555555;
   font-size: 10pt;
+}
+
+th {
+  cursor: grab;
+}
+
+th:active {
+  cursor: grabbing;
 }
 </style>

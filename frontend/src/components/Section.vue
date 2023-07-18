@@ -15,7 +15,6 @@ const thisSection = ref(props.section);
 // TODO: figure out how to avoid this
 const attributesRefreshKey = ref(0);
 const sectionsRefreshKey = ref(0);
-const tableRefreshKey = ref(0);
 
 const getSectionType = (aSubsection) => {
   const subsection = Array.isArray(aSubsection) ? aSubsection[0] : aSubsection;
@@ -108,10 +107,9 @@ const createTag = (msg) => {
   attributesRefreshKey.value += 1;
 };
 
-const swapRows = (event, rows) => {
-  const temp = rows[event.oldIndex];
-  rows[event.oldIndex] = rows[event.newIndex];
-  rows[event.newIndex] = temp;
+const rowsReordered = (event, rows) => {
+  rows.splice(event.newIndex, 0, rows.splice(event.oldIndex, 1)[0]);
+  sectionsRefreshKey.value += 1;
 };
 
 const updateColumnName = (subsection, update) => {
@@ -194,7 +192,7 @@ const componentInstance = getCurrentInstance();
               <SectionTable
                 v-else
                 :rows="subsection"
-                @rowsSwapped="(e) => swapRows(e, subsection)"
+                @rowsReordered="(e) => rowsReordered(e, subsection)"
                 @columnUpdated="(msg) => updateColumnName(subsection, msg)"
               />
             </div>
