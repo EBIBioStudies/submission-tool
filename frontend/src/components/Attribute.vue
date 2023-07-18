@@ -19,7 +19,6 @@ const thisMultivalueAttribute = ref(
         a.name === thisAttribute.value.name && thisAttribute.value.value !== '',
     ),
 );
-
 function isString(val) {
   return typeof val === 'string' || val instanceof String;
 }
@@ -183,7 +182,7 @@ const withinThreeYears = (date) => {
 
   <!--date-->
   <datePicker
-    v-if="fieldType?.valueType?.name === 'date'"
+    v-else-if="fieldType?.valueType?.name === 'date'"
     class="form-control"
     v-model:value="thisAttribute.value"
     defaultValue="thisAttribute.value"
