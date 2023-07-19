@@ -3,6 +3,7 @@ import { getCurrentInstance, nextTick, ref } from 'vue';
 import Attributes from './Attributes.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import SectionTable from './SectionTable.vue';
+import SectionFiles from './SectionFiles.vue';
 
 const props = defineProps(['section', 'sectionType', 'depth']);
 defineEmits(['delete']);
@@ -15,6 +16,7 @@ const thisSection = ref(props.section);
 // TODO: figure out how to avoid this
 const attributesRefreshKey = ref(0);
 const sectionsRefreshKey = ref(0);
+
 
 const getSectionType = (aSubsection) => {
   const subsection = Array.isArray(aSubsection) ? aSubsection[0] : aSubsection;
@@ -34,7 +36,7 @@ const canRender = (sec) => {
     ) < 0
   );
 };
-const isCollapsed = ref((props?.depth ?? 0) >= 2);
+const isCollapsed = false; //ref((props?.depth ?? 0) >= 2);
 
 // children are not allowed to change properties of a parent
 // all section/attributes updates thus need to be at this level
@@ -166,6 +168,8 @@ const componentInstance = getCurrentInstance();
     <transition name="slide">
       <div v-if="!isCollapsed">
         <div class="has-child-section ms-3 slide-in">
+
+
           <!-- attributes -->
           <Attributes
             :key="attributesRefreshKey"
@@ -178,6 +182,17 @@ const componentInstance = getCurrentInstance();
           />
 
           <div :key="sectionsRefreshKey">
+
+            <!-- Files -->
+            <SectionFiles
+              v-if="section.files"
+              :rows="section.files"
+              :depth="props.depth+1"
+              :sectionType="(props.sectionType?.tableTypes ?? []).find( type=> type.name==='File')"
+              @rowsReordered="(e) => rowsReordered(e, Array.isArray(section.files[0]) ? section.files[0] : section.files  )"
+              @columnUpdated="(msg) => updateColumnName(Array.isArray(section.files[0]) ? section.files[0] : section.files, msg)"
+            />
+
             <div v-for="(subsection, i) in section.subsections" v-bind:key="i">
               <!-- subsection -->
               <Section
@@ -192,6 +207,8 @@ const componentInstance = getCurrentInstance();
               <SectionTable
                 v-else
                 :rows="subsection"
+                :depth="props.depth+1"
+                :sectionType="getSectionType(subsection)"
                 @rowsReordered="(e) => rowsReordered(e, subsection)"
                 @columnUpdated="(msg) => updateColumnName(subsection, msg)"
               />
