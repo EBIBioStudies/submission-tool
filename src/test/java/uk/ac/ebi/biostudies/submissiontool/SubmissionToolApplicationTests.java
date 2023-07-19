@@ -1,10 +1,10 @@
-package uk.ac.ebi.biostudies.submissiontool.backend;
+package uk.ac.ebi.biostudies.submissiontool;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class BackendApplicationTests {
+class SubmissionToolApplicationTests {
 
     @Test
     void contextLoads() {

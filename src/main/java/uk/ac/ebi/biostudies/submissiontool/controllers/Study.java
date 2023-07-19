@@ -1,4 +1,4 @@
-package uk.ac.ebi.biostudies.submissiontool.backend.controllers;
+package uk.ac.ebi.biostudies.submissiontool.controllers;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -10,20 +10,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.ModelAndView;
 
-import java.net.URI;
 import java.nio.file.Files;
 
 @Controller
 public class Study {
-
-    @RequestMapping("/")
-    public String index() {
-        return "index";
-    }
-
     @CrossOrigin(origins = "http://localhost:5173")
-    @GetMapping(value = "/study/{accession}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/api/study/{accession}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> getStudy(@PathVariable String accession) throws Exception {
         Resource resource = new ClassPathResource(accession + ".json");
         if (resource.exists()) {
@@ -35,6 +29,11 @@ public class Study {
         String url = "https://www.ebi.ac.uk/biostudies/files/%s/%s.json".formatted(accession, accession);
         return ResponseEntity.ok(restTemplate.getForObject(url, String.class));
 
+    }
+
+    @RequestMapping("/edit")
+    public ModelAndView redirect() {
+        return new ModelAndView("forward:/");
     }
 
 }

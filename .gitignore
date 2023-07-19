@@ -1,11 +1,7 @@
 target/
 .mvn/
-
-### IntelliJ IDEA ###
+frontend/node
 .idea/
-
-### VS Code ###
-.vscode/
 
 ### Mac OS ###
 .DS_Store
