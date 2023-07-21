@@ -33,7 +33,7 @@ watchEffect(async () => {
   if (props.accession) {
     // load from exisiting data
     const response = await fetch(
-      `http://localhost:8080/api/study/${props.accession}`,
+      `${app.config.globalProperties.config.backendUrl}/api/study/${props.accession}`,
     );
     const submissionJson = await response.json();
     const releaseDate = submissionJson?.attributes?.find(

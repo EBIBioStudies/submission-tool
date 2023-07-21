@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.servlet.ModelAndView;
 
 import java.nio.file.Files;
 
@@ -32,8 +31,8 @@ public class Study {
     }
 
     @RequestMapping("/edit")
-    public ModelAndView redirect() {
-        return new ModelAndView("forward:/");
+    public String redirect() {
+        return "forward:/";
     }
 
 }

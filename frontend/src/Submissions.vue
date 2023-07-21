@@ -23,7 +23,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import {ref} from 'vue';
 
 const accession = ref('S-BIAD796');
+
 </script>
