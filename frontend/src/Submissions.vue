@@ -1,5 +1,28 @@
 <template>
   <div class="container">
+    <table v-if="submissions?.length" class="table table-responsive table-striped table-hover">
+      <thead>
+      <th>Accession</th>
+      <th>Title</th>
+      <th>Release Date</th>
+      <th>Last Modified</th>
+      <th>Actions</th>
+      </thead>
+      <tbody>
+      <tr v-for="submission in submissions">
+        <td>{{ submission.accno }}</td>
+        <td>{{ submission.title }}</td>
+        <td>{{ moment(submission.rtime).format("DD MMM YYYY") }}</td>
+        <td>{{ moment(submission.mtime).format("DD MMM YYYY") }}</td>
+        <td>
+          <button class="btn btn-link text-primary" @click.stop="edit(submission.accno)">
+            <font-awesome-icon icon="fa-edit"></font-awesome-icon>
+          </button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+
     <div class="input-group w-25">
       <input
         type="text"
@@ -13,18 +36,38 @@
         :to="`/edit/${accession}`"
         class="btn btn-primary"
         role="button"
-        >Edit</router-link
+      >Edit
+      </router-link
       >
       <router-link :to="`/edit`" class="btn btn-primary" role="button"
-        >New</router-link
+      >New
+      </router-link
       >
     </div>
   </div>
 </template>
 
 <script setup>
-import {ref} from 'vue';
+import {ref, watchEffect} from 'vue';
+import AuthService from "./services/AuthService";
+import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
+import moment from "moment";
+import router from "./router";
 
 const accession = ref('S-BIAD796');
+const submissions = ref([])
+
+
+watchEffect(async () => {
+  if (!AuthService.isAuthenticated()) return
+  const response = await fetch(
+    `${window.config.backendUrl}/api/submissions?offset=0&limit=15`,
+  ).then(r => r.json())
+    .then(r => submissions.value = r);
+})
+
+const edit = (accno)=> {
+  router.push(`/edit/${accno}`)
+}
 
 </script>

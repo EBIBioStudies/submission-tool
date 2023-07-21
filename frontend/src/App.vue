@@ -1,14 +1,15 @@
 <template>
-  <nav class="navbar pb-0 align-items-end" style="background-color:#75C8EC !important;">
+  <nav class="navbar pb-0 align-items-end justify-content-start " style="background-color:#75C8EC !important;">
     <a class="navbar-brand p-2" href="#"><img src="/src/assets/logo.svg" style="width: 300px"/></a>
     <div>
       <ul class="nav nav-tabs pe-2">
         <li class="nav-item">
           <router-link :to="`/`" class="nav-link"
-                       :class="{ active:router.currentRoute.value.name==='Submissions'  }">Submissions
+                       :class="{ active:router.currentRoute.value.name==='Submissions' || router.currentRoute.value.name==='Sign In' }">
+            Home
           </router-link>
         </li>
-        <li class="nav-item">
+        <li v-if="AuthService.isAuthenticated()" class="nav-item">
           <router-link :to="`/files`" class="nav-link"
                        :class="{ active:router.currentRoute.value.name==='Files'  }">Files
           </router-link>
@@ -42,9 +43,9 @@ import {onMounted} from "vue";
 import {Tooltip} from "bootstrap";
 
 const router = useRouter();
-const logout = () => {
+const logout = async () => {
   AuthService.logout()
-  router.push('/')
+  await router.push('/signin')
 }
 
 onMounted(() => {
@@ -54,3 +55,9 @@ onMounted(() => {
 });
 
 </script>
+
+<style scoped>
+.nav-tabs {
+  border-bottom: 0 !important;
+}
+</style>

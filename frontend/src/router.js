@@ -9,8 +9,8 @@ const routes = [
     meta: {requiresAuth: true}
   },
   {
-    path: '/login',
-    name: 'Login',
+    path: '/signin',
+    name: 'Sign In',
     component: () => import('./Login.vue'),
   },
   {
@@ -50,11 +50,11 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   if (to.matched.some((route) => route.meta.requiresAuth)) {
     if (!AuthService.isAuthenticated()) {
-      next('/login');
+      next('/signin');
     } else {
       next();
     }
-  } else if (AuthService.isAuthenticated() && to.path==='/login') {
+  } else if (AuthService.isAuthenticated() && to.path==='/signin') {
     next('/')
   } else {
     next();

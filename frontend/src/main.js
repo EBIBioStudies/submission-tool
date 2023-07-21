@@ -9,6 +9,7 @@ import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 
 import {createApp, reactive, ref} from 'vue';
 import App from './App.vue';
+import './fetchWrapper'
 
 library.add(fas);
 library.add(far);
@@ -17,7 +18,7 @@ app.use(router);
 app.component('font-awesome-icon', FontAwesomeIcon);
 
 
-fetch( "config.json")
+fetch( "/config.json")
   .then((response) => response.json())
   .then((config) => {
     window.config = config

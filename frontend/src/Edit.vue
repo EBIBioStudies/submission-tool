@@ -31,9 +31,9 @@ const allTemplates = [BioImages, ArrayExpress];
 
 watchEffect(async () => {
   if (props.accession) {
-    // load from exisiting data
+    // load from existing data
     const response = await fetch(
-      `${app.config.globalProperties.config.backendUrl}/api/study/${props.accession}`,
+      `${window.config.backendUrl}/api/study/${props.accession}`,
     );
     const submissionJson = await response.json();
     const releaseDate = submissionJson?.attributes?.find(
@@ -89,7 +89,7 @@ const updatedSubmission = computed(() =>
 watch(updatedSubmission, async (sub) => {
   const draft = JSON.parse(updatedSubmission.value);
   // Remove ReleaseDate from Study. It remains in the Submission
-  draft.section.attributes.splice(1, 1);
+  draft?.section?.attributes.splice(1, 1);
   document.getElementById('json').innerText = JSON.stringify(draft, null, 2);
 });
 
