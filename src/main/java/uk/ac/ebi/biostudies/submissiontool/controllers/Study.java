@@ -27,7 +27,6 @@ public class Study {
         RestTemplate restTemplate = new RestTemplate();
         String url = "https://www.ebi.ac.uk/biostudies/files/%s/%s.json".formatted(accession, accession);
         String body = restTemplate.getForObject(url, String.class);
-        System.out.println(body);
         return ResponseEntity.ok(body);
     }
 
