@@ -1,4 +1,5 @@
 import './assets/main.css';
+import config from './assets/config.json'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap';
 import router from './router';
@@ -17,11 +18,6 @@ const app = createApp(App);
 app.use(router);
 app.component('font-awesome-icon', FontAwesomeIcon);
 
-
-fetch( "/config.json")
-  .then((response) => response.json())
-  .then((config) => {
-    window.config = config
-    app.mount('#app')
-  })
+window.config = config
+app.mount('#app')
 

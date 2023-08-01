@@ -23,6 +23,7 @@
     "@popperjs/core": "^2.11.8",
     "@vueform/multiselect": "^2.6.2",
     "bootstrap": "^5.3.0",
+    "moment": "^2.29.4",
     "vue": "^3.3.4",
     "vue-datepicker-next": "^1.0.3",
     "vue-multiselect": "^2.1.7",
