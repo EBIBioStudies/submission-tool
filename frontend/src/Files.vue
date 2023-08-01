@@ -35,11 +35,11 @@
         <td class="text-end pe-4">{{ file.size.toLocaleString() }}</td>
         <td>
           <div class="btn-group">
-            <button class="btn btn-link text-primary" v-if="file.type.toLowerCase()!=='dir'"
+            <button v-if="file.type.toLowerCase()!=='dir'" class="btn btn-link text-primary"
                     @click.stop="downloadFile(file)">
               <font-awesome-icon icon="fa-download"></font-awesome-icon>
             </button>
-            <button class="btn btn-link text-primary" v-else>
+            <button v-else class="btn btn-link text-primary" @click.stop="downloadFileList(file)">
               <font-awesome-icon icon="fa-regular fa-file-lines"></font-awesome-icon>
             </button>
             <button class="btn btn-link text-danger" @click.stop="deleteFile(file)">
@@ -96,6 +96,18 @@ const downloadFile = (file) => {
   });
 }
 
+const downloadFileList = (file) => {
+  const downloadPath = `${window.config.backendUrl}/filelist/${file.path}/${file.name}`;
+  fetch(downloadPath).then(function (t) {
+    return t.blob().then((b) => {
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(b);
+        a.setAttribute("download", file.name+".tsv");
+        a.click();
+      }
+    );
+  });
+}
 
 const deleteFile = async (file) => {
   if (!await utils.confirm("Delete File", `Do you want to delete ${file.name}?`, "Delete")) return
