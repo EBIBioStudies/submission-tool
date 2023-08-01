@@ -29,7 +29,7 @@ public class Proxy {
     @PostMapping(value = "/api/{*path}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> postResponse(@PathVariable String path, @RequestBody String body) throws Exception {
         RestTemplate restTemplate = new RestTemplate();
-        String url = "%s/%s".formatted(environments.getProperty("backend.url"), path.startsWith("/") ? path.substring(1) : path );
+        String url = "%s/%s".formatted(environments.getProperty("backend.url"), path.startsWith("/") ? path.substring(1) : path);
         Map<String, Object> jsonObject = new ObjectMapper().readValue(body, Map.class);
         String response;
         try {
@@ -41,23 +41,24 @@ public class Proxy {
     }
 
     @CrossOrigin(origins = "http://localhost:5173")
-    @GetMapping(value = "/api/**", produces = MediaType.ALL_VALUE)
+    @RequestMapping(value = "/api/**", produces = MediaType.ALL_VALUE, method = {RequestMethod.GET, RequestMethod.DELETE})
     public void getResponse(HttpServletRequest request,
-                                              HttpServletResponse response) throws Exception {
+                            HttpServletResponse response) throws Exception {
         RestTemplate restTemplate = new RestTemplate();
         String url = "%s/%s".formatted(environments.getProperty("backend.url"),
                 request.getRequestURI().substring(5));
         if (request.getQueryString() != null) url += "?" + request.getQueryString();
         HttpHeaders headers = new HttpHeaders();
-        headers.set( SESSION_HEADER , request.getHeader(SESSION_HEADER));
+        headers.set(SESSION_HEADER, request.getHeader(SESSION_HEADER));
         HttpEntity httpEntity = new HttpEntity(headers);
         ResponseEntity<Resource> resp;
         ServletOutputStream out = response.getOutputStream();
         try {
-            resp = restTemplate.exchange(url, HttpMethod.GET, httpEntity, Resource.class);
-            response.setStatus(HttpServletResponse.SC_OK);
+            resp = restTemplate.exchange(url, HttpMethod.valueOf(request.getMethod()), httpEntity, Resource.class);
+            response.setStatus(resp.getStatusCode().value());
             resp.getHeaders().forEach((header, values) -> response.setHeader(header, String.join(",", values))); // https://www.rfc-editor.org/rfc/rfc7230#section-3.2.2
-            IOUtils.copyLarge(resp.getBody().getInputStream(), out);
+            if (resp.hasBody())
+                IOUtils.copyLarge(resp.getBody().getInputStream(), out);
         } catch (HttpStatusCodeException e) {
             response.sendError(e.getStatusCode().value(), e.getResponseBodyAsString());
         }

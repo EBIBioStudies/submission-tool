@@ -36,13 +36,13 @@
         <td>
           <div class="btn-group">
             <button class="btn btn-link text-primary" v-if="file.type.toLowerCase()!=='dir'"
-                    @click.stop="download(file)">
+                    @click.stop="downloadFile(file)">
               <font-awesome-icon icon="fa-download"></font-awesome-icon>
             </button>
             <button class="btn btn-link text-primary" v-else>
               <font-awesome-icon icon="fa-regular fa-file-lines"></font-awesome-icon>
             </button>
-            <button class="btn btn-link text-danger">
+            <button class="btn btn-link text-danger" @click.stop="deleteFile(file)">
               <font-awesome-icon icon="fa-regular fa-trash-can"></font-awesome-icon>
             </button>
           </div>
@@ -59,6 +59,7 @@ import {useRouter} from "vue-router";
 import AuthService from "./services/AuthService";
 import {computed, ref, watchEffect} from 'vue';
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
+import utils from './utils.js'
 
 const props = defineProps(['paths']);
 const sort = ref('type')
@@ -79,9 +80,10 @@ watchEffect(async () => {
 
 const navigate = async (path, name) => {
   await router.push(`/files/${path}/${name}`)
+  location.reload()
 }
 
-const download = (file) => {
+const downloadFile = (file) => {
   const downloadPath = `${window.config.backendUrl}/api/files/${file.path}?fileName=${file.name}`;
   fetch(downloadPath).then(function (t) {
     return t.blob().then((b) => {
@@ -94,6 +96,14 @@ const download = (file) => {
   });
 }
 
+
+const deleteFile = async (file) => {
+  if (!await utils.confirm("Delete File", `Do you want to delete ${file.name}?`, "Delete")) return
+  const downloadPath = `${window.config.backendUrl}/api/files/${file.path}?fileName=${file.name}`;
+  fetch(downloadPath, {method: 'DELETE'}).then(async function (t) {
+    await navigate(file.path, '')
+  });
+}
 </script>
 
 

@@ -19,5 +19,6 @@ app.use(router);
 app.component('font-awesome-icon', FontAwesomeIcon);
 
 window.config = config
+
 app.mount('#app')
 
