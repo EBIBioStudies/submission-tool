@@ -14,20 +14,24 @@
       <div class="float-end">
         <label role="button" class="btn btn-primary me-2" for="inputFile">Upload File</label>
         <input type="file" id="inputFile" multiple hidden="hidden"
-               @input.stop="(e) => uploadFiles(e.target.files)">
-        <label role="button" class="btn btn-primary" for="inputFile">Upload Folder</label>
-        <input type="file" id="inputFile" multiple webkitdirectory directory hidden="hidden"
-               @select="(e) => uploadFiles(e.target.files)">
+               @change.stop="(e) => uploadFiles(e.target.files)">
+        <label role="button" class="btn btn-primary me-2" for="inputFolder">Upload Folder</label>
+        <input type="file" id="inputFolder" multiple="multiple"
+               webkitdirectory mozdirectory msdirectory odirectory directory hidden="hidden"
+               @change.stop="(e) => uploadFiles(e.target.files)">
+        <button class="btn btn-secondary me-2" data-bs-toggle="modal" data-bs-target="#transferModal">FTP/Aspera</button>
       </div>
     </div> <!-- header end-->
 
     <div class="table-responsive-sm">
       <table v-if="files?.length" class="table table-sm align-middle  table-hover">
         <thead>
-        <th></th>
-        <th>Name</th>
-        <th class="text-end pe-4">Size (in bytes)</th>
-        <th>Actions</th>
+        <tr>
+          <th></th>
+          <th>Name</th>
+          <th class="text-end pe-4">Size (in bytes)</th>
+          <th>Actions</th>
+        </tr>
         </thead>
         <tbody>
         <tr v-for="file in sortedFiles">
@@ -59,24 +63,59 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="uploadModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="exampleModalLabel">Upload Files</h1>
+          </div>
+          <div class="modal-body">
+            <div class="text-center pb-2">{{ currentUpload.progress === 100 ? "Saving" : "Uploading" }}
+              {{ currentUpload.name }} ...
+            </div>
+            <div class="progress" role="progressbar" aria-label="Example with label"
+                 aria-valuenow="{{currentUpload.progress}}" aria-valuemin="0" aria-valuemax="100">
+              <div class="progress-bar"
+                   :class="{ 'progress-bar-striped  progress-bar-animated': currentUpload.progress===100}"
+                   :style="{width: currentUpload.progress+'%'}">{{ currentUpload.progress }}%
+              </div>
+            </div>
+          </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-danger" @click.stop="axiosAbortController.abort()" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <TransferModal></TransferModal>
+
   </div>
 </template>
 
 <script setup>
 import router from './router';
 import AuthService from "./services/AuthService";
-import {computed, ref, watchEffect} from 'vue';
+import {computed, onMounted, ref, watchEffect} from 'vue';
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import utils from './utils.js'
-import axios from "axios";
+import axios, {CanceledError} from "axios";
+import {Modal} from "bootstrap";
+import TransferModal from "./components/TransferModal.vue";
 
 const props = defineProps(['paths']);
 const currentPath = computed(() => props.paths === '' ? ['user'] : props.paths)
 const sort = ref('type')
 const files = ref([])
+const currentUpload = ref({name: '', progress: 0})
 const sortedFiles = computed(() => files.value?.sort((a, b) => {
   return a[sort.value].localeCompare(b[sort.value]);
 }))
+const axiosAbortController = new AbortController();
+
+const showModal = ref(true)
 
 watchEffect(async () => {
   if (!AuthService.isAuthenticated()) return
@@ -122,27 +161,36 @@ const deleteFile = async (file) => {
 const uploadFile = (file) => {
   const formData = new FormData();
   formData.append('files', file);
-  axios.post(`${window.config.backendUrl}/api/files/${currentPath.value}`,
+  return axios.post(`${window.config.backendUrl}/api/files/${currentPath.value.join("/")}`,
     formData,
     {
+      signal: axiosAbortController.signal,
       headers: {
         'Content-Type': 'multipart/form-data'
       },
       onUploadProgress: function (progressEvent) {
-        console.log(parseInt(Math.round((progressEvent.loaded / progressEvent.total) * 100)));
+        currentUpload.value.progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
       }.bind(this)
     })
-    .then(() => location.reload())
-    .catch((e) => {
-      console.log(e);
-    });
 }
 
 const uploadFiles = async (files) => {
+  const uploadModal = new Modal('#uploadModal');
+  uploadModal.show();
+
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
-    uploadFile(file);
+    currentUpload.value.name = file.name
+    await uploadFile(file)
+      .then((r)=> {
+        if (r?.message==='canceled') i=files.length;
+      })
+      .catch((e) => {
+        console.log(e);
+       })
   }
+  uploadModal.hide();
+  location.reload()
   return false
 }
 
