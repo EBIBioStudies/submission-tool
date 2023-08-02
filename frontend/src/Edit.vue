@@ -23,6 +23,7 @@ import { computed, nextTick, ref, watch, watchEffect } from 'vue';
 import BioImages from './templates/BioImages.v4.json';
 import ArrayExpress from './templates/ArrayExpress.json';
 import Submission from './components/Submission.vue';
+import axios from "axios";
 
 const props = defineProps(['accession']);
 const submission = ref({});
@@ -32,10 +33,10 @@ const allTemplates = [BioImages, ArrayExpress];
 watchEffect(async () => {
   if (props.accession) {
     // load from existing data
-    const response = await fetch(
+    const response = await axios.get (
       `${window.config.backendUrl}/api/submissions/drafts/${props.accession}/content`,
     );
-    const submissionJson = await response.json();
+    const submissionJson = await response.data;
     const releaseDate = submissionJson?.attributes?.find(
       (attr) => attr.name === 'ReleaseDate',
     );

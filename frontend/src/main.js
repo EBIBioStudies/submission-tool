@@ -10,14 +10,15 @@ import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 
 import {createApp, reactive, ref} from 'vue';
 import App from './App.vue';
-import './fetchWrapper'
+import AuthService from "./services/AuthService";
+import axios from "axios";
 
 library.add(fas);
 library.add(far);
 const app = createApp(App);
 app.use(router);
 app.component('font-awesome-icon', FontAwesomeIcon);
-
+axios.defaults.headers.common['x-session-token'] =  AuthService.user?.value?.sessid
 window.config = config
 
 app.mount('#app')

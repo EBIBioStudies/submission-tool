@@ -53,6 +53,7 @@ import AuthService from "./services/AuthService";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import moment from "moment";
 import router from "./router";
+import axios from "axios";
 
 const accession = ref('S-BIAD796');
 const submissions = ref([])
@@ -60,10 +61,8 @@ const submissions = ref([])
 
 watchEffect(async () => {
   if (!AuthService.isAuthenticated()) return
-  const response = await fetch(
-    `${window.config.backendUrl}/api/submissions?offset=0&limit=15`,
-  ).then(r => r.json())
-    .then(r => submissions.value = r);
+  await axios(`${window.config.backendUrl}/api/submissions?offset=0&limit=15`)
+    .then(response => submissions.value = response.data);
 })
 
 const edit = (accno)=> {
