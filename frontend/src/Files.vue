@@ -12,14 +12,20 @@
         </div>
       </div>
       <div class="float-end">
-        <label role="button" class="btn btn-primary me-2" for="inputFile">Upload File</label>
-        <input type="file" id="inputFile" multiple hidden="hidden"
-               @change.stop="(e) => uploadFiles(e.target.files)">
-        <label role="button" class="btn btn-primary me-2" for="inputFolder">Upload Folder</label>
+        <label role="button" class="btn btn-primary btn-sm me-2" for="inputFile">
+          <font-awesome-icon icon="fa-solid fa-file-circle-plus"></font-awesome-icon>
+          Upload File</label>
+        <input type="file" id="inputFile" multiple hidden="hidden" @change.stop="(e) => uploadFiles(e.target.files)">
+        <label role="button" class="btn btn-primary btn-sm me-2" for="inputFolder">
+          <font-awesome-icon icon="fa-solid fa-folder-plus"></font-awesome-icon>
+          Upload Folder</label>
         <input type="file" id="inputFolder" multiple="multiple"
                webkitdirectory mozdirectory msdirectory odirectory directory hidden="hidden"
                @change.stop="(e) => uploadFiles(e.target.files)">
-        <button class="btn btn-secondary me-2" data-bs-toggle="modal" data-bs-target="#transferModal">FTP/Aspera</button>
+        <button class="btn btn-secondary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#transferModal">
+          <font-awesome-icon icon="fa-solid fa-upload"></font-awesome-icon>
+          FTP/Aspera
+        </button>
       </div>
     </div> <!-- header end-->
 
@@ -44,7 +50,7 @@
           <td><a class="pointer" v-if="file.type.toLowerCase()==='dir'"
                  @click.stop="navigate(file.path, file.name)">{{ file.name }}</a>
             <span v-else>{{ file.name }}</span></td>
-          <td class="text-end pe-4">{{ file.size.toLocaleString() }}</td>
+          <td class="text-end pe-4"><span v-if="file.type.toLowerCase()!=='dir'">{{ file.size.toLocaleString() }}</span></td>
           <td>
             <div class="btn-group">
               <button v-if="file.type.toLowerCase()!=='dir'" class="btn btn-link text-primary"
@@ -83,9 +89,11 @@
               </div>
             </div>
           </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-danger" @click.stop="axiosAbortController.abort()" data-bs-dismiss="modal">Cancel</button>
-            </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" @click.stop="axiosAbortController.abort()"
+                    data-bs-dismiss="modal">Cancel
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -98,10 +106,10 @@
 <script setup>
 import router from './router';
 import AuthService from "./services/AuthService";
-import {computed, onMounted, ref, watchEffect} from 'vue';
+import {computed, ref, watchEffect} from 'vue';
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import utils from './utils.js'
-import axios, {CanceledError} from "axios";
+import axios from "axios";
 import {Modal} from "bootstrap";
 import TransferModal from "./components/TransferModal.vue";
 
@@ -142,13 +150,10 @@ const downloadFile = (file) => {
 const downloadFileList = (file) => {
   const downloadPath = `${window.config.backendUrl}/filelist/${file.path}/${file.name}`;
   axios({url: downloadPath, responseType: 'blob'}).then((response) => {
-    return t.blob().then((b) => {
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(response.data);
-        a.setAttribute("download", file.name + ".tsv");
-        a.click();
-      }
-    );
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(response.data);
+    a.setAttribute("download", file.name + ".tsv");
+    a.click();
   });
 }
 
@@ -182,12 +187,12 @@ const uploadFiles = async (files) => {
     const file = files[i];
     currentUpload.value.name = file.name
     await uploadFile(file)
-      .then((r)=> {
-        if (r?.message==='canceled') i=files.length;
+      .then((r) => {
+        if (r?.message === 'canceled') i = files.length;
       })
       .catch((e) => {
         console.log(e);
-       })
+      })
   }
   uploadModal.hide();
   location.reload()

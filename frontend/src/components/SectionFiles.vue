@@ -1,7 +1,7 @@
 <script setup>
-import { ref } from 'vue';
+import {ref} from 'vue';
 import draggable from 'vuedraggable';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 
 const props = defineProps(['rows', 'depth', 'sectionType']);
 const emits = defineEmits([
@@ -10,7 +10,8 @@ const emits = defineEmits([
   'columnsReordered',
 ]);
 const files = Array.isArray(props.rows[0]) ? props.rows[0] : props.rows
-const attributeNames = ['','File'];
+const rowSectionType = files[0].type;
+const attributeNames = ['', 'File'];
 files.forEach((row) =>
   row?.attributes?.forEach((attr) => {
     if (!attributeNames.includes(attr.name)) attributeNames.push(attr.name)
@@ -22,14 +23,14 @@ const theseFiles = ref(files);
 
 // Add all column to the first row. We will use it to control column dragging
 const getCell = (row, col) => {
-  if (col==='File') {
-    return { value: row.path}
+  if (col === 'File') {
+    return {value: row.path}
   }
   let attribute = row?.attributes?.find(
     (att) => att?.name?.toLowerCase() === col?.toLowerCase(),
   );
   if (!attribute) {
-    attribute = { name: col, value: '' };
+    attribute = {name: col, value: ''};
     row.attributes.push(attribute);
   }
   return attribute;
@@ -49,15 +50,15 @@ const addColumn = (event) => {
   const columnName = 'Column ' + (headers.value.length - 1);
   headers.value.splice(-1, 0, columnName);
   theseFiles.value.forEach((row) =>
-    row.attributes.push({ name: columnName, value: '' }),
+    row.attributes.push({name: columnName, value: ''}),
   );
 };
 
 const addRow = (event) => {
-  const row = { type: rowSectionType, attributes: [] };
+  const row = {path: '', type: rowSectionType, attributes: []};
   headers.value.forEach((header, i) => {
-    if (i === 0 || i === headers.value.length - 1) return;
-    row.attributes.push({ name: header, value: '' });
+    if (i === 0 || i === 1 || i === headers.value.length - 1) return;
+    row.attributes.push({name: header, value: ''});
   });
   theseFiles.value.push(row);
 };
@@ -71,7 +72,7 @@ const updateColumnName = (event, index) => {
   const oldValue = headers.value[index];
   const newValue = event.target.value;
   if (headers.value.find((n) => n === newValue)) return;
-  emits('columnUpdated', { old: oldValue, new: newValue, index: index });
+  emits('columnUpdated', {old: oldValue, new: newValue, index: index});
 };
 
 
@@ -94,32 +95,32 @@ const toggle = () => (isCollapsed.value = !isCollapsed.value);
           class="section-control"
           :icon="'fa-caret-' + (isCollapsed ? 'right' : 'down')"
         ></font-awesome-icon>
-        <span class="ms-2">Files ({{theseFiles.length}})</span>
+        <span class="ms-2">Files ({{ theseFiles.length }})</span>
       </span>
   </div>
-  <div class="ps-3"  v-if="!isCollapsed">
-    <table class="table table-responsive">
+  <div class="ps-3 " v-if="!isCollapsed">
+    <table class="table table-responsive border-start border-1">
       <thead>
-        <draggable
-          v-model="headers"
-          tag="tr"
-          :item-key="(key) => key"
-          @end.stop="reorderColumns"
-        >
-          <template #item="{ element: header, index: i }">
-            <th :class="{ fixed: i === 0 || i === headers?.length - 1 }">
+      <draggable
+        v-model="headers"
+        tag="tr"
+        :item-key="(key) => key"
+        @end.stop="reorderColumns"
+      >
+        <template #item="{ element: header, index: i }">
+          <th :class="{ fixed: i === 0 || i === 1 || i === headers?.length - 1 }">
                <span v-if="i > 0 && i < headers.length - 1">
-                <span v-if="hasColumnType(header)">{{ header }} </span>
-              <input
-                v-else
-                class="form-control form-control-sm"
-                type="text"
-                :value="header"
-                @change.stop="(e) => updateColumnName(e, i)"
-              /></span>
-            </th>
-          </template>
-        </draggable>
+                 <span v-if="i==1 || hasColumnType(header)">{{ header }} </span>
+                 <input v-else
+                        class="form-control form-control-sm"
+                        type="text"
+                        :value="header"
+                        @change.stop="(e) => updateColumnName(e, i)"
+                 />
+               </span>
+          </th>
+        </template>
+      </draggable>
       </thead>
       <draggable
         v-model="theseFiles"
@@ -128,17 +129,17 @@ const toggle = () => (isCollapsed.value = !isCollapsed.value);
         @end="(e) => emits('rowsReordered', e)"
       >
         <template #item="{ element: row, index: index }">
-          <tr>
+          <tr class="border-white">
             <td class="grip">
-              <font-awesome-icon icon="fa-solid fa-grip-vertical" />
+              <font-awesome-icon icon="fa-solid fa-grip-vertical"/>
             </td>
-            <td
-              v-for="(col, j) in [...headers].filter(
-                (v, i) => i > 0 && i < headers.length - 1,
-              )"
-              :key="j"
-            >
+            <td v-for="(col, j) in [...headers].filter((v, i) => i > 0 && i < headers.length - 1 )" :key="j">
+              <div v-if="j===0" class="input-group input-group-sm">
+                <input type="text" class="form-control" v-model="getCell(row, col).value" readonly>
+                <button class="btn btn-secondary" type="button" >Select File</button>
+              </div>
               <input
+                v-else
                 class="form-control form-control-sm"
                 type="text"
                 v-model="getCell(row, col).value"
