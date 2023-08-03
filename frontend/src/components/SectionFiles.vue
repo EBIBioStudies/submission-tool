@@ -2,6 +2,7 @@
 import {ref} from 'vue';
 import draggable from 'vuedraggable';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
+import FileFolderSelectModal from "./FileFolderSelectModal.vue";
 
 const props = defineProps(['rows', 'depth', 'sectionType']);
 const emits = defineEmits([
@@ -23,9 +24,6 @@ const theseFiles = ref(files);
 
 // Add all column to the first row. We will use it to control column dragging
 const getCell = (row, col) => {
-  if (col === 'File') {
-    return {value: row.path}
-  }
   let attribute = row?.attributes?.find(
     (att) => att?.name?.toLowerCase() === col?.toLowerCase(),
   );
@@ -55,7 +53,7 @@ const addColumn = (event) => {
 };
 
 const addRow = (event) => {
-  const row = {path: '', type: rowSectionType, attributes: []};
+  const row = {path: '', attributes: []};
   headers.value.forEach((header, i) => {
     if (i === 0 || i === 1 || i === headers.value.length - 1) return;
     row.attributes.push({name: header, value: ''});
@@ -134,10 +132,7 @@ const toggle = () => (isCollapsed.value = !isCollapsed.value);
               <font-awesome-icon icon="fa-solid fa-grip-vertical"/>
             </td>
             <td v-for="(col, j) in [...headers].filter((v, i) => i > 0 && i < headers.length - 1 )" :key="j">
-              <div v-if="j===0" class="input-group input-group-sm">
-                <input type="text" class="form-control" v-model="getCell(row, col).value" readonly>
-                <button class="btn btn-secondary" type="button" >Select File</button>
-              </div>
+              <FileFolderSelectModal v-if="j===0"  :file="row" />
               <input
                 v-else
                 class="form-control form-control-sm"

@@ -75,7 +75,7 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h1 class="modal-title fs-5" id="exampleModalLabel">Upload Files</h1>
+            <h1 class="modal-title fs-5">Upload Files</h1>
           </div>
           <div class="modal-body">
             <div class="text-center pb-2">{{ currentUpload.progress === 100 ? "Saving" : "Uploading" }}
@@ -112,6 +112,7 @@ import utils from './utils.js'
 import axios from "axios";
 import {Modal} from "bootstrap";
 import TransferModal from "./components/TransferModal.vue";
+import FileTree from "./components/FileTree.vue";
 
 const props = defineProps(['paths']);
 const currentPath = computed(() => props.paths === '' ? ['user'] : props.paths)
