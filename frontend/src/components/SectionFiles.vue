@@ -11,7 +11,6 @@ const emits = defineEmits([
   'columnsReordered',
 ]);
 const files = Array.isArray(props.rows[0]) ? props.rows[0] : props.rows
-const rowSectionType = files[0].type;
 const attributeNames = ['', 'File'];
 files.forEach((row) =>
   row?.attributes?.forEach((attr) => {

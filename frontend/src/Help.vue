@@ -9,9 +9,6 @@ const filePath = ref(attr.path)
 
 <template>
 Help
-
-  [{{attr}}]
-  <p><FileFolderSelectModal :attribute="attr" /></p>
 </template>
 
 <style scoped>

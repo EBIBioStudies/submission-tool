@@ -1,7 +1,7 @@
 <script setup>
-import { getCurrentInstance, nextTick, ref } from 'vue';
+import {getCurrentInstance, nextTick, ref} from 'vue';
 import Attributes from './Attributes.vue';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import SectionTable from './SectionTable.vue';
 import SectionFiles from './SectionFiles.vue';
 
@@ -36,7 +36,7 @@ const canRender = (sec) => {
     ) < 0
   );
 };
-const isCollapsed = false; //ref((props?.depth ?? 0) >= 2);
+const isCollapsed = ref((props?.depth ?? 0) >= 2);
 
 // children are not allowed to change properties of a parent
 // all section/attributes updates thus need to be at this level
@@ -48,7 +48,7 @@ const addSubsection = async (aSection) => {
       '-' +
       (props.section.subsections.length + 1),
     type: '',
-    attributes: [{ name: '', value: '' }],
+    attributes: [{name: '', value: ''}],
     subsections: [],
   });
   // wait till the UI is updated and the focus the first attribute name
@@ -70,14 +70,10 @@ const deleteSubSection = async (someSubSections, index) => {
 
 const addAttribute = async (aSection) => {
   aSection.attributes = aSection.attributes || [];
-  aSection.attributes.push({ name: '', value: '' });
+  aSection.attributes.push({name: '', value: ''});
   attributesRefreshKey.value += 1;
   await nextTick();
-  const added = [
-    ...componentInstance.refs.attributesComponent.$.ctx.$el.querySelectorAll(
-      'input.input-group-text',
-    ),
-  ].pop();
+  const added = [...componentInstance.refs.attributesComponent.$.ctx.$el.querySelectorAll('.attribute-name')].pop();
   added.scrollIntoView();
   added.focus();
 };
@@ -123,7 +119,6 @@ const updateColumnName = (subsection, update) => {
 };
 
 const deleteTag = (msg) => deleteAttribute(msg.index);
-const toggle = () => (isCollapsed.value = !isCollapsed.value);
 const componentInstance = getCurrentInstance();
 </script>
 
@@ -138,7 +133,7 @@ const componentInstance = getCurrentInstance();
       <span :class="[depth > 0 ? 'branch' : 'branch spacer']"></span>
       <span
         class="input-group-text text-start btn btn-lg ps-1 mt-2 section-title"
-        @click="toggle()"
+        @click="isCollapsed = !isCollapsed"
       >
         <font-awesome-icon
           class="section-control"
@@ -151,7 +146,7 @@ const componentInstance = getCurrentInstance();
             @click.stop=""
             type="text"
             placeholder="Enter section type"
-            v-model="thisSection.type" />
+            v-model="thisSection.type"/>
           <font-awesome-icon
             class="icon ps-2"
             role="button"
@@ -160,7 +155,7 @@ const componentInstance = getCurrentInstance();
             @click.stop=""
             icon="fa-trash"
           ></font-awesome-icon
-        ></span>
+          ></span>
       </span>
     </div>
 
@@ -181,11 +176,21 @@ const componentInstance = getCurrentInstance();
             @deleteTag="deleteTag"
           />
 
-          <div :key="sectionsRefreshKey">
+          <!-- add attribute button -->
+          <div class="branch">
+            <button class="btn btn-sm btn-link text-black-50 text-decoration-none"
+                    @click="addAttribute(section)"  data-bs-toggle="tooltip"
+                    data-bs-title="Add new attribute">
+              <font-awesome-icon class="pe-1" :icon="['fas', 'toggle-off']"></font-awesome-icon>
+            </button>
+          </div>
+
+
+          <div class="p-0" :key="sectionsRefreshKey">
 
             <!-- Files -->
             <SectionFiles
-              v-if="section.files"
+              v-if="section.files && section.files.length"
               :rows="section.files"
               :depth="props.depth+1"
               :sectionType="(props.sectionType?.tableTypes ?? []).find( type=> type.name==='File')"
@@ -193,8 +198,9 @@ const componentInstance = getCurrentInstance();
               @columnUpdated="(msg) => updateColumnName(Array.isArray(section.files[0]) ? section.files[0] : section.files, msg)"
             />
 
+            <!-- Subsections -->
             <div v-for="(subsection, i) in section.subsections" v-bind:key="i">
-              <!-- subsection -->
+              <!-- section -->
               <Section
                 v-if="!Array.isArray(subsection)"
                 ref="sectionsComponent"
@@ -203,7 +209,7 @@ const componentInstance = getCurrentInstance();
                 :depth="props.depth + 1"
                 @delete="deleteSubSection(section.subsections, i)"
               />
-              <!-- Table -->
+              <!-- or table -->
               <SectionTable
                 v-else
                 :rows="subsection"
@@ -213,6 +219,7 @@ const componentInstance = getCurrentInstance();
                 @columnUpdated="(msg) => updateColumnName(subsection, msg)"
               />
             </div>
+
             <!-- Menu -->
             <div class="dropdown add-control">
               <div
@@ -223,7 +230,7 @@ const componentInstance = getCurrentInstance();
                 @click="isCollapsed = false"
               >
                 <font-awesome-icon
-                  icon="fa-regular fa-square-plus"
+                  :icon="['fas','plus-circle']"
                   class="section-control fa-lg"
                 ></font-awesome-icon>
               </div>
@@ -265,4 +272,11 @@ const componentInstance = getCurrentInstance();
 <style>
 .section-block:nth-child(even) {
 }
+
+
+.add-control {
+  margin: 0 0 0 -11px;
+  top: 1em;
+}
+
 </style>

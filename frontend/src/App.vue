@@ -6,7 +6,13 @@
         <li class="nav-item">
           <router-link :to="`/`" class="nav-link"
                        :class="{ active:router.currentRoute.value.name==='Submissions' || router.currentRoute.value.name==='Sign In' }">
-            Home
+            Submissions
+          </router-link>
+        </li>
+        <li  v-if="AuthService.isAuthenticated()" class="nav-item">
+          <router-link :to="`/drafts`" class="nav-link"
+                       :class="{ active:router.currentRoute.value.name==='Drafts' }">
+            Drafts
           </router-link>
         </li>
         <li v-if="AuthService.isAuthenticated()" class="nav-item">
@@ -59,5 +65,8 @@ onMounted(() => {
 <style scoped>
 .nav-tabs {
   border-bottom: 0 !important;
+}
+.nav-link {
+  color: white
 }
 </style>

@@ -9,6 +9,12 @@ const routes = [
     meta: {requiresAuth: true}
   },
   {
+    path: '/drafts',
+    name: 'Drafts',
+    component: () => import('./Drafts.vue'),
+    meta: {requiresAuth: true}
+  },
+  {
     path: '/signin',
     name: 'Sign In',
     component: () => import('./Login.vue'),

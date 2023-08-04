@@ -8,6 +8,7 @@ import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
@@ -19,6 +20,7 @@ import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Files;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -81,6 +83,22 @@ public class Proxy {
                             @RequestBody(required = false) String requestBody,
                             HttpServletRequest request,
                             HttpServletResponse response) throws Exception {
+
+
+        // Test code starts. Serve local version if it exists
+        // TODO: Remove this
+        String accession  = request.getRequestURI().split("/")[request.getRequestURI().split("/").length-2];
+        Resource resource = new ClassPathResource(accession+".json");
+        if (resource.exists()) {
+            byte[] fileData = Files.readAllBytes(resource.getFile().toPath());
+            String jsonContent = new String(fileData);
+            response.getWriter().print(jsonContent);
+            response.flushBuffer();
+            return;
+        }
+        // Test code ends
+
+
         String url = "%s/%s".formatted(environments.getProperty("backend.url"), request.getRequestURI().substring(5));
         if (request.getQueryString() != null) url += "?" + request.getQueryString();
 

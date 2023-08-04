@@ -106,7 +106,7 @@ const withinThreeYears = (date) => {
     <span v-else>
       <input
         type="text"
-        class="form-control"
+        class="form-control attribute-name"
         v-model="thisAttribute.name"
         placeholder="Attribute name"
         style="margin-left: -1em"

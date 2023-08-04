@@ -29,7 +29,7 @@ const select = (node) => {
     <input type="text" class="form-control bg-body-secondary" v-model="thisFile.path" readonly data-bs-toggle="modal"
            :data-bs-target="'#fileFolderSelectModal'+thisComponent.uid">
     <button class="btn btn-secondary" type="button" data-bs-toggle="modal" :data-bs-target="'#fileFolderSelectModal'+thisComponent.uid">
-      Select File
+      Select File{{}}
     </button>
   </div>
   <div class="modal fade" :id="'fileFolderSelectModal'+thisComponent.uid" tabindex="-1" aria-labelledby="fileFolderSelectModal"

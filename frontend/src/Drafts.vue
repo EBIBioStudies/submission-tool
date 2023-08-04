@@ -6,22 +6,18 @@
         New Submission
       </router-link>
     </div>
-    <table v-if="submissions?.length" class="table table-responsive table-striped table-hover">
+    <table v-if="drafts?.length" class="table table-responsive table-striped table-hover">
       <thead>
-      <th>Accession</th>
+      <th>Draft Key</th>
       <th>Title</th>
-      <th>Release Date</th>
-      <th>Last Modified</th>
       <th>Actions</th>
       </thead>
       <tbody>
-      <tr v-for="submission in submissions">
-        <td>{{ submission.accno }}</td>
-        <td>{{ submission.title }}</td>
-        <td>{{ moment(submission.rtime).format("DD MMM YYYY") }}</td>
-        <td>{{ moment(submission.mtime).format("DD MMM YYYY") }}</td>
+      <tr v-for="draft in drafts">
+        <td>{{ draft.key }}</td>
+        <td>{{ getTitle(draft) }}</td>
         <td>
-          <button class="btn btn-link text-primary" @click.stop="edit(submission.accno)">
+          <button class="btn btn-link text-primary" @click.stop="edit(draft.key)">
             <font-awesome-icon icon="fa-edit"></font-awesome-icon>
           </button>
         </td>
@@ -29,12 +25,12 @@
       </tbody>
       <tfoot>
       <tr class="border-white">
-        <td colspan="5" class="text-end">
+        <td colspan="3" class="text-end">
           <button v-if="offset>0" class="btn btn-outline-primary btn-sm m-2" @click="offset -= pageLength">
             <font-awesome-icon icon="fa-chevron-left"></font-awesome-icon>
             Previous
           </button>
-          <button v-if="submissions.length % pageLength === 0" class="btn btn-outline-primary btn-sm m-2"
+          <button v-if="drafts.length % pageLength === 0" class="btn btn-outline-primary btn-sm m-2"
                   @click="offset += pageLength">
             <font-awesome-icon icon="fa-chevron-right"></font-awesome-icon>
             Next
@@ -64,16 +60,20 @@ import router from "./router";
 import axios from "axios";
 
 const accession = ref('S-BIAD796');
-const submissions = ref([])
+const drafts = ref([])
 const offset = ref(0)
 const pageLength = ref(15)
 
 
 watchEffect(async () => {
   if (!AuthService.isAuthenticated()) return
-  await axios(`${window.config.backendUrl}/api/submissions?offset=${offset.value}&limit=15`)
-    .then(response => submissions.value = response.data);
+  await axios(`${window.config.backendUrl}/api/submissions/drafts?offset=${offset.value}&limit=15`)
+    .then(response => drafts.value = response.data);
 })
+
+const getTitle = (draft) => {
+  return draft.content?.section?.attributes?.find( attr=> attr.name==='Title')?.value || draft.content?.attributes?.find( attr=> attr.name==='Title')?.value
+}
 
 const edit = (accno) => {
   router.push(`/edit/${accno}`)

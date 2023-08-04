@@ -25,11 +25,6 @@ body {
   border-left: 2px solid var(--bs-border-color);
 }
 
-.add-control {
-  margin: 0 0 0 -0.1em;
-  top: 4px;
-}
-
 .section-control {
   color: #8f8f8f;
 }

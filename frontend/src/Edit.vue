@@ -22,13 +22,14 @@ import { computed, nextTick, ref, watch, watchEffect } from 'vue';
 
 import BioImages from './templates/BioImages.v4.json';
 import ArrayExpress from './templates/ArrayExpress.json';
+import Default from './templates/Default.json';
 import Submission from './components/Submission.vue';
 import axios from "axios";
 
 const props = defineProps(['accession']);
 const submission = ref({});
 const template = ref({});
-const allTemplates = [BioImages, ArrayExpress];
+const allTemplates = [BioImages, Default, ArrayExpress];
 
 watchEffect(async () => {
   if (props.accession) {
