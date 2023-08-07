@@ -11,9 +11,9 @@ const emits = defineEmits([
   'columnsReordered',
 ]);
 const rowSectionType = '' + props.rows[0].type;
-const tableType = ref(rowSectionType==='file' ? 'Files' : rowSectionType)
+const tableType = ref(rowSectionType === 'file' ? 'Files' : rowSectionType)
 const headerMap = new Map();
-if (rowSectionType.toLowerCase()==='file') {
+if (rowSectionType.toLowerCase() === 'file') {
   headerMap.set('File', [])
 }
 
@@ -25,7 +25,7 @@ props.rows.forEach((row) =>
 );
 const keys = ['', ...headerMap.keys(), ''];
 const headers = ref(keys);
-const theseRows = ref( Array.isArray(props.rows[0]) ? props.rows[0] : props.rows);
+const theseRows = ref(Array.isArray(props.rows[0]) ? props.rows[0] : props.rows);
 const refresh = ref(0);
 
 const getFieldType = (attribute) => {
@@ -41,7 +41,7 @@ const getCell = (row, col) => {
   let attribute = row?.attributes.find(
     (att) => att?.name?.toLowerCase() === col?.toLowerCase(),
   );
-  if (!attribute &&  row.type==='file' && col==='File' ) {
+  if (!attribute && row.type === 'file' && col === 'File') {
     return row;
   }
   if (!attribute) {
@@ -94,59 +94,37 @@ const hasColumnType = (header) =>
   props.sectionType?.columnTypes.find(col => col.name === header) != null
 
 
-const isCollapsed = ref(false) //TODO: uncoment ref((props?.depth ?? 0) >= 2);
+const isCollapsed = ref((props?.depth ?? 0) >= 2);
 const toggle = () => (isCollapsed.value = !isCollapsed.value);
 </script>
 <template>
   <!-- section title -->
   <div>
     <span :class="[depth > 0 ? 'branch' : 'branch spacer']"></span>
-    <span
-      class="input-group-text text-start btn btn-lg ps-1 mt-2 section-title"
-      @click="toggle()"
-    >
-        <font-awesome-icon
-          class="section-control"
-          :icon="'fa-caret-' + (isCollapsed ? 'right' : 'down')"
-        ></font-awesome-icon>
+    <span class="input-group-text text-start btn btn-lg ps-1 mt-2 section-title" @click="toggle()">
+        <font-awesome-icon class="section-control"
+                           :icon="'fa-caret-' + (isCollapsed ? 'right' : 'down')">        </font-awesome-icon>
         <span v-if="sectionType?.name" class="ms-2">{{ tableType }}</span>
         <span v-else>
-          <input
-            class="ms-2"
-            @click.stop=""
-            type="text"
-            placeholder="Enter section type"
-            v-model="tableType"
-          />
-          <font-awesome-icon
-            class="icon ps-2"
-            role="button"
-            size="sm"
-            @click="$emit('delete')"
-            @click.stop=""
-            icon="fa-trash"
-          ></font-awesome-icon
-          ></span>
+          <input class="ms-2" @click.stop="" type="text" placeholder="Enter table name" v-model="tableType"/>
+          <font-awesome-icon class="icon ps-2" role="button" size="sm" @click="$emit('delete')" @click.stop=""
+                             icon="fa-trash"></font-awesome-icon>
+        </span>
       </span>
   </div>
   <div class="ps-3" v-if="!isCollapsed" :key="refresh">
     <table class="table table-responsive">
       <thead>
-      <draggable
-        v-model="headers"
-        tag="tr"
-        :item-key="(key) => key"
-        @end.stop="reorderColumns"
-      >
+      <draggable v-model="headers" tag="tr" :item-key="(key) => key" @end.stop="reorderColumns">
         <template #item="{ element: header, index: i }">
           <th :class="{ fixed: i === 0 || i === headers?.length - 1 || getFieldType(header)?.display==='required' }">
             <span v-if="i > 0 && i < headers.length - 1">
-              <span v-if="hasColumnType(header)">{{ header }}</span>
+              <span class="form-control-sm" v-if="hasColumnType(header)">{{ header }}</span>
               <input v-else
-                class="form-control form-control-sm"
-                type="text"
-                :value="header"
-                @change.stop="(e) => updateColumnName(e, i)"
+                     class="form-control form-control-sm"
+                     type="text"
+                     :value="header"
+                     @change.stop="(e) => updateColumnName(e, i)"
               />
             </span>
           </th>
@@ -173,11 +151,11 @@ const toggle = () => (isCollapsed.value = !isCollapsed.value);
                 :isTableAttribute="true"
                 @deleteAttribute="(v) => emits('deleteAttribute', index)"
               />
-<!--              <input-->
-<!--                class="form-control form-control-sm"-->
-<!--                type="text"-->
-<!--                v-model="getCell(row, col).value"-->
-<!--              />-->
+              <!--              <input-->
+              <!--                class="form-control form-control-sm"-->
+              <!--                type="text"-->
+              <!--                v-model="getCell(row, col).value"-->
+              <!--              />-->
             </td>
             <td class="grip">
               <font-awesome-icon
@@ -229,6 +207,10 @@ span.grip {
 
 th {
   cursor: grab;
+}
+
+th span .form-control {
+  font-weight: bold;
 }
 
 th:active {

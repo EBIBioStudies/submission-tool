@@ -1,15 +1,10 @@
 <template>
   <div class="container">
     <div class="text-end">
-      <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#newSubmissionModal">
+      <button class="btn btn-success  mb-4" data-bs-toggle="modal" data-bs-target="#newSubmissionModal">
         <font-awesome-icon :icon="['fas', 'circle-plus']"></font-awesome-icon>
         New Submission
       </button>
-
-      <router-link :to="`/edit`" class="btn btn-success" role="button">
-        <font-awesome-icon icon="fa-circle-plus"/>
-        New Submission
-      </router-link>
     </div>
     <table v-if="submissions?.length" class="table table-responsive table-striped table-hover">
       <thead>
@@ -59,7 +54,7 @@
 <!--    </div>-->
   </div>
 
-  <NewSubmissionModal></NewSubmissionModal>
+  <NewSubmissionModal @select="(e)=>console.log(e)" ></NewSubmissionModal>
 </template>
 
 <script setup>

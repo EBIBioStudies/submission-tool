@@ -3,13 +3,19 @@ import {getCurrentInstance, nextTick, ref} from 'vue';
 import Attributes from './Attributes.vue';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import SectionTable from './SectionTable.vue';
+import {addTable} from '@/utils';
 
 const props = defineProps(['section', 'sectionType', 'depth']);
-defineEmits(['delete']);
+const emits = defineEmits(['delete','addTable']);
+
+const componentInstance = getCurrentInstance();
 
 const attributesComponent = ref(null);
 const sectionsComponent = ref(null);
 const thisSection = ref(props.section);
+
+const deleteTag = (msg) => deleteAttribute(msg.index);
+
 
 // hack: variable to trigger re-rendering of attributes when needed
 // TODO: figure out how to avoid this
@@ -35,7 +41,7 @@ const canRender = (sec) => {
     ) < 0
   );
 };
-const isCollapsed =ref(false) //TODO: uncoment  ref((props?.depth ?? 0) >= 2);
+const isCollapsed = ref((props?.depth ?? 0) >= 2);
 
 // children are not allowed to change properties of a parent
 // all section/attributes updates thus need to be at this level
@@ -117,8 +123,6 @@ const updateColumnName = (subsection, update) => {
   sectionsRefreshKey.value += 1;
 };
 
-const deleteTag = (msg) => deleteAttribute(msg.index);
-const componentInstance = getCurrentInstance();
 </script>
 
 <template>
@@ -176,13 +180,17 @@ const componentInstance = getCurrentInstance();
           />
 
           <!-- add attribute button -->
-          <div class="input-group branch ">
-            <label class="input-group-text text-muted attribute" role="button" @click="addAttribute(section)"
-                   data-bs-toggle="tooltip" data-bs-title="Add new attribute">
+          <div class="branch btn-group btn-group-sm " role="group" aria-label="Large button group">
+            <button type="button" class="btn btn-add-element" @click="addAttribute(thisSection)">
               <font-awesome-icon
-                class="icon" :icon="['fas', 'plus']" transform="shrink-5"></font-awesome-icon>
-              <i>New Attribute</i>
-            </label>
+                class="icon" :icon="['fas', 'add']"></font-awesome-icon>
+              New Attribute
+            </button>
+            <button type="button" class="btn btn-add-element" @click="()=>emits('addTable', {section:thisSection, instance:componentInstance})">
+              <font-awesome-icon
+                class="icon" :icon="['fas', 'table']"></font-awesome-icon>
+              New Table
+            </button>
           </div>
 
 
@@ -208,6 +216,7 @@ const componentInstance = getCurrentInstance();
                 :sectionType="getSectionType(subsection)"
                 :depth="props.depth + 1"
                 @delete="deleteSubSection(section.subsections, i)"
+                @addTable="(msg)=>addTable(msg.section, msg.instance)"
               />
               <!-- or table -->
               <SectionTable
@@ -220,50 +229,35 @@ const componentInstance = getCurrentInstance();
               />
             </div>
 
-            <!-- Menu -->
-            <div class="dropdown add-control">
-              <div
-                class="align-text-bottom"
-                role="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-                @click="isCollapsed = false"
-              >
-                <font-awesome-icon
-                  :icon="['fas','plus-circle']"
-                  class="section-control fa-lg"
-                ></font-awesome-icon>
-              </div>
-              <ul class="dropdown-menu">
-                <li>
-                  <a class="dropdown-item btn" @click="addAttribute(section)">
-                    <font-awesome-icon
-                      class="icon"
-                      :icon="['fas','plus']"
-                    ></font-awesome-icon>
-                    New Attribute</a
-                  >
-                </li>
-                <!--          <li><a class="dropdown-item btn"><i class="fa-solid fa-table icon"></i> Table</a></li>-->
-                <li>
-                  <a class="dropdown-item btn" @click="addSubsection(section)">
-                    <font-awesome-icon
-                      class="icon"
-                      icon="fa-caret-right"
-                    ></font-awesome-icon>
-                    New Section</a
-                  >
-                </li>
-              </ul>
-            </div>
-            <!--        {{-->
-            <!--          [-->
-            <!--            ...(sectionType?.sectionTypes ?? []),-->
-            <!--            ...(sectionType?.tableTypes ?? []),-->
-            <!--          ].map((t) => t.name)-->
-            <!--        }}-->
           </div>
+
+          <!-- add other sections button start -->
+          <div class="input-group branch dropdown mt-2  dropend">
+            <label class="input-group-text attribute new-button" role="button"
+                   data-bs-toggle="dropdown"
+                   aria-expanded="false"
+                   @click="isCollapsed = false">
+              <font-awesome-icon
+                class="icon" :icon="['far', 'plus-square']"></font-awesome-icon>
+              <span>New ...</span>
+            </label>
+
+            <ul class="dropdown-menu">
+              <!--              <li><a class="dropdown-item btn" @click="addAttribute(section)">                <font-awesome-icon class="icon" :icon="['fas','plus']"></font-awesome-icon>                New Attribute</a>              </li>-->
+              <!--              <li><a class="dropdown-item btn" @click="addTable(section)">-->
+              <!--                <font-awesome-icon class="icon" icon="fa-table"></font-awesome-icon>-->
+              <!--                Table</a>-->
+              <!--              </li>-->
+              <li><a class="dropdown-item btn" @click="addSubsection(section)">
+                <font-awesome-icon class="icon" icon="fa-caret-right"></font-awesome-icon>
+                Subsection</a>
+              </li>
+            </ul>
+          </div>
+          <!-- add other sections button end -->
+
         </div>
+
       </div>
     </transition>
   </div>
@@ -273,19 +267,15 @@ const componentInstance = getCurrentInstance();
 .section-block:nth-child(even) {
 }
 
-.add-attribute {
-  border: 2px solid gray;
-  content: ' ';
-  display: inline-block;
-  min-width: 19px;
-  height: 12px;
-  margin-left: -2px;
-  border-radius: 0 2pt 2pt 0;
+.btn-add-element {
+  border: 1px dashed var(--bs-border-color);
+  font-style: oblique;
+  color: #999999;
 }
 
-.add-control {
-  margin: 0 0 0 -11px;
-  top: 1em;
+.btn-add-element:hover {
+  background-color: var(--bs-secondary-bg);
 }
+
 
 </style>

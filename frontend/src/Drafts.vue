@@ -1,10 +1,10 @@
 <template>
   <div class="container">
     <div class="text-end">
-      <router-link :to="`/edit`" class="btn btn-success" role="button">
-        <font-awesome-icon icon="fa-circle-plus"/>
+      <button class="btn btn-success  mb-4" data-bs-toggle="modal" data-bs-target="#newSubmissionModal">
+        <font-awesome-icon :icon="['fas', 'circle-plus']"></font-awesome-icon>
         New Submission
-      </router-link>
+      </button>
     </div>
     <table v-if="drafts?.length" class="table table-responsive table-striped table-hover">
       <thead>
@@ -49,6 +49,8 @@
 <!--      <router-link :to="`/edit/${accession}`" class="btn btn-primary" role="button">Edit</router-link>-->
 <!--    </div>-->
   </div>
+
+  <NewSubmissionModal @select="(e)=>console.log(e)" ></NewSubmissionModal>
 </template>
 
 <script setup>
@@ -58,6 +60,7 @@ import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import moment from "moment";
 import router from "./router";
 import axios from "axios";
+import NewSubmissionModal from "@/components/NewSubmissionModal.vue";
 
 const accession = ref('S-BIAD796');
 const drafts = ref([])

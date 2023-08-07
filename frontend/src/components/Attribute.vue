@@ -14,7 +14,6 @@ const props = defineProps({
 });
 const emits = defineEmits(['createTag', 'deleteTag', 'deleteAttribute']);
 const thisAttribute = ref(props.attribute);
-console.log(props.fieldType==null? props.attribute : '')
 const thisMultiValuedAttribute = ref(
   props.parent
     ?.map((a, i) => {
@@ -190,7 +189,7 @@ const withinThreeYears = (date) => {
 
   <!--date-->
   <datePicker
-    v-else-if="fieldType?.valueType?.name === 'date'"
+    v-else-if="fieldType?.controlType?.name === 'date'"
     class="form-control"
     v-model:value="thisAttribute.value"
     defaultValue="thisAttribute.value"
@@ -214,7 +213,6 @@ const withinThreeYears = (date) => {
     :placeholder="fieldType?.controlType?.placeholder"
     v-model="thisAttribute.value"
   />
-
   <!-- delete icon -->
   <div
     class="input-group-text btn-group-vertical"

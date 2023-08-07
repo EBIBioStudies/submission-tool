@@ -1,11 +1,14 @@
 <script setup>
 import {allTemplates} from "@/templates/templates";
 import {ref} from "vue";
+import axios from "axios";
+import router from "@/router";
 
+const emits = defineEmits(['select'])
 const showMoreWasPressed = ref(false)
-
 const nameLatestVersionMap = new Map()
 const nameTemplateMap = new Map()
+const selectedTemplate = ref(null)
 
 allTemplates.map((tmpl, i) => {
   const templateNameRe = /^(.+?)(?:\.v(\d+))?$/;
@@ -19,11 +22,63 @@ allTemplates.map((tmpl, i) => {
 
 const latestTemplates = [...nameLatestVersionMap.keys()].map((collection) => nameTemplateMap.get(`${collection}.v${nameLatestVersionMap.get(collection)}`))
 //TODO: Filter on user collection allow list
+
+
+function buildTemplate(section, tmpl) {
+  // fill attributes
+  section.attributes = [];
+  [...(tmpl?.fieldTypes ?? []), ...(tmpl?.columnTypes ?? [])].forEach(
+    (field) => {
+      const attr = { name: field.name };
+      if (field?.controlType?.defaultValue) {
+        attr.value = field?.controlType?.defaultValue;
+        if (field?.controlType?.values?.filter( (value) => value?.valqual!=null).length ) {
+          attr.valqual = field?.controlType?.values?.find( (v)=> v.value === attr.value)?.valqual
+        }
+      }
+      else if (field?.controlType?.name === 'select')
+        attr.value = '';
+      section.attributes.push(attr);
+    },
+  );
+
+  // fill sections
+  section.subsections = [];
+  [...(tmpl?.tableTypes ?? []), ...(tmpl.sectionTypes ?? [])].forEach(
+    (sectionTemplate) => {
+      const subsection = { type: sectionTemplate.name };
+      section.subsections.push(subsection);
+      buildTemplate(subsection, sectionTemplate);
+    },
+  );
+}
+
+const createNewSubmission = async ()=> {
+
+  // create new
+  const thisTemplate = allTemplates.find((tmpl) => tmpl.name===selectedTemplate.value);
+  const draft = {
+    type: 'submission',
+    attributes: [
+      { name: 'Template', value: thisTemplate.name },
+      { name: 'AttachTo', value: thisTemplate.title },
+    ],
+  };
+  const tmpl = thisTemplate.sectionType;
+  draft.section = { type: tmpl.name };
+  buildTemplate(draft.section, tmpl);
+  const response = await axios.post (
+    `${window.config.backendUrl}/api/submissions/drafts`,
+    draft
+  );
+  await router.push(`/edit/${response.data.key}`)
+}
+
+
 </script>
 
 <template>
-  <div class="modal fade modal-lg" id="newSubmissionModal" tabindex="-1" aria-labelledby="newSubmissionModal"
-       aria-hidden="true">
+  <div class="modal fade modal-lg" id="newSubmissionModal" tabindex="-1" aria-labelledby="newSubmissionModal">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
@@ -36,16 +91,14 @@ const latestTemplates = [...nameLatestVersionMap.keys()].map((collection) => nam
           </p>
           <p>
             Imaging datasets must be submitted using the "BioImages" template. Submissions that do not do so may have
-            their
-            release delayed.
-            For further details please see the <a
+            their release delayed. For further details please see the <a
             href="https://www.ebi.ac.uk/bioimage-archive/help-images-at-ebi" target="_blank"> EMBL-EBI policy on imaging
-            data
-            submissions</a>.</p>
+            data submissions</a>.</p>
 
           <div v-for="(tmpl, i) in latestTemplates" class="form-check template-button">
             <div v-if="i<2 || showMoreWasPressed">
               <input :id="`template_${i}`" type="radio" class="form-check visually-hidden" name="template"
+                     v-model="selectedTemplate"
                      :value="tmpl.name"
               />
               <label class="input-group" :for="`template_${i}`">
@@ -71,7 +124,7 @@ const latestTemplates = [...nameLatestVersionMap.keys()].map((collection) => nam
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Add</button>
+          <button @click="createNewSubmission" :disabled="selectedTemplate==null" type="button" class="btn btn-primary" data-bs-dismiss="modal">Add</button>
         </div>
       </div>
     </div>

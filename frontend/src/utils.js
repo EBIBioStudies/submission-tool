@@ -1,6 +1,7 @@
-import{Modal } from "bootstrap";
+import {Modal} from "bootstrap";
+import {nextTick} from "vue";
 
-const confirm = (title, message, okayLabel ='Okay', cancelLabel = 'Cancel') => {
+const confirm = (title, message, okayLabel = 'Okay', cancelLabel = 'Cancel') => {
   const modal = document.createElement('div')
   modal.id = "modal-confirm"
   modal.className = "modal"
@@ -37,5 +38,26 @@ const confirm = (title, message, okayLabel ='Okay', cancelLabel = 'Cancel') => {
   })
 }
 
+// parent level functions need to be replicated here for now
+export const addTable = async (section, componentInstance) => {
+  section.subsections = section.subsections || [];
+  section.subsections.push([{
+    accno: (section.accno ?? Date.now()) + '-' + (section.subsections.length + 1),
+    type: '',
+    attributes: [{name: 'Column 1', value: ''}],
+    subsections: [],
+  }]);
 
-export default {confirm}
+  // wait till the UI is updated and the focus the first attribute name
+  await nextTick();
+  const added = [...componentInstance.refs.sectionsComponent].pop().$.ctx.$el;
+  added.scrollIntoView();
+  /*await nextTick();
+
+  // New section added to first is always collapsed
+  if (added.classList.contains('collapsed'))
+    added.querySelector('.section-title').click();*/
+}
+
+
+export default {confirm, addTable}
