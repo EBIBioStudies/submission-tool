@@ -3,7 +3,6 @@ import {getCurrentInstance, nextTick, ref} from 'vue';
 import Attributes from './Attributes.vue';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import SectionTable from './SectionTable.vue';
-import SectionFiles from './SectionFiles.vue';
 
 const props = defineProps(['section', 'sectionType', 'depth']);
 defineEmits(['delete']);
@@ -36,7 +35,7 @@ const canRender = (sec) => {
     ) < 0
   );
 };
-const isCollapsed = ref((props?.depth ?? 0) >= 2);
+const isCollapsed =ref(false) //TODO: uncoment  ref((props?.depth ?? 0) >= 2);
 
 // children are not allowed to change properties of a parent
 // all section/attributes updates thus need to be at this level
@@ -177,21 +176,22 @@ const componentInstance = getCurrentInstance();
           />
 
           <!-- add attribute button -->
-          <div class="branch">
-            <button class="btn btn-sm btn-link text-black-50 text-decoration-none"
-                    @click="addAttribute(section)"  data-bs-toggle="tooltip"
-                    data-bs-title="Add new attribute">
-              <font-awesome-icon class="pe-1" :icon="['fas', 'toggle-off']"></font-awesome-icon>
-            </button>
+          <div class="input-group branch ">
+            <label class="input-group-text text-muted attribute" role="button" @click="addAttribute(section)"
+                   data-bs-toggle="tooltip" data-bs-title="Add new attribute">
+              <font-awesome-icon
+                class="icon" :icon="['fas', 'plus']" transform="shrink-5"></font-awesome-icon>
+              <i>New Attribute</i>
+            </label>
           </div>
 
 
           <div class="p-0" :key="sectionsRefreshKey">
 
             <!-- Files -->
-            <SectionFiles
+            <SectionTable
               v-if="section.files && section.files.length"
-              :rows="section.files"
+              :rows="Array.isArray(section.files[0]) ? section.files[0] : section.files "
               :depth="props.depth+1"
               :sectionType="(props.sectionType?.tableTypes ?? []).find( type=> type.name==='File')"
               @rowsReordered="(e) => rowsReordered(e, Array.isArray(section.files[0]) ? section.files[0] : section.files  )"
@@ -239,7 +239,7 @@ const componentInstance = getCurrentInstance();
                   <a class="dropdown-item btn" @click="addAttribute(section)">
                     <font-awesome-icon
                       class="icon"
-                      icon="fa-solid fa-toggle-off"
+                      :icon="['fas','plus']"
                     ></font-awesome-icon>
                     New Attribute</a
                   >
@@ -273,6 +273,15 @@ const componentInstance = getCurrentInstance();
 .section-block:nth-child(even) {
 }
 
+.add-attribute {
+  border: 2px solid gray;
+  content: ' ';
+  display: inline-block;
+  min-width: 19px;
+  height: 12px;
+  margin-left: -2px;
+  border-radius: 0 2pt 2pt 0;
+}
 
 .add-control {
   margin: 0 0 0 -11px;

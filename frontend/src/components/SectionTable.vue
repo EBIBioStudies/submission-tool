@@ -2,6 +2,7 @@
 import {ref} from 'vue';
 import draggable from 'vuedraggable';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
+import Attribute from "@/components/Attribute.vue";
 
 const props = defineProps(['rows', 'depth', 'sectionType']);
 const emits = defineEmits([
@@ -10,8 +11,12 @@ const emits = defineEmits([
   'columnsReordered',
 ]);
 const rowSectionType = '' + props.rows[0].type;
-const tableType = ref(rowSectionType)
+const tableType = ref(rowSectionType==='file' ? 'Files' : rowSectionType)
 const headerMap = new Map();
+if (rowSectionType.toLowerCase()==='file') {
+  headerMap.set('File', [])
+}
+
 props.rows.forEach((row) =>
   row?.attributes?.forEach((attr) => {
     if (!headerMap.has(attr.name)) headerMap.set(attr.name, []);
@@ -20,15 +25,25 @@ props.rows.forEach((row) =>
 );
 const keys = ['', ...headerMap.keys(), ''];
 const headers = ref(keys);
-const theseRows = ref(props.rows);
-const thisSection = ref(props.section);
+const theseRows = ref( Array.isArray(props.rows[0]) ? props.rows[0] : props.rows);
 const refresh = ref(0);
+
+const getFieldType = (attribute) => {
+  const name = attribute.path ? 'File' : attribute?.name || attribute
+
+  // return the column type. Expects either an object or a column name (for use in draggable)
+  return props.sectionType?.columnTypes?.find((f) => f.name.toLowerCase() === name.toLowerCase());
+};
+
 
 // Add all column to the first row. We will use it to control column dragging
 const getCell = (row, col) => {
   let attribute = row?.attributes.find(
     (att) => att?.name?.toLowerCase() === col?.toLowerCase(),
   );
+  if (!attribute &&  row.type==='file' && col==='File' ) {
+    return row;
+  }
   if (!attribute) {
     attribute = {name: col, value: ''};
     row.attributes.push(attribute);
@@ -79,7 +94,7 @@ const hasColumnType = (header) =>
   props.sectionType?.columnTypes.find(col => col.name === header) != null
 
 
-const isCollapsed = ref((props?.depth ?? 0) >= 2);
+const isCollapsed = ref(false) //TODO: uncoment ref((props?.depth ?? 0) >= 2);
 const toggle = () => (isCollapsed.value = !isCollapsed.value);
 </script>
 <template>
@@ -124,16 +139,16 @@ const toggle = () => (isCollapsed.value = !isCollapsed.value);
         @end.stop="reorderColumns"
       >
         <template #item="{ element: header, index: i }">
-          <th :class="{ fixed: i === 0 || i === headers?.length - 1 }">
-              <span v-if="i > 0 && i < headers.length - 1">
-                <span v-if="hasColumnType(header)">{{ header }}</span>
-              <input
-                v-else
+          <th :class="{ fixed: i === 0 || i === headers?.length - 1 || getFieldType(header)?.display==='required' }">
+            <span v-if="i > 0 && i < headers.length - 1">
+              <span v-if="hasColumnType(header)">{{ header }}</span>
+              <input v-else
                 class="form-control form-control-sm"
                 type="text"
                 :value="header"
                 @change.stop="(e) => updateColumnName(e, i)"
-              /></span>
+              />
+            </span>
           </th>
         </template>
       </draggable>
@@ -149,17 +164,20 @@ const toggle = () => (isCollapsed.value = !isCollapsed.value);
             <td class="grip">
               <font-awesome-icon icon="fa-solid fa-grip-vertical"/>
             </td>
-            <td
-              v-for="(col, j) in [...headers].filter(
-                (v, i) => i > 0 && i < headers.length - 1,
-              )"
-              :key="j"
-            >
-              <input
-                class="form-control form-control-sm"
-                type="text"
-                v-model="getCell(row, col).value"
+            <td v-for="(col, j) in [...headers].filter((v, i) => i > 0 && i < headers.length - 1 )" :key="j">
+              <Attribute
+                :key="index"
+                :attribute="getCell(row, col)"
+                :field-type="getFieldType(getCell(row, col))"
+                :parent="row.attributes"
+                :isTableAttribute="true"
+                @deleteAttribute="(v) => emits('deleteAttribute', index)"
               />
+<!--              <input-->
+<!--                class="form-control form-control-sm"-->
+<!--                type="text"-->
+<!--                v-model="getCell(row, col).value"-->
+<!--              />-->
             </td>
             <td class="grip">
               <font-awesome-icon

@@ -1,24 +1,32 @@
 <script setup>
-import { computed, ref } from 'vue';
+import {computed, ref} from 'vue';
 import Multiselect from '@vueform/multiselect';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import DatePicker from 'vue-datepicker-next';
 import 'vue-datepicker-next/index.css';
+import FileFolderSelectModal from "@/components/FileFolderSelectModal.vue";
 
-const props = defineProps(['attribute', 'fieldType', 'parent']);
+const props = defineProps({
+  'attribute': Object,
+  'fieldType': Object,
+  'parent': Object,
+  'isTableAttribute': Boolean
+});
 const emits = defineEmits(['createTag', 'deleteTag', 'deleteAttribute']);
 const thisAttribute = ref(props.attribute);
-const thisMultivalueAttribute = ref(
+console.log(props.fieldType==null? props.attribute : '')
+const thisMultiValuedAttribute = ref(
   props.parent
     ?.map((a, i) => {
       // save the original index -- needed when deleting
-      return { index: i, ...a };
+      return {index: i, ...a};
     })
     ?.filter(
       (a) =>
         a.name === thisAttribute.value.name && thisAttribute.value.value !== '',
     ),
 );
+
 function isString(val) {
   return typeof val === 'string' || val instanceof String;
 }
@@ -26,8 +34,8 @@ function isString(val) {
 const getAttributesFromFieldType = (fieldType) => {
   return (fieldType?.controlType?.values ?? []).map((val) =>
     isString(val)
-      ? { name: fieldType.name, value: val }
-      : { name: fieldType.name, ...val },
+      ? {name: fieldType.name, value: val}
+      : {name: fieldType.name, ...val},
   );
 };
 
@@ -64,7 +72,7 @@ const onChangeSelect = (newValue, control) => {
 
 const onCreateTag = (newTag) => {
   // TODO: handle valqual
-  const obj = { name: props.attribute.name, value: newTag.value ?? newTag };
+  const obj = {name: props.attribute.name, value: newTag.value ?? newTag};
   emits('createTag', obj);
   return false; // ignore the event, it will be rendered by the parent
 };
@@ -90,7 +98,7 @@ const withinThreeYears = (date) => {
 
 <template>
   <!--label-->
-  <label class="input-group-text">
+  <label class="input-group-text attribute" v-if="!props.isTableAttribute">
     <font-awesome-icon
       v-if="fieldType?.icon"
       class="icon"
@@ -145,9 +153,9 @@ const withinThreeYears = (date) => {
     v-else-if="
       (fieldType?.controlType?.name === 'select' &&
         fieldType?.controlType?.multiple) ||
-      thisMultivalueAttribute.length > 1
+      thisMultiValuedAttribute?.length > 1
     "
-    v-model="thisMultivalueAttribute"
+    v-model="thisMultiValuedAttribute"
     mode="tags"
     label="value"
     class="form-control"
@@ -192,6 +200,12 @@ const withinThreeYears = (date) => {
     :disabledDate="withinThreeYears"
   />
 
+  <!--file-->
+  <FileFolderSelectModal
+    v-else-if="fieldType?.valueType?.name === 'file'"
+    :file="thisAttribute"
+  />
+
   <!-- default / text -->
   <input
     v-else
@@ -204,7 +218,7 @@ const withinThreeYears = (date) => {
   <!-- delete icon -->
   <div
     class="input-group-text btn-group-vertical"
-    v-if="fieldType?.display !== 'required'"
+    v-if="fieldType?.display !== 'required' &&  !props.isTableAttribute"
   >
     <font-awesome-icon
       class="icon fa-sm"
@@ -215,8 +229,8 @@ const withinThreeYears = (date) => {
   </div>
 </template>
 
-<style scoped>
-label {
+<style>
+label.attribute {
   min-width: 18em;
 }
 </style>

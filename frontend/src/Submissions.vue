@@ -1,6 +1,11 @@
 <template>
   <div class="container">
     <div class="text-end">
+      <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#newSubmissionModal">
+        <font-awesome-icon :icon="['fas', 'circle-plus']"></font-awesome-icon>
+        New Submission
+      </button>
+
       <router-link :to="`/edit`" class="btn btn-success" role="button">
         <font-awesome-icon icon="fa-circle-plus"/>
         New Submission
@@ -53,6 +58,8 @@
 <!--      <router-link :to="`/edit/${accession}`" class="btn btn-primary" role="button">Edit</router-link>-->
 <!--    </div>-->
   </div>
+
+  <NewSubmissionModal></NewSubmissionModal>
 </template>
 
 <script setup>
@@ -62,6 +69,7 @@ import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import moment from "moment";
 import router from "./router";
 import axios from "axios";
+import NewSubmissionModal from "@/components/NewSubmissionModal.vue";
 
 const accession = ref('S-BIAD796');
 const submissions = ref([])

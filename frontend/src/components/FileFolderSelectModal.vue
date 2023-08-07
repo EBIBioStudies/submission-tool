@@ -19,6 +19,7 @@ onMounted(() => {
 const select = (node) => {
   modal.hide();
   thisFile.value.path = (node.path + '/' + node.name).substring(5);
+  thisFile.value.size = node.size;
   emits('select', thisFile.value);
 }
 
