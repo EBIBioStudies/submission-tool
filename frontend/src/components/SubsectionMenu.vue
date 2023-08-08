@@ -3,6 +3,7 @@ import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 
 const props = defineProps(['sectionType'])
 const emits = defineEmits(['newAttribute', 'newTable', 'newSection'])
+
 </script>
 
 <template>
@@ -17,10 +18,21 @@ const emits = defineEmits(['newAttribute', 'newTable', 'newSection'])
     <ul class="dropdown-menu">
       <li><a class="dropdown-item btn" @click="$emit('newAttribute')">
         <font-awesome-icon class="icon" :icon="['fas','plus']"></font-awesome-icon>
-        New Attribute</a></li>
-      <li><a class="dropdown-item btn" @click="$emit('newTable')">
+        Text Attribute</a></li>
+      <li>
+        <hr class="dropdown-divider">
+      </li>
+      <li><a class="dropdown-item btn" @click="$emit('newTable', null)">
         <font-awesome-icon class="icon" icon="fa-table"></font-awesome-icon>
         Table</a>
+      </li>
+      <li v-for="(tableType,i) in props?.sectionType?.tableTypes">
+        <a class="dropdown-item btn" @click="$emit('newTable', tableType)">
+        <font-awesome-icon class="icon" icon="fa-table"></font-awesome-icon>
+          {{ tableType.name }}</a>
+      </li>
+      <li>
+        <hr class="dropdown-divider">
       </li>
       <li><a class="dropdown-item btn" @click="$emit('newSection')">
         <font-awesome-icon class="icon" icon="fa-caret-right"></font-awesome-icon>

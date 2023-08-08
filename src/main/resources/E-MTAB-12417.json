@@ -69,6 +69,10 @@
           "type": "Protocols",
           "attributes": [
             {
+              "name": "Name",
+              "value": "P-MTAB-128269"
+            },
+            {
               "name": "Type",
               "value": "sample collection protocol",
               "valqual": [

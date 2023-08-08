@@ -4,6 +4,7 @@ import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import Attributes from '@/components/Attributes.vue';
 import SectionTable from '@/components/SectionTable.vue';
 import SubsectionMenu from "@/components/SubsectionMenu.vue";
+import utils from "@/utils";
 
 
 const props = defineProps(['section', 'sectionType', 'depth']);
@@ -59,22 +60,25 @@ const addSubsection = async (aSection, i) => {
   await nextTick();
   const added = [...componentInstance.refs.sectionsComponent][i]
   added.scrollIntoView();
-  await nextTick();
-  added.querySelector('.section-title input').focus();
-
+  added.querySelector('input').focus();
   // Expand section if collapsed
   if (added.querySelector('.section-block').classList.contains('collapsed'))
     added.querySelector('.section-title').click();
 
 };
 
-const addTable = async (aSection, i) => {
+const addTable = async (aSection, i, type) => {
   aSection.subsections = aSection.subsections || [];
-  aSection.subsections.splice(i, 0, {
-    accno: (props.section.accno ?? Date.now()) + '-' + (props.section.subsections.length + 1),
-    type: 'Table',
-    attributes: [{name: 'Column 1', value: ''}],
-  });
+  const obj = {}
+  if (type != null)
+    utils.fillTemplate(obj, type)
+  else {
+    obj.accno = (props.section.accno ?? Date.now()) + '-' + (props.section.subsections.length + 1);
+    obj.type = 'Table';
+    obj.attributes = [{name: 'Column 1', value: ''}];
+  }
+
+  aSection.subsections.splice(i, 0, [obj]);
 
   sectionsRefreshKey.value += 1
 
@@ -82,11 +86,9 @@ const addTable = async (aSection, i) => {
   await nextTick();
   const added = [...componentInstance.refs.sectionsComponent][i]
   added.scrollIntoView();
-  await nextTick();
-  added.querySelector('.section-title input').focus();
-
+  added.querySelector('input')?.focus();
   // Expand section if collapsed
-  if (added.querySelector('.section-block').classList.contains('collapsed'))
+  if (added.querySelector('.section-block')?.classList.contains('collapsed'))
     added.querySelector('.section-title').click();
 
 };
@@ -149,11 +151,7 @@ const updateColumnName = (subsection, update) => {
 </script>
 
 <template>
-  <div
-    v-if="canRender(props.section)"
-    class="section-block pb-2"
-    :class="{ collapsed: isCollapsed }"
-  >
+  <div v-if="canRender(props.section)" class="section-block pb-2" :class="{ collapsed: isCollapsed }">
     <!-- section title -->
     <div>
       <span :class="[depth > 0 ? 'branch' : 'branch spacer']"></span>
@@ -206,7 +204,7 @@ const updateColumnName = (subsection, update) => {
             :sectionType="sectionType"
             @newAttribute="addAttribute(section)"
             @newSection="addSubsection(section,0)"
-            @newTable="addTable(section,0)"
+            @newTable="(type)=> addTable(section,0, type)"
           ></SubsectionMenu>
 
 
@@ -241,28 +239,16 @@ const updateColumnName = (subsection, update) => {
                 :sectionType="getSectionType(subsection)"
                 @rowsReordered="(e) => rowsReordered(e, subsection)"
                 @columnUpdated="(msg) => updateColumnName(subsection, msg)"
+                @columnsReordered="(msg) => sectionsRefreshKey+= 1"
               />
 
-              <!--  add other sections button start -->
-<!--              <div v-if="canRender(subsection)" class="dropdown dropend">-->
-<!--                <svg class="plus-icon" height="1em" viewBox="0 0 640 512" aria-expanded="false"-->
-<!--                     xmlns="http://www.w3.org/2000/svg" data-bs-toggle="dropdown" role="button">-->
-<!--                  <path fill="currentColor"-->
-<!--                        d="m 256,80 c -8.8,0 -16,7.2 -16,16 v 320 c 0,8.8 7.2,16 16,16 h 320 c 8.8,0 16,-7.2 16,-16 V 96 c 0,-8.8 -7.2,-16 -16,-16 z m -64,16 c 0,-35.3 28.7,-64 64,-64 h 320 c 35.3,0 64,28.7 64,64 v 320 c 0,35.3 -28.7,64 -64,64 H 256 c -35.3,0 -64,-28.7 -64,-64 V 280 H 0 v -50 h 192 z m 200,248 v -64 h -64 c -13.3,0 -24,-10.7 -24,-24 0,-13.3 10.7,-24 24,-24 h 64 v -64 c 0,-13.3 10.7,-24 24,-24 13.3,0 24,10.7 24,24 v 64 h 64 c 13.3,0 24,10.7 24,24 0,13.3 -10.7,24 -24,24 h -64 v 64 c 0,13.3 -10.7,24 -24,24 -13.3,0 -24,-10.7 -24,-24 z"/>-->
-<!--                </svg>-->
 
-<!--                <ul class="dropdown-menu">-->
-<!--                  <li><a class="dropdown-item btn" @click="addTable(section, i+1)">-->
-<!--                    <font-awesome-icon class="icon" icon="fa-table"></font-awesome-icon>-->
-<!--                    Table</a>-->
-<!--                  </li>-->
-<!--                  <li><a class="dropdown-item btn" @click="addSubsection(section, i+1)">-->
-<!--                    <font-awesome-icon class="icon" icon="fa-caret-right"></font-awesome-icon>-->
-<!--                    Subsection</a>-->
-<!--                  </li>-->
-<!--                </ul>-->
-<!--              </div>-->
-              <!--  add other sections button end -->
+              <SubsectionMenu v-if="canRender(subsection)"
+                :sectionType="sectionType"
+                @newAttribute="addAttribute(section)"
+                @newSection="addSubsection(section,i)"
+                @newTable="(type)=> addTable(section,i, type)"
+              ></SubsectionMenu>
 
             </div>
             <!-- Subsections end -->

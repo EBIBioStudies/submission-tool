@@ -40,6 +40,7 @@ const confirm = (title, message, okayLabel = 'Okay', cancelLabel = 'Cancel') => 
 
 // fill attributes and subsections of a given section according to the given template
 const fillTemplate = (section, tmpl) => {
+  section.type = tmpl.name
   // fill attributes
   section.attributes = [];
   [...(tmpl?.fieldTypes ?? []), ...(tmpl?.columnTypes ?? [])].forEach(
@@ -59,7 +60,7 @@ const fillTemplate = (section, tmpl) => {
 
   // fill sections
   section.subsections = [];
-  [...(tmpl?.tableTypes ?? []), ...(tmpl.sectionTypes ?? [])].forEach(
+  [...(tmpl?.tableTypes ?? []), ...(tmpl?.sectionTypes ?? [])].forEach(
     (sectionTemplate) => {
       const subsection = { type: sectionTemplate.name };
       section.subsections.push(subsection);

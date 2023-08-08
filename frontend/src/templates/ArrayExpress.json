@@ -63,7 +63,8 @@
             "name": "Name",
             "valueType": {
               "name": "text"
-            }
+            },
+            "display": "required"
           },
           {
             "name": "Type",
