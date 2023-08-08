@@ -10,9 +10,10 @@ const emits = defineEmits(['select'])
 const thisFile = ref(props.file);
 let modal = null;
 const thisComponent = getCurrentInstance();
+const filetree = ref(null);
 
 onMounted(() => {
-  modal = new Modal(document.getElementById('fileFolderSelectModal'+thisComponent.uid), {
+  modal = new Modal(document.getElementById('fileFolderSelectModal' + thisComponent.uid), {
     backdrop: 'static'
   })
 })
@@ -22,6 +23,9 @@ const select = (node) => {
   thisFile.value.size = node.size;
   emits('select', thisFile.value);
 }
+const loadTree=() =>{
+  thisComponent.refs.filetree.show();
+}
 
 </script>
 
@@ -29,21 +33,24 @@ const select = (node) => {
   <div class="input-group input-group-sm">
     <input type="text" class="form-control bg-body-secondary" v-model="thisFile.path" readonly data-bs-toggle="modal"
            :data-bs-target="'#fileFolderSelectModal'+thisComponent.uid">
-    <button class="btn btn-secondary" type="button" data-bs-toggle="modal" :data-bs-target="'#fileFolderSelectModal'+thisComponent.uid">
-      Select File{{}}
+    <button class="btn btn-secondary" type="button" data-bs-toggle="modal"
+            @click="loadTree()"
+            :data-bs-target="'#fileFolderSelectModal'+thisComponent.uid">
+      Select File
     </button>
   </div>
-  <div class="modal fade" :id="'fileFolderSelectModal'+thisComponent.uid" tabindex="-1" aria-labelledby="fileFolderSelectModal"
+  <div class="modal fade" :id="'fileFolderSelectModal'+thisComponent.uid" tabindex="-1"
+       aria-labelledby="fileFolderSelectModal"
        aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="modal-title fs-5">Select File: {{thisFile?.path}}</h1>
+          <h1 class="modal-title fs-5">Select File: {{ thisFile?.path }}</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div class="overflow-auto" style="max-height: 400px">
-            <FileTree path="/user"
+            <FileTree path="/user" ref="filetree"
                       @select="(node) => select(node)"/>
           </div>
         </div>

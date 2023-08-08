@@ -32,10 +32,11 @@ const props = defineProps({
 
 const emits = defineEmits(['select'])
 
+
 const isLoading = ref(true);
 const tree = ref([]);
 
-onMounted(async () => {
+const show = (async () => {
   try {
     if (!AuthService.isAuthenticated()) return
     const response = await axios.get(`${window.config.backendUrl}/api/files/${props.path}`)
@@ -46,6 +47,8 @@ onMounted(async () => {
     isLoading.value = false;
   }
 });
+
+defineExpose({ show});
 
 const onSelected = (node) => {
   if (node.type.toLowerCase() === 'dir' && !props.allowFolders) {

@@ -38,26 +38,35 @@ const confirm = (title, message, okayLabel = 'Okay', cancelLabel = 'Cancel') => 
   })
 }
 
-// parent level functions need to be replicated here for now
-export const addTable = async (section, componentInstance) => {
-  section.subsections = section.subsections || [];
-  section.subsections.push([{
-    accno: (section.accno ?? Date.now()) + '-' + (section.subsections.length + 1),
-    type: '',
-    attributes: [{name: 'Column 1', value: ''}],
-    subsections: [],
-  }]);
+// fill attributes and subsections of a given section according to the given template
+const fillTemplate = (section, tmpl) => {
+  // fill attributes
+  section.attributes = [];
+  [...(tmpl?.fieldTypes ?? []), ...(tmpl?.columnTypes ?? [])].forEach(
+    (field) => {
+      const attr = { name: field.name };
+      if (field?.controlType?.defaultValue) {
+        attr.value = field?.controlType?.defaultValue;
+        if (field?.controlType?.values?.filter( (value) => value?.valqual!=null).length ) {
+          attr.valqual = field?.controlType?.values?.find( (v)=> v.value === attr.value)?.valqual
+        }
+      }
+      else if (field?.controlType?.name === 'select')
+        attr.value = '';
+      section.attributes.push(attr);
+    },
+  );
 
-  // wait till the UI is updated and the focus the first attribute name
-  await nextTick();
-  const added = [...componentInstance.refs.sectionsComponent].pop().$.ctx.$el;
-  added.scrollIntoView();
-  /*await nextTick();
-
-  // New section added to first is always collapsed
-  if (added.classList.contains('collapsed'))
-    added.querySelector('.section-title').click();*/
+  // fill sections
+  section.subsections = [];
+  [...(tmpl?.tableTypes ?? []), ...(tmpl.sectionTypes ?? [])].forEach(
+    (sectionTemplate) => {
+      const subsection = { type: sectionTemplate.name };
+      section.subsections.push(subsection);
+      fillTemplate(subsection, sectionTemplate);
+    },
+  );
 }
 
 
-export default {confirm, addTable}
+export default {confirm, fillTemplate}

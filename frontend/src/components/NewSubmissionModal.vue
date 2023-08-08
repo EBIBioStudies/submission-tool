@@ -3,6 +3,7 @@ import {allTemplates} from "@/templates/templates";
 import {ref} from "vue";
 import axios from "axios";
 import router from "@/router";
+import utils from '@/utils'
 
 const emits = defineEmits(['select'])
 const showMoreWasPressed = ref(false)
@@ -24,35 +25,6 @@ const latestTemplates = [...nameLatestVersionMap.keys()].map((collection) => nam
 //TODO: Filter on user collection allow list
 
 
-function buildTemplate(section, tmpl) {
-  // fill attributes
-  section.attributes = [];
-  [...(tmpl?.fieldTypes ?? []), ...(tmpl?.columnTypes ?? [])].forEach(
-    (field) => {
-      const attr = { name: field.name };
-      if (field?.controlType?.defaultValue) {
-        attr.value = field?.controlType?.defaultValue;
-        if (field?.controlType?.values?.filter( (value) => value?.valqual!=null).length ) {
-          attr.valqual = field?.controlType?.values?.find( (v)=> v.value === attr.value)?.valqual
-        }
-      }
-      else if (field?.controlType?.name === 'select')
-        attr.value = '';
-      section.attributes.push(attr);
-    },
-  );
-
-  // fill sections
-  section.subsections = [];
-  [...(tmpl?.tableTypes ?? []), ...(tmpl.sectionTypes ?? [])].forEach(
-    (sectionTemplate) => {
-      const subsection = { type: sectionTemplate.name };
-      section.subsections.push(subsection);
-      buildTemplate(subsection, sectionTemplate);
-    },
-  );
-}
-
 const createNewSubmission = async ()=> {
 
   // create new
@@ -66,7 +38,7 @@ const createNewSubmission = async ()=> {
   };
   const tmpl = thisTemplate.sectionType;
   draft.section = { type: tmpl.name };
-  buildTemplate(draft.section, tmpl);
+  utils.fillTemplate(draft.section, tmpl);
   const response = await axios.post (
     `${window.config.backendUrl}/api/submissions/drafts`,
     draft

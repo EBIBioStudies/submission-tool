@@ -1,8 +1,9 @@
 <script setup>
 import {getCurrentInstance, nextTick, ref} from 'vue';
-import Attributes from './Attributes.vue';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
-import SectionTable from './SectionTable.vue';
+import Attributes from '@/components/Attributes.vue';
+import SectionTable from '@/components/SectionTable.vue';
+import SubsectionMenu from "@/components/SubsectionMenu.vue";
 
 
 const props = defineProps(['section', 'sectionType', 'depth']);
@@ -201,29 +202,12 @@ const updateColumnName = (subsection, update) => {
             @deleteTag="deleteTag"
           />
 
-          <!--  add other sections button start -->
-          <div class="dropdown dropend">
-            <svg class="plus-icon" height="1em" viewBox="0 0 640 512" aria-expanded="false"
-                 xmlns="http://www.w3.org/2000/svg" data-bs-toggle="dropdown" role="button">
-              <path fill="currentColor"
-                    d="m 256,80 c -8.8,0 -16,7.2 -16,16 v 320 c 0,8.8 7.2,16 16,16 h 320 c 8.8,0 16,-7.2 16,-16 V 96 c 0,-8.8 -7.2,-16 -16,-16 z m -64,16 c 0,-35.3 28.7,-64 64,-64 h 320 c 35.3,0 64,28.7 64,64 v 320 c 0,35.3 -28.7,64 -64,64 H 256 c -35.3,0 -64,-28.7 -64,-64 V 280 H 0 v -50 h 192 z m 200,248 v -64 h -64 c -13.3,0 -24,-10.7 -24,-24 0,-13.3 10.7,-24 24,-24 h 64 v -64 c 0,-13.3 10.7,-24 24,-24 13.3,0 24,10.7 24,24 v 64 h 64 c 13.3,0 24,10.7 24,24 0,13.3 -10.7,24 -24,24 h -64 v 64 c 0,13.3 -10.7,24 -24,24 -13.3,0 -24,-10.7 -24,-24 z"/>
-            </svg>
-
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item btn" @click="addAttribute(section)">
-                <font-awesome-icon class="icon" :icon="['fas','plus']"></font-awesome-icon>
-                New Attribute</a></li>
-              <li><a class="dropdown-item btn" @click="addTable(section, i+1)">
-                <font-awesome-icon class="icon" icon="fa-table"></font-awesome-icon>
-                Table</a>
-              </li>
-              <li><a class="dropdown-item btn" @click="addSubsection(section, i+1)">
-                <font-awesome-icon class="icon" icon="fa-caret-right"></font-awesome-icon>
-                Subsection</a>
-              </li>
-            </ul>
-          </div>
-          <!--  add other sections button end -->
+          <SubsectionMenu
+            :sectionType="sectionType"
+            @newAttribute="addAttribute(section)"
+            @newSection="addSubsection(section,0)"
+            @newTable="addTable(section,0)"
+          ></SubsectionMenu>
 
 
           <div class="p-0" :key="sectionsRefreshKey">
@@ -260,24 +244,24 @@ const updateColumnName = (subsection, update) => {
               />
 
               <!--  add other sections button start -->
-              <div v-if="canRender(subsection)" class="dropdown dropend">
-                <svg class="plus-icon" height="1em" viewBox="0 0 640 512" aria-expanded="false"
-                     xmlns="http://www.w3.org/2000/svg" data-bs-toggle="dropdown" role="button">
-                  <path fill="currentColor"
-                        d="m 256,80 c -8.8,0 -16,7.2 -16,16 v 320 c 0,8.8 7.2,16 16,16 h 320 c 8.8,0 16,-7.2 16,-16 V 96 c 0,-8.8 -7.2,-16 -16,-16 z m -64,16 c 0,-35.3 28.7,-64 64,-64 h 320 c 35.3,0 64,28.7 64,64 v 320 c 0,35.3 -28.7,64 -64,64 H 256 c -35.3,0 -64,-28.7 -64,-64 V 280 H 0 v -50 h 192 z m 200,248 v -64 h -64 c -13.3,0 -24,-10.7 -24,-24 0,-13.3 10.7,-24 24,-24 h 64 v -64 c 0,-13.3 10.7,-24 24,-24 13.3,0 24,10.7 24,24 v 64 h 64 c 13.3,0 24,10.7 24,24 0,13.3 -10.7,24 -24,24 h -64 v 64 c 0,13.3 -10.7,24 -24,24 -13.3,0 -24,-10.7 -24,-24 z"/>
-                </svg>
+<!--              <div v-if="canRender(subsection)" class="dropdown dropend">-->
+<!--                <svg class="plus-icon" height="1em" viewBox="0 0 640 512" aria-expanded="false"-->
+<!--                     xmlns="http://www.w3.org/2000/svg" data-bs-toggle="dropdown" role="button">-->
+<!--                  <path fill="currentColor"-->
+<!--                        d="m 256,80 c -8.8,0 -16,7.2 -16,16 v 320 c 0,8.8 7.2,16 16,16 h 320 c 8.8,0 16,-7.2 16,-16 V 96 c 0,-8.8 -7.2,-16 -16,-16 z m -64,16 c 0,-35.3 28.7,-64 64,-64 h 320 c 35.3,0 64,28.7 64,64 v 320 c 0,35.3 -28.7,64 -64,64 H 256 c -35.3,0 -64,-28.7 -64,-64 V 280 H 0 v -50 h 192 z m 200,248 v -64 h -64 c -13.3,0 -24,-10.7 -24,-24 0,-13.3 10.7,-24 24,-24 h 64 v -64 c 0,-13.3 10.7,-24 24,-24 13.3,0 24,10.7 24,24 v 64 h 64 c 13.3,0 24,10.7 24,24 0,13.3 -10.7,24 -24,24 h -64 v 64 c 0,13.3 -10.7,24 -24,24 -13.3,0 -24,-10.7 -24,-24 z"/>-->
+<!--                </svg>-->
 
-                <ul class="dropdown-menu">
-                  <li><a class="dropdown-item btn" @click="addTable(section, i+1)">
-                    <font-awesome-icon class="icon" icon="fa-table"></font-awesome-icon>
-                    Table</a>
-                  </li>
-                  <li><a class="dropdown-item btn" @click="addSubsection(section, i+1)">
-                    <font-awesome-icon class="icon" icon="fa-caret-right"></font-awesome-icon>
-                    Subsection</a>
-                  </li>
-                </ul>
-              </div>
+<!--                <ul class="dropdown-menu">-->
+<!--                  <li><a class="dropdown-item btn" @click="addTable(section, i+1)">-->
+<!--                    <font-awesome-icon class="icon" icon="fa-table"></font-awesome-icon>-->
+<!--                    Table</a>-->
+<!--                  </li>-->
+<!--                  <li><a class="dropdown-item btn" @click="addSubsection(section, i+1)">-->
+<!--                    <font-awesome-icon class="icon" icon="fa-caret-right"></font-awesome-icon>-->
+<!--                    Subsection</a>-->
+<!--                  </li>-->
+<!--                </ul>-->
+<!--              </div>-->
               <!--  add other sections button end -->
 
             </div>
