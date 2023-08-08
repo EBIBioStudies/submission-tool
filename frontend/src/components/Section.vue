@@ -3,17 +3,16 @@ import {getCurrentInstance, nextTick, ref} from 'vue';
 import Attributes from './Attributes.vue';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import SectionTable from './SectionTable.vue';
-import {addTable} from '@/utils';
+
 
 const props = defineProps(['section', 'sectionType', 'depth']);
-const emits = defineEmits(['delete','addTable']);
+const emits = defineEmits(['delete', 'addTable']);
 
 const componentInstance = getCurrentInstance();
 
 const attributesComponent = ref(null);
 const sectionsComponent = ref(null);
 const thisSection = ref(props.section);
-
 const deleteTag = (msg) => deleteAttribute(msg.index);
 
 
@@ -45,27 +44,50 @@ const isCollapsed = ref((props?.depth ?? 0) >= 2);
 
 // children are not allowed to change properties of a parent
 // all section/attributes updates thus need to be at this level
-const addSubsection = async (aSection) => {
+const addSubsection = async (aSection, i) => {
   aSection.subsections = aSection.subsections || [];
-  aSection.subsections.push({
-    accno:
-      (props.section.accno ?? Date.now()) +
-      '-' +
-      (props.section.subsections.length + 1),
+  aSection.subsections.splice(i, 0, {
+    accno: (props.section.accno ?? Date.now()) + '-' + (props.section.subsections.length + 1),
     type: '',
     attributes: [{name: '', value: ''}],
     subsections: [],
   });
+  sectionsRefreshKey.value += 1
+
   // wait till the UI is updated and the focus the first attribute name
   await nextTick();
-  const added = [...componentInstance.refs.sectionsComponent].pop().$.ctx.$el;
+  const added = [...componentInstance.refs.sectionsComponent][i]
   added.scrollIntoView();
   await nextTick();
   added.querySelector('.section-title input').focus();
 
-  // New section added to first is always collapsed
-  if (added.classList.contains('collapsed'))
+  // Expand section if collapsed
+  if (added.querySelector('.section-block').classList.contains('collapsed'))
     added.querySelector('.section-title').click();
+
+};
+
+const addTable = async (aSection, i) => {
+  aSection.subsections = aSection.subsections || [];
+  aSection.subsections.splice(i, 0, {
+    accno: (props.section.accno ?? Date.now()) + '-' + (props.section.subsections.length + 1),
+    type: 'Table',
+    attributes: [{name: 'Column 1', value: ''}],
+  });
+
+  sectionsRefreshKey.value += 1
+
+  // wait till the UI is updated and the focus the first attribute name
+  await nextTick();
+  const added = [...componentInstance.refs.sectionsComponent][i]
+  added.scrollIntoView();
+  await nextTick();
+  added.querySelector('.section-title input').focus();
+
+  // Expand section if collapsed
+  if (added.querySelector('.section-block').classList.contains('collapsed'))
+    added.querySelector('.section-title').click();
+
 };
 
 const deleteSubSection = async (someSubSections, index) => {
@@ -128,7 +150,7 @@ const updateColumnName = (subsection, update) => {
 <template>
   <div
     v-if="canRender(props.section)"
-    class="section-block"
+    class="section-block pb-2"
     :class="{ collapsed: isCollapsed }"
   >
     <!-- section title -->
@@ -179,19 +201,29 @@ const updateColumnName = (subsection, update) => {
             @deleteTag="deleteTag"
           />
 
-          <!-- add attribute button -->
-          <div class="branch btn-group btn-group-sm " role="group" aria-label="Large button group">
-            <button type="button" class="btn btn-add-element" @click="addAttribute(thisSection)">
-              <font-awesome-icon
-                class="icon" :icon="['fas', 'add']"></font-awesome-icon>
-              New Attribute
-            </button>
-            <button type="button" class="btn btn-add-element" @click="()=>emits('addTable', {section:thisSection, instance:componentInstance})">
-              <font-awesome-icon
-                class="icon" :icon="['fas', 'table']"></font-awesome-icon>
-              New Table
-            </button>
+          <!--  add other sections button start -->
+          <div class="dropdown dropend">
+            <svg class="plus-icon" height="1em" viewBox="0 0 640 512" aria-expanded="false"
+                 xmlns="http://www.w3.org/2000/svg" data-bs-toggle="dropdown" role="button">
+              <path fill="currentColor"
+                    d="m 256,80 c -8.8,0 -16,7.2 -16,16 v 320 c 0,8.8 7.2,16 16,16 h 320 c 8.8,0 16,-7.2 16,-16 V 96 c 0,-8.8 -7.2,-16 -16,-16 z m -64,16 c 0,-35.3 28.7,-64 64,-64 h 320 c 35.3,0 64,28.7 64,64 v 320 c 0,35.3 -28.7,64 -64,64 H 256 c -35.3,0 -64,-28.7 -64,-64 V 280 H 0 v -50 h 192 z m 200,248 v -64 h -64 c -13.3,0 -24,-10.7 -24,-24 0,-13.3 10.7,-24 24,-24 h 64 v -64 c 0,-13.3 10.7,-24 24,-24 13.3,0 24,10.7 24,24 v 64 h 64 c 13.3,0 24,10.7 24,24 0,13.3 -10.7,24 -24,24 h -64 v 64 c 0,13.3 -10.7,24 -24,24 -13.3,0 -24,-10.7 -24,-24 z"/>
+            </svg>
+
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item btn" @click="addAttribute(section)">
+                <font-awesome-icon class="icon" :icon="['fas','plus']"></font-awesome-icon>
+                New Attribute</a></li>
+              <li><a class="dropdown-item btn" @click="addTable(section, i+1)">
+                <font-awesome-icon class="icon" icon="fa-table"></font-awesome-icon>
+                Table</a>
+              </li>
+              <li><a class="dropdown-item btn" @click="addSubsection(section, i+1)">
+                <font-awesome-icon class="icon" icon="fa-caret-right"></font-awesome-icon>
+                Subsection</a>
+              </li>
+            </ul>
           </div>
+          <!--  add other sections button end -->
 
 
           <div class="p-0" :key="sectionsRefreshKey">
@@ -206,12 +238,11 @@ const updateColumnName = (subsection, update) => {
               @columnUpdated="(msg) => updateColumnName(Array.isArray(section.files[0]) ? section.files[0] : section.files, msg)"
             />
 
-            <!-- Subsections -->
-            <div v-for="(subsection, i) in section.subsections" v-bind:key="i">
+            <!-- Subsections start -->
+            <div v-for="(subsection, i) in section.subsections" v-bind:key="i" ref="sectionsComponent">
               <!-- section -->
               <Section
                 v-if="!Array.isArray(subsection)"
-                ref="sectionsComponent"
                 :section="subsection"
                 :sectionType="getSectionType(subsection)"
                 :depth="props.depth + 1"
@@ -227,55 +258,71 @@ const updateColumnName = (subsection, update) => {
                 @rowsReordered="(e) => rowsReordered(e, subsection)"
                 @columnUpdated="(msg) => updateColumnName(subsection, msg)"
               />
+
+              <!--  add other sections button start -->
+              <div v-if="canRender(subsection)" class="dropdown dropend">
+                <svg class="plus-icon" height="1em" viewBox="0 0 640 512" aria-expanded="false"
+                     xmlns="http://www.w3.org/2000/svg" data-bs-toggle="dropdown" role="button">
+                  <path fill="currentColor"
+                        d="m 256,80 c -8.8,0 -16,7.2 -16,16 v 320 c 0,8.8 7.2,16 16,16 h 320 c 8.8,0 16,-7.2 16,-16 V 96 c 0,-8.8 -7.2,-16 -16,-16 z m -64,16 c 0,-35.3 28.7,-64 64,-64 h 320 c 35.3,0 64,28.7 64,64 v 320 c 0,35.3 -28.7,64 -64,64 H 256 c -35.3,0 -64,-28.7 -64,-64 V 280 H 0 v -50 h 192 z m 200,248 v -64 h -64 c -13.3,0 -24,-10.7 -24,-24 0,-13.3 10.7,-24 24,-24 h 64 v -64 c 0,-13.3 10.7,-24 24,-24 13.3,0 24,10.7 24,24 v 64 h 64 c 13.3,0 24,10.7 24,24 0,13.3 -10.7,24 -24,24 h -64 v 64 c 0,13.3 -10.7,24 -24,24 -13.3,0 -24,-10.7 -24,-24 z"/>
+                </svg>
+
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item btn" @click="addTable(section, i+1)">
+                    <font-awesome-icon class="icon" icon="fa-table"></font-awesome-icon>
+                    Table</a>
+                  </li>
+                  <li><a class="dropdown-item btn" @click="addSubsection(section, i+1)">
+                    <font-awesome-icon class="icon" icon="fa-caret-right"></font-awesome-icon>
+                    Subsection</a>
+                  </li>
+                </ul>
+              </div>
+              <!--  add other sections button end -->
+
             </div>
+            <!-- Subsections end -->
 
           </div>
-
-          <!-- add other sections button start -->
-          <div class="input-group branch dropdown mt-2  dropend">
-            <label class="input-group-text attribute new-button" role="button"
-                   data-bs-toggle="dropdown"
-                   aria-expanded="false"
-                   @click="isCollapsed = false">
-              <font-awesome-icon
-                class="icon" :icon="['far', 'plus-square']"></font-awesome-icon>
-              <span>New ...</span>
-            </label>
-
-            <ul class="dropdown-menu">
-              <!--              <li><a class="dropdown-item btn" @click="addAttribute(section)">                <font-awesome-icon class="icon" :icon="['fas','plus']"></font-awesome-icon>                New Attribute</a>              </li>-->
-              <!--              <li><a class="dropdown-item btn" @click="addTable(section)">-->
-              <!--                <font-awesome-icon class="icon" icon="fa-table"></font-awesome-icon>-->
-              <!--                Table</a>-->
-              <!--              </li>-->
-              <li><a class="dropdown-item btn" @click="addSubsection(section)">
-                <font-awesome-icon class="icon" icon="fa-caret-right"></font-awesome-icon>
-                Subsection</a>
-              </li>
-            </ul>
-          </div>
-          <!-- add other sections button end -->
-
         </div>
-
       </div>
     </transition>
-  </div>
+  </div> <!-- end rendered section -->
+  <div v-else class="section-block"></div>
 </template>
 
 <style>
-.section-block:nth-child(even) {
+
+.new-button {
+  line-height: 8pt;
 }
 
-.btn-add-element {
-  border: 1px dashed var(--bs-border-color);
-  font-style: oblique;
-  color: #999999;
+.new-button:before {
+  content: ' ';
+  width: 6px;
+  color: transparent;
+  border-top: 1px dashed #efefef;
+  display: inline-block;
 }
 
-.btn-add-element:hover {
-  background-color: var(--bs-secondary-bg);
+
+.new-button [role='button'] {
+  margin-left: -2px;
+  margin-bottom: -5px;
+  color: #eeeeee;
 }
 
+.new-button [role='button']:hover {
+  color: #aaaaaa;
+  line-height: 16pt;
+}
+
+.plus-icon {
+  color: #efefef;
+}
+
+.plus-icon:hover, .plus-icon.show {
+  color: #bcbcbc;
+}
 
 </style>
