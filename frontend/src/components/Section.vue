@@ -46,23 +46,28 @@ const isCollapsed = ref((props?.depth ?? 0) >= 2);
 
 // children are not allowed to change properties of a parent
 // all section/attributes updates thus need to be at this level
-const addSubsection = async (aSection, i) => {
+const addSubsection = async (aSection, i, type) => {
   aSection.subsections = aSection.subsections || [];
-  aSection.subsections.splice(i, 0, {
-    accno: (props.section.accno ?? Date.now()) + '-' + (props.section.subsections.length + 1),
-    type: '',
-    attributes: [{name: '', value: ''}],
-    subsections: [],
-  });
+  const obj = {}
+  if (type != null)
+    utils.fillTemplate(obj, type)
+  else {
+    obj.accno = (props.section.accno ?? Date.now()) + '-' + (props.section.subsections.length + 1);
+    obj.type = '';
+    obj.attributes = [{name: '', value: ''}];
+  }
+
+  aSection.subsections.splice(i, 0, obj);
+
   sectionsRefreshKey.value += 1
 
   // wait till the UI is updated and the focus the first attribute name
   await nextTick();
   const added = [...componentInstance.refs.sectionsComponent][i]
   added.scrollIntoView();
-  added.querySelector('input').focus();
+  added.querySelector('input')?.focus();
   // Expand section if collapsed
-  if (added.querySelector('.section-block').classList.contains('collapsed'))
+  if (added.querySelector('.section-block')?.classList.contains('collapsed'))
     added.querySelector('.section-title').click();
 
 };
@@ -203,7 +208,7 @@ const updateColumnName = (subsection, update) => {
           <SubsectionMenu
             :sectionType="sectionType"
             @newAttribute="addAttribute(section)"
-            @newSection="addSubsection(section,0)"
+            @newSection="(type)=> addSubsection(section,0, type)"
             @newTable="(type)=> addTable(section,0, type)"
           ></SubsectionMenu>
 
@@ -221,7 +226,7 @@ const updateColumnName = (subsection, update) => {
             />
 
             <!-- Subsections start -->
-            <div v-for="(subsection, i) in section.subsections" v-bind:key="i" ref="sectionsComponent">
+            <div v-for="(subsection, i) in section.subsections" key="i" ref="sectionsComponent">
               <!-- section -->
               <Section
                 v-if="!Array.isArray(subsection)"
@@ -242,12 +247,11 @@ const updateColumnName = (subsection, update) => {
                 @columnsReordered="(msg) => sectionsRefreshKey+= 1"
               />
 
-
               <SubsectionMenu v-if="canRender(subsection)"
                 :sectionType="sectionType"
                 @newAttribute="addAttribute(section)"
-                @newSection="addSubsection(section,i)"
-                @newTable="(type)=> addTable(section,i, type)"
+                @newSection="(type)=> addSubsection(section,i+1, type)"
+                @newTable="(type)=> addTable(section,i+1, type)"
               ></SubsectionMenu>
 
             </div>

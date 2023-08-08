@@ -103,12 +103,12 @@ const toggle = () => (isCollapsed.value = !isCollapsed.value);
 </script>
 <template>
   <div class="section-block ">
-    <!-- section title -->
+    <!-- section table title -->
     <div>
       <span :class="[depth > 0 ? 'branch' : 'branch spacer']"></span>
       <span class="input-group-text text-start btn btn-lg ps-1 mt-2 section-title" @click="toggle()">
         <font-awesome-icon class="section-control"
-                           :icon="'fa-caret-' + (isCollapsed ? 'right' : 'down')">        </font-awesome-icon>
+                           :icon="'fa-caret-' + (isCollapsed ? 'right' : 'down')"/>
         <span v-if="sectionType?.name" class="ms-2">{{ tableType }}</span>
         <span v-else>
           <input class="ms-2" @click.stop="" type="text" placeholder="Enter table name" v-model="tableType"/>

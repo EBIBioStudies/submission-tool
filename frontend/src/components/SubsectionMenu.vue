@@ -17,26 +17,37 @@ const emits = defineEmits(['newAttribute', 'newTable', 'newSection'])
 
     <ul class="dropdown-menu">
       <li><a class="dropdown-item btn" @click="$emit('newAttribute')">
-        <font-awesome-icon class="icon" :icon="['fas','plus']"></font-awesome-icon>
-        Text Attribute</a></li>
+        <font-awesome-icon class="icon fa-fw" :icon="['fas','plus']"></font-awesome-icon>
+        Text Attribute</a>
+      </li>
+<!--      <li v-for="(type,i) in props?.sectionType?.fieldTypes">-->
+<!--        <a class="dropdown-item btn" @click="$emit('newAttribute', type)">-->
+<!--          <font-awesome-icon class="icon" :icon="type.icon ?? 'fa-plus'"></font-awesome-icon>-->
+<!--          {{ type.name }}</a>-->
+<!--      </li>-->
       <li>
         <hr class="dropdown-divider">
       </li>
       <li><a class="dropdown-item btn" @click="$emit('newTable', null)">
-        <font-awesome-icon class="icon" icon="fa-table"></font-awesome-icon>
+        <font-awesome-icon class="icon fa-fw" icon="fa-table"></font-awesome-icon>
         Table</a>
       </li>
-      <li v-for="(tableType,i) in props?.sectionType?.tableTypes">
-        <a class="dropdown-item btn" @click="$emit('newTable', tableType)">
-        <font-awesome-icon class="icon" icon="fa-table"></font-awesome-icon>
-          {{ tableType.name }}</a>
+      <li v-for="(type,i) in props?.sectionType?.tableTypes">
+        <a class="dropdown-item btn" @click="$emit('newTable', type)">
+          <font-awesome-icon class="icon fa-fw" :icon="type.icon && type.icon!=='' ? type.icon : 'fa-table'"></font-awesome-icon>
+          {{ type.name }}</a>
       </li>
       <li>
         <hr class="dropdown-divider">
       </li>
       <li><a class="dropdown-item btn" @click="$emit('newSection')">
-        <font-awesome-icon class="icon" icon="fa-caret-right"></font-awesome-icon>
+        <font-awesome-icon class="icon fa-fw" icon="fa-caret-right"></font-awesome-icon>
         Subsection</a>
+      </li>
+      <li v-for="(type,i) in props?.sectionType?.sectionTypes">
+        <a class="dropdown-item btn" @click="$emit('newSection', type)">
+          <font-awesome-icon class="icon fa-fw" :icon="type.icon && type.icon!=='' ? type.icon : 'fa-caret-right'"></font-awesome-icon>
+          {{ type.name }}</a>
       </li>
     </ul>
   </div>
