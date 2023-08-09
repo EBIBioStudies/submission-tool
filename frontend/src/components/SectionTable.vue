@@ -9,6 +9,7 @@ const emits = defineEmits([
   'rowsReordered',
   'columnUpdated',
   'columnsReordered',
+  'delete'
 ]);
 const rowSectionType = '' + props.rows[0].type;
 const tableType = ref(rowSectionType === 'file' ? 'Files' : rowSectionType)

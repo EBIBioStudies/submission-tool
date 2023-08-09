@@ -91,7 +91,7 @@ const addTable = async (aSection, i, type) => {
   const added = [...componentInstance.refs.sectionsComponent][i]
   added.scrollIntoView();
   added.querySelector('input')?.focus();
-  debugger
+
   // Expand section if collapsed
   if (added.querySelector('.section-block')?.classList.contains('collapsed'))
     added.querySelector('.section-title').click();
@@ -161,7 +161,7 @@ const validate = () => {
     a.validate();
     v = v && a.value.isValid;
   });
-  isValid.value = v;
+  isValid.value = !!v;
 }
 defineExpose({ validate, isValid});
 
@@ -258,6 +258,7 @@ defineExpose({ validate, isValid});
                 @rowsReordered="(e) => rowsReordered(e, subsection)"
                 @columnUpdated="(msg) => updateColumnName(subsection, msg)"
                 @columnsReordered="(msg) => sectionsRefreshKey+= 1"
+                @delete="deleteSubSection(section.subsections, i)"
               />
 
               <SubsectionMenu v-if="canRender(subsection)"

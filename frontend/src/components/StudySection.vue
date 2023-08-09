@@ -7,7 +7,7 @@ const sectionComponent = ref(null)
 const isValid = ref(true);
 const validate = () => {
   sectionComponent.value.validate();
-  isValid.value = sectionComponent.value.isValid;
+  isValid.value = !!sectionComponent.value.isValid;
 }
 defineExpose({ validate, isValid});
 </script>

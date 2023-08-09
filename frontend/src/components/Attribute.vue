@@ -67,6 +67,7 @@ const onChangeSelect = (newValue, control) => {
   // TODO: Figure out a way to bind the selected option instead of copying the individual properties
   const selected = control.options.find((o) => o.value === newValue);
   thisAttribute.value.valqual = selected?.valqual;
+  validate();
 };
 
 const onCreateTag = (newTag) => {
@@ -99,13 +100,12 @@ const validationMessage = ref([]);
 
 const validate = () => {
   validationMessage.value = [];
-
   //validate text fields
   if (props.fieldType?.display === 'required' && (!thisAttribute.value?.value || thisAttribute?.value?.value?.trim() === '')) {
     validationMessage.value.push('Required');
-    if (props.fieldType?.controlType?.minlength > (thisAttribute.value?.value?.trim().length ?? 0) ) {
-      validationMessage.value.push(`Please enter at least ${props.fieldType?.controlType?.minlength} characters. `)
-    }
+  }
+  if (props.fieldType?.controlType?.minlength > (thisAttribute.value?.value?.trim().length ?? 0) ) {
+    validationMessage.value.push(`Please enter at least ${props.fieldType?.controlType?.minlength} characters. `)
   }
 
   isValid.value = validationMessage.value.length === 0;
@@ -167,6 +167,7 @@ defineExpose({validate, isValid});
       class="form-control"
       :searchable="true"
       :options="singleSelectValues"
+      :class="{'border-danger':!isValid}"
       @change="onChangeSelect"
     >
     </Multiselect>
@@ -190,6 +191,8 @@ defineExpose({validate, isValid});
       @create="onCreateTag"
       @deselect="onDeleteTag"
       @select="onCreateTag"
+      @change="validate()"
+      :class="{'border-danger':!isValid}"
       object
     >
       <template v-slot:tag="{ option, handleTagRemove, disabled }">
@@ -221,12 +224,16 @@ defineExpose({validate, isValid});
       placeholder="Select date"
       format="YYYY-MM-DD"
       :disabledDate="withinThreeYears"
+      :class="{'border-danger':!isValid}"
+      @change="validate()"
     />
 
     <!--file-->
     <FileFolderSelectModal
       v-else-if="fieldType?.valueType?.name === 'file'"
       :file="thisAttribute"
+      :class="{'border-danger':!isValid}"
+      @change="validate()"
     />
 
     <!-- default / text -->

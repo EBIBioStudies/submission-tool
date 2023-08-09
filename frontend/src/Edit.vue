@@ -1,9 +1,15 @@
 <template xmlns="http://www.w3.org/1999/html">
   <div class="container">
     <div class="row">
-        <div class="col-1"></div>
-        <Submission class="col-8" :submission="submission" :template="template"/>
-        <div id="json" class="json col-3"></div>
+      <div class="col-1"></div>
+      <form>
+        <div class="text-end">
+          <font-awesome-icon v-if="isSaving" :icon="['far','floppy-disk']" beat-fade class="pe-2" />
+          <button class="btn btn-primary" type="button" @click="submitDraft()">Submit</button>
+        </div>
+        <Submission class="col-8" :submission="submission" :template="template" ref="submissionComponent"/>
+      </form>
+      <div id="json" class="json col-3"></div>
     </div>
   </div>
 </template>
@@ -25,11 +31,22 @@ import ArrayExpress from './templates/ArrayExpress.json';
 import Default from './templates/Default.json';
 import Submission from './components/Submission.vue';
 import axios from "axios";
+import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 
 const props = defineProps(['accession']);
 const submission = ref({});
 const template = ref({});
 const allTemplates = [BioImages, Default, ArrayExpress];
+const isSaving = ref(true)
+
+const submissionComponent = ref({})
+
+const submitDraft = () => {
+  submissionComponent.value.validate();
+  if (!submissionComponent.value.isValid) {
+    console.log("Not valid")
+  }
+}
 
 watchEffect(async () => {
   if (props.accession) {
@@ -60,6 +77,9 @@ watchEffect(async () => {
       submissionJson?.attributes.splice(0, 0, studySectionTitle);
     } else if (submissionTitle && !studySectionTitle) {
       submissionJson?.section?.attributes.splice(0, 0, submissionTitle);
+    } else if (submissionTitle && studySectionTitle) {
+      const index = submissionJson?.attributes?.findIndex((attr) => attr.name === 'Title')
+      submissionJson?.attributes?.splice(index,1, studySectionTitle);
     }
 
     submission.value = submissionJson;
@@ -86,11 +106,31 @@ watchEffect(async () => {
 const updatedSubmission = computed(() =>
   JSON.stringify(submission.value, null, 2),
 );
+
+let lastUpdated = Date.now();
+let pendingSave = null;
 watch(updatedSubmission, async (sub) => {
   const draft = JSON.parse(updatedSubmission.value);
   // Remove ReleaseDate from Study. It remains in the Submission
   draft?.section?.attributes.splice(draft?.section?.attributes.findIndex((a) => a.name === 'ReleaseDate'), 1);
-  //document.getElementById('json').innerText = JSON.stringify(draft, null, 2);
+
+  const delta = Date.now() - lastUpdated
+  if (delta < 1000) {
+    clearTimeout(pendingSave)
+  }
+
+  pendingSave = setTimeout(() => {
+    isSaving.value = true
+    axios({
+      url: `${window.config.backendUrl}/api/submissions/drafts/${props.accession}`,
+      headers: {'content-type': 'application/json'},
+      method: 'PUT',
+      data: JSON.stringify(draft)
+    }).then(()=>isSaving.value = false);
+
+  }, 1002)
+  lastUpdated = Date.now();
+  document.getElementById('json').innerText = JSON.stringify(draft, null, 2);
 });
 
 </script>
