@@ -11,7 +11,6 @@ const props = defineProps(['section', 'sectionType', 'depth']);
 const emits = defineEmits(['delete', 'addTable']);
 
 const componentInstance = getCurrentInstance();
-
 const attributesComponent = ref(null);
 const sectionsComponent = ref(null);
 const thisSection = ref(props.section);
@@ -92,6 +91,7 @@ const addTable = async (aSection, i, type) => {
   const added = [...componentInstance.refs.sectionsComponent][i]
   added.scrollIntoView();
   added.querySelector('input')?.focus();
+  debugger
   // Expand section if collapsed
   if (added.querySelector('.section-block')?.classList.contains('collapsed'))
     added.querySelector('.section-title').click();
@@ -152,6 +152,18 @@ const updateColumnName = (subsection, update) => {
   );
   sectionsRefreshKey.value += 1;
 };
+
+const subsectionsRef = ref([])
+const isValid = ref(true);
+const validate = () => {
+  let v = attributesComponent.value?.validate();
+  subsectionsRef?.value.forEach ( a=> {
+    a.validate();
+    v = v && a.value.isValid;
+  });
+  isValid.value = v;
+}
+defineExpose({ validate, isValid});
 
 </script>
 
@@ -235,6 +247,7 @@ const updateColumnName = (subsection, update) => {
                 :depth="props.depth + 1"
                 @delete="deleteSubSection(section.subsections, i)"
                 @addTable="(msg)=>addTable(msg.section, msg.instance)"
+                ref="subsectionsRef"
               />
               <!-- or table -->
               <SectionTable

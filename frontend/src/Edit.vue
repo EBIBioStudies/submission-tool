@@ -1,9 +1,9 @@
-<template>
+<template xmlns="http://www.w3.org/1999/html">
   <div class="container">
     <div class="row">
-      <div class="col-1"></div>
-      <Submission class="col-8" :submission="submission" :template="template"/>
-      <div id="json" class="json col-3"></div>
+        <div class="col-1"></div>
+        <Submission class="col-8" :submission="submission" :template="template"/>
+        <div id="json" class="json col-3"></div>
     </div>
   </div>
 </template>
@@ -89,8 +89,8 @@ const updatedSubmission = computed(() =>
 watch(updatedSubmission, async (sub) => {
   const draft = JSON.parse(updatedSubmission.value);
   // Remove ReleaseDate from Study. It remains in the Submission
-  draft?.section?.attributes.splice( draft?.section?.attributes.findIndex((a)=> a.name==='ReleaseDate' ),1);
-  document.getElementById('json').innerText = JSON.stringify(draft, null, 2);
+  draft?.section?.attributes.splice(draft?.section?.attributes.findIndex((a) => a.name === 'ReleaseDate'), 1);
+  //document.getElementById('json').innerText = JSON.stringify(draft, null, 2);
 });
 
 </script>

@@ -93,137 +93,169 @@ const withinThreeYears = (date) => {
     date < today || date > new Date(today).setFullYear(today.getFullYear() + 3)
   );
 };
+
+const isValid = ref(true);
+const validationMessage = ref([]);
+
+const validate = () => {
+  validationMessage.value = [];
+
+  //validate text fields
+  if (props.fieldType?.display === 'required' && (!thisAttribute.value?.value || thisAttribute?.value?.value?.trim() === '')) {
+    validationMessage.value.push('Required');
+    if (props.fieldType?.controlType?.minlength > (thisAttribute.value?.value?.trim().length ?? 0) ) {
+      validationMessage.value.push(`Please enter at least ${props.fieldType?.controlType?.minlength} characters. `)
+    }
+  }
+
+  isValid.value = validationMessage.value.length === 0;
+}
+defineExpose({validate, isValid});
+
 </script>
 
 <template>
-  <!--label-->
-  <label class="input-group-text attribute" v-if="!props.isTableAttribute">
-    <font-awesome-icon
-      v-if="fieldType?.icon"
-      class="icon"
-      :icon="fieldType?.icon"
-    ></font-awesome-icon>
-    <font-awesome-icon
-      v-else
-      class="icon"
-      inverse
-      icon="fa-check"
-    ></font-awesome-icon>
-    <span class="text-muted" v-if="fieldType">{{ fieldType.name }}</span>
-    <span v-else>
+  <div class="input-group branch pb-1">
+    <!--label-->
+    <label class="input-group-text attribute" v-if="!props.isTableAttribute">
+      <font-awesome-icon
+        v-if="fieldType?.icon"
+        class="icon"
+        :icon="fieldType?.icon"
+      ></font-awesome-icon>
+      <font-awesome-icon
+        v-else
+        class="icon"
+        inverse
+        icon="fa-check"
+      ></font-awesome-icon>
+      <span class="text-muted" v-if="fieldType">{{ fieldType.name }}</span>
+      <span v-else>
       <input
         type="text"
         class="form-control attribute-name"
         v-model="thisAttribute.name"
         placeholder="Attribute name"
+        :class="{'border-danger':!isValid}"
         style="margin-left: -1em"
       />
     </span>
-  </label>
+    </label>
 
-  <!--largetext-->
-  <textarea
-    v-if="fieldType?.controlType?.name === 'largetext'"
-    type="text"
-    class="form-control"
-    rows="3"
-    :placeholder="fieldType?.controlType?.placeholder"
-    v-model="thisAttribute.value"
-  ></textarea>
+    <!--largetext-->
+    <textarea
+      v-if="fieldType?.controlType?.name === 'largetext'"
+      type="text"
+      class="form-control"
+      rows="3"
+      :placeholder="fieldType?.controlType?.placeholder"
+      v-model="thisAttribute.value"
+      :class="{'border-danger':!isValid}"
+      :required="fieldType?.display==='required' || fieldType?.controlType?.minlength >0"
+      @change="validate()"
+    ></textarea>
 
-  <!-- select  -->
-  <Multiselect
-    v-else-if="
+    <!-- select  -->
+    <Multiselect
+      v-else-if="
       fieldType?.controlType?.name === 'select' &&
       !fieldType?.controlType?.multiple
     "
-    :allow-absent="fieldType?.controlType?.enableValueAdd ?? true"
-    v-model="thisAttribute.value"
-    label="value"
-    class="form-control"
-    :searchable="true"
-    :options="singleSelectValues"
-    @change="onChangeSelect"
-  >
-  </Multiselect>
+      :allow-absent="fieldType?.controlType?.enableValueAdd ?? true"
+      v-model="thisAttribute.value"
+      label="value"
+      class="form-control"
+      :searchable="true"
+      :options="singleSelectValues"
+      @change="onChangeSelect"
+    >
+    </Multiselect>
 
-  <!-- tags  -->
-  <Multiselect
-    v-else-if="
+    <!-- tags  -->
+    <Multiselect
+      v-else-if="
       (fieldType?.controlType?.name === 'select' &&
         fieldType?.controlType?.multiple) ||
       thisMultiValuedAttribute?.length > 1
     "
-    v-model="thisMultiValuedAttribute"
-    mode="tags"
-    label="value"
-    class="form-control"
-    :searchable="true"
-    :createOption="fieldType?.controlType?.enableValueAdd ?? true"
-    :allowAbsent="fieldType?.controlType?.enableValueAdd ?? true"
-    :options="singleSelectValues"
-    noOptionsText="Type and press ↵ to add"
-    @create="onCreateTag"
-    @deselect="onDeleteTag"
-    @select="onCreateTag"
-    object
-  >
-    <template v-slot:tag="{ option, handleTagRemove, disabled }">
-      <div
-        class="multiselect-tag is-user"
-        :class="{
+      v-model="thisMultiValuedAttribute"
+      mode="tags"
+      label="value"
+      class="form-control"
+      :searchable="true"
+      :createOption="fieldType?.controlType?.enableValueAdd ?? true"
+      :allowAbsent="fieldType?.controlType?.enableValueAdd ?? true"
+      :options="singleSelectValues"
+      noOptionsText="Type and press ↵ to add"
+      @create="onCreateTag"
+      @deselect="onDeleteTag"
+      @select="onCreateTag"
+      object
+    >
+      <template v-slot:tag="{ option, handleTagRemove, disabled }">
+        <div
+          class="multiselect-tag is-user"
+          :class="{
           'is-disabled': disabled,
         }"
-      >
-        {{ option.value }}
-        <span
-          v-if="!disabled"
-          class="multiselect-tag-remove"
-          @mousedown.prevent="handleTagRemove(option, $event)"
         >
+          {{ option.value }}
+          <span
+            v-if="!disabled"
+            class="multiselect-tag-remove"
+            @mousedown.prevent="handleTagRemove(option, $event)"
+          >
           <span class="multiselect-tag-remove-icon"></span>
         </span>
-      </div>
-    </template>
-  </Multiselect>
+        </div>
+      </template>
+    </Multiselect>
 
-  <!--date-->
-  <datePicker
-    v-else-if="fieldType?.controlType?.name === 'date'"
-    class="form-control"
-    v-model:value="thisAttribute.value"
-    defaultValue="thisAttribute.value"
-    valueType="format"
-    placeholder="Select date"
-    format="YYYY-MM-DD"
-    :disabledDate="withinThreeYears"
-  />
+    <!--date-->
+    <datePicker
+      v-else-if="fieldType?.controlType?.name === 'date'"
+      class="form-control"
+      v-model:value="thisAttribute.value"
+      defaultValue="thisAttribute.value"
+      valueType="format"
+      placeholder="Select date"
+      format="YYYY-MM-DD"
+      :disabledDate="withinThreeYears"
+    />
 
-  <!--file-->
-  <FileFolderSelectModal
-    v-else-if="fieldType?.valueType?.name === 'file'"
-    :file="thisAttribute"
-  />
+    <!--file-->
+    <FileFolderSelectModal
+      v-else-if="fieldType?.valueType?.name === 'file'"
+      :file="thisAttribute"
+    />
 
-  <!-- default / text -->
-  <input
-    v-else
-    type="text"
-    class="form-control"
-    :placeholder="fieldType?.controlType?.placeholder"
-    v-model="thisAttribute.value"
-  />
-  <!-- delete icon -->
-  <div
-    class="input-group-text btn-group-vertical"
-    v-if="fieldType?.display !== 'required' &&  !props.isTableAttribute"
-  >
-    <font-awesome-icon
-      class="icon fa-sm"
-      role="button"
-      icon="fa-trash"
-      @click="emits('deleteAttribute', attribute)"
-    ></font-awesome-icon>
+    <!-- default / text -->
+    <input
+      v-else
+      type="text"
+      class="form-control"
+      :class="{'border-danger':!isValid}"
+      :placeholder="fieldType?.controlType?.placeholder"
+      v-model="thisAttribute.value"
+      :required="fieldType?.display==='required' || fieldType?.controlType?.minlength >0"
+      @change="validate()"
+    />
+    <!-- delete icon -->
+    <div
+      class="input-group-text btn-group-vertical"
+      v-if="fieldType?.display !== 'required' &&  !props.isTableAttribute"
+    >
+      <font-awesome-icon
+        class="icon fa-sm"
+        role="button"
+        icon="fa-trash"
+        @click="emits('deleteAttribute', attribute)"
+      ></font-awesome-icon>
+    </div>
+  </div>
+  <div class="pb-2 ps-2 text-danger text-end" v-if="!isValid">
+    {{ validationMessage.join('. ') }}
+    <font-awesome-icon :icon="['fas','arrow-turn-up']" transform="shrink-6 up-2"/>
   </div>
 </template>
 

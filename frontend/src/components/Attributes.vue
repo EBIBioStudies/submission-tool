@@ -8,6 +8,7 @@ const attributeList = ref(props.attributes);
 const duplicateAttributes = attributeList.value?.filter(
   (value, index, array) =>    array.find((v, i) => v.name === value.name) !== value && value.name!=''
 );
+const  attributeRefs = ref([]);
 
 // const nonTemplateAttributes = computed(() => {
 //   const fieldTypeNames = props.fieldTypes?.map((f) => f.name) ?? [];
@@ -54,13 +55,24 @@ const addMissingAttributes = () => {
   }
 };
 
+const isValid = ref(true);
+const validate = () => {
+  let v = true;
+  attributeRefs.value.forEach ( a=> {
+    a.validate();
+    v = v && a.isValid;
+  });
+  isValid.value = v;
+}
+defineExpose({ validate, isValid});
+
 addMissingAttributes();
 </script>
 
 <template>
   <div>
     <div v-for="(attribute, index) in attributeList" :key="index">
-      <div class="input-group pb-2 branch" v-if="!processed(attribute)">
+      <template v-if="!processed(attribute)">
         <Attribute
           :key="index"
           :attribute="attribute"
@@ -69,8 +81,9 @@ addMissingAttributes();
           @createTag="(v) => emits('createTag', v)"
           @deleteTag="(v) => emits('deleteTag', v)"
           @deleteAttribute="(v) => emits('deleteAttribute', index)"
+          ref = "attributeRefs"
         />
-      </div>
+      </template>
     </div>
   </div>
 </template>
