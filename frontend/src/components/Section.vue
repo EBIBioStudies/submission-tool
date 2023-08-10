@@ -306,7 +306,7 @@ defineExpose({ validate, isValid});
 }
 
 .plus-icon {
-  color: #efefef;
+  color: #dedede;
 }
 
 .plus-icon:hover, .plus-icon.show {

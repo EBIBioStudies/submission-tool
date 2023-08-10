@@ -5,6 +5,7 @@ import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import DatePicker from 'vue-datepicker-next';
 import 'vue-datepicker-next/index.css';
 import FileFolderSelectModal from "@/components/FileFolderSelectModal.vue";
+import utils from "@/utils";
 
 const props = defineProps({
   'attribute': Object,
@@ -104,13 +105,22 @@ const validate = () => {
   if (props.fieldType?.display === 'required' && (!thisAttribute.value?.value || thisAttribute?.value?.value?.trim() === '')) {
     validationMessage.value.push('Required');
   }
-  if (props.fieldType?.controlType?.minlength > (thisAttribute.value?.value?.trim().length ?? 0) ) {
+  if (props.fieldType?.controlType?.minlength > (thisAttribute.value?.value?.trim().length ?? 0)) {
     validationMessage.value.push(`Please enter at least ${props.fieldType?.controlType?.minlength} characters. `)
   }
 
   isValid.value = validationMessage.value.length === 0;
 }
 defineExpose({validate, isValid});
+
+
+const showHelp = () => {
+  utils.confirm(props.fieldType?.name,
+    `<p>${props.fieldType?.helpContextual?.description}</p>` +
+    (!props.fieldType?.helpContextual?.examples ? '' :
+      `<p><h6>Examples:</h6><i>${props.fieldType?.helpContextual?.examples?.join('<p> </p>')}</i></p>`),
+    "Close",true, false);
+}
 
 </script>
 
@@ -140,6 +150,8 @@ defineExpose({validate, isValid});
         style="margin-left: -1em"
       />
     </span>
+      <font-awesome-icon v-if="fieldType?.helpContextual" :icon="['far','circle-question']" class="text-info ps-1 small"
+                         role="button" @click="showHelp()"/>
     </label>
 
     <!--largetext-->

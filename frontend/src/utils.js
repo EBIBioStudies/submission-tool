@@ -1,12 +1,13 @@
 import {Modal} from "bootstrap";
-import {nextTick} from "vue";
 
-const confirm = (title, message, okayLabel = 'Okay', cancelLabel = 'Cancel') => {
+const confirm = (title, message, okayLabel = 'Close', isLarge = false, showCancel = true, cancelLabel = 'Cancel') => {
   const modal = document.createElement('div')
+  let isOkay = false
   modal.id = "modal-confirm"
-  modal.className = "modal"
+  modal.className = "modal" + (isLarge ? ' modal-lg' : '')
+  modal.tabIndex = -1
   modal.innerHTML = `
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable ">
       <div class="modal-content">
         <div class="modal-header">
             <h5>${title}</h5>
@@ -15,26 +16,23 @@ const confirm = (title, message, okayLabel = 'Okay', cancelLabel = 'Cancel') => 
           <p>${message}</p>
         </div>
         <div class="modal-footer border-0">
-          <button id="bs-confirm-okay" type="button" class="btn btn-danger">${okayLabel}</button>
-          <button id="bs-confirm-cancel" type="button" class="btn btn-primary">Cancel</button>
+          <button id="bs-confirm-okay" type="button" class="btn ${showCancel? 'btn-danger' : 'btn-primary'}">${okayLabel}</button>
+         ${showCancel ? `<button data-bs-dismiss="modal"  type="button" class="btn btn-primary">${cancelLabel}</button>` : ''}
         </div>
     </div>
   `
-  const thisModal = new Modal(modal, {
-    keyboard: false,
-    backdrop: 'static'
-  })
+  const thisModal = new Modal(modal)
   thisModal.show()
-
+  document.querySelector('#bs-confirm-okay').addEventListener('click', (e) => {
+    isOkay = true;
+    thisModal.hide();
+  });
   return new Promise((resolve, reject) => {
-    document.body.addEventListener('click', response)
-
-    function response(e) {
-      document.body.removeEventListener('click', response)
+    modal.addEventListener('hide.bs.modal', (e) => {
       document.body.querySelector('.modal-backdrop').remove()
       modal.remove()
-      resolve(e.target.id === 'bs-confirm-okay')
-    }
+      resolve(isOkay)
+    })
   })
 }
 
@@ -45,14 +43,13 @@ const fillTemplate = (section, tmpl) => {
   section.attributes = [];
   [...(tmpl?.fieldTypes ?? []), ...(tmpl?.columnTypes ?? [])].forEach(
     (field) => {
-      const attr = { name: field.name };
+      const attr = {name: field.name};
       if (field?.controlType?.defaultValue) {
         attr.value = field?.controlType?.defaultValue;
-        if (field?.controlType?.values?.filter( (value) => value?.valqual!=null).length ) {
-          attr.valqual = field?.controlType?.values?.find( (v)=> v.value === attr.value)?.valqual
+        if (field?.controlType?.values?.filter((value) => value?.valqual != null).length) {
+          attr.valqual = field?.controlType?.values?.find((v) => v.value === attr.value)?.valqual
         }
-      }
-      else if (field?.controlType?.name === 'select')
+      } else if (field?.controlType?.name === 'select')
         attr.value = '';
       section.attributes.push(attr);
     },
@@ -62,7 +59,7 @@ const fillTemplate = (section, tmpl) => {
   section.subsections = [];
   [...(tmpl?.tableTypes ?? []), ...(tmpl?.sectionTypes ?? [])].forEach(
     (sectionTemplate) => {
-      const subsection = { type: sectionTemplate.name };
+      const subsection = {type: sectionTemplate.name};
       section.subsections.push(subsection);
       fillTemplate(subsection, sectionTemplate);
     },

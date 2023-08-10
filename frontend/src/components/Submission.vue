@@ -10,11 +10,15 @@ const validate = () => {
   studyComponent.value.validate();
   isValid.value = !!studyComponent.value.isValid;
 }
-defineExpose({ validate, isValid});
+defineExpose({validate, isValid});
 </script>
 
 <template>
   <div>
+    <div v-if="template?.sectionType?.banner" class="card"
+         :style="`background-color: ${template?.sectionType?.banner?.backgroundColor}`">
+      <img height="70" :src="'/src/assets/'+template?.sectionType?.banner?.src"/>
+    </div>
     <div class="accession">{{ submission.accno }}</div>
     <div v-for="(attribute, i) in submission.attributes" :key="i">
       <div>
