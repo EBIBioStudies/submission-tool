@@ -80,9 +80,9 @@ const onCreateTag = (newTag) => {
 
 const onDeleteTag = (newTag) => {
   const obj = {
-    name: props.fieldType.name,
-    value: newTag.value,
-    index: newTag.index,
+    name: props.fieldType?.name,
+    value: newTag?.value,
+    index: newTag?.index,
   };
   emits('deleteTag', obj);
   return false; // ignore the event, it will be rendered by the parent
@@ -125,7 +125,7 @@ const showHelp = () => {
 </script>
 
 <template>
-  <div class="input-group branch pb-1">
+  <div class="input-group branch pb-2">
     <!--label-->
     <label class="input-group-text attribute" v-if="!props.isTableAttribute">
       <font-awesome-icon
@@ -150,7 +150,7 @@ const showHelp = () => {
         style="margin-left: -1em"
       />
     </span>
-      <font-awesome-icon v-if="fieldType?.helpContextual" :icon="['far','circle-question']" class="text-info ps-1 small"
+      <font-awesome-icon v-if="fieldType?.helpContextual" :icon="['fas','circle-question']" class="text-black-50 ps-1 small"
                          role="button" @click="showHelp()"/>
     </label>
 
@@ -180,7 +180,9 @@ const showHelp = () => {
       :searchable="true"
       :options="singleSelectValues"
       :class="{'border-danger':!isValid}"
+      :allow-empty="false"
       @change="onChangeSelect"
+      @select="validate()"
     >
     </Multiselect>
 
@@ -282,5 +284,30 @@ const showHelp = () => {
 label.attribute {
   min-width: 18em;
 }
+:root {
+  --ms-ring-color:  rgba(13,110,253,.25);
+  --ms-option-bg-selected: var(--bs-secondary);
+  --ms-option-bg-selected-pointed: var(--bs-secondary);
+  --ms-option-bg-pointed: var(--bs-secondary-bg);
+  --ms-option-pointed: white;
+}
+.multiselect-tags {
+  padding-left: 0 !important;
+}
+
+.multiselect-tag {
+  background-color: transparent !important;
+  border: 1px solid #aaaaaa;
+  font-weight: normal !important;
+  font-size: 1em !important;
+  color: #333 !important;
+}
+.multiselect-tag-remove {
+  background: #dedede !important;
+}
+.multiselect-multiple-label, .multiselect-placeholder, .multiselect-single-label {
+  padding-left:0 !important;
+}
+
 </style>
 <style src="@vueform/multiselect/themes/default.css"></style>

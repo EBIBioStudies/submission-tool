@@ -1,14 +1,16 @@
 <template xmlns="http://www.w3.org/1999/html">
   <div class="container">
     <div class="row">
+      <div class="col text-end">
+        <font-awesome-icon v-if="isSaving" :icon="['far','floppy-disk']" beat-fade class="pe-2"/>
+        <button class="btn btn-primary" type="button" @click="submitDraft()">Submit</button>
+      </div>
+    </div>
+    <div class="row">
       <div class="col-1"></div>
-      <form>
-        <div class="text-end">
-          <font-awesome-icon v-if="isSaving" :icon="['far','floppy-disk']" beat-fade class="pe-2" />
-          <button class="btn btn-primary" type="button" @click="submitDraft()">Submit</button>
-        </div>
-        <Submission class="col-8" :submission="submission" :template="template" ref="submissionComponent"/>
-      </form>
+      <div class="col-8">
+          <Submission :submission="submission" :template="template" ref="submissionComponent"/>
+      </div>
       <div id="json" class="json col-3"></div>
     </div>
   </div>
@@ -79,7 +81,7 @@ watchEffect(async () => {
       submissionJson?.section?.attributes.splice(0, 0, submissionTitle);
     } else if (submissionTitle && studySectionTitle) {
       const index = submissionJson?.attributes?.findIndex((attr) => attr.name === 'Title')
-      submissionJson?.attributes?.splice(index,1, studySectionTitle);
+      submissionJson?.attributes?.splice(index, 1, studySectionTitle);
     }
 
     submission.value = submissionJson;
@@ -126,7 +128,7 @@ watch(updatedSubmission, async (sub) => {
       headers: {'content-type': 'application/json'},
       method: 'PUT',
       data: JSON.stringify(draft)
-    }).then(()=>isSaving.value = false);
+    }).then(() => isSaving.value = false);
 
   }, 1002)
   lastUpdated = Date.now();
