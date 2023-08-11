@@ -11,13 +11,12 @@ const emits = defineEmits([
   'columnsReordered',
   'delete'
 ]);
-const rowSectionType = '' + props.rows[0].type;
+const rowSectionType = props.rows[0].type ? ('' + props.rows[0].type) : 'file';
 const tableType = ref(rowSectionType === 'file' ? 'Files' : rowSectionType)
 const headerMap = new Map();
 if (rowSectionType.toLowerCase() === 'file') {
   headerMap.set('File', [])
 }
-
 props.rows.forEach((row) =>
   row?.attributes?.forEach((attr) => {
     if (!headerMap.has(attr.name)) headerMap.set(attr.name, []);
@@ -30,11 +29,10 @@ const theseRows = ref(Array.isArray(props.rows[0]) ? props.rows[0] : props.rows)
 const refresh = ref(0);
 
 const getFieldType = (attribute) => {
-  const name = attribute.path ? 'File' : attribute?.name || attribute
-
+  const name = attribute?.type?.toLowerCase() === 'file' ? 'File' : attribute?.name || attribute
   // return the column type. Expects either an object or a column name (for use in draggable)
-  return props.sectionType?.columnTypes?.find((f) => f.name.toLowerCase() === name.toLowerCase());
-};
+  return props.sectionType?.columnTypes?.find((f) => f.name?.toLowerCase() === name?.toLowerCase())
+}
 
 
 // Add all column to the first row. We will use it to control column dragging
@@ -42,7 +40,7 @@ const getCell = (row, col) => {
   let attribute = row?.attributes.find(
     (att) => att?.name?.toLowerCase() === col?.toLowerCase(),
   );
-  if (!attribute && row.type === 'file' && col === 'File') {
+  if (!attribute && rowSectionType.toLowerCase() === 'file' && col === 'File') {
     return row;
   }
   if (!attribute) {
@@ -73,8 +71,11 @@ const addColumn = (event) => {
 
 const addRow = (event) => {
   const row = {type: rowSectionType, attributes: []};
+  if (rowSectionType.toLowerCase() === 'file') {
+    row.path = null;
+  }
   headers.value.forEach((header, i) => {
-    if (i === 0 || i === headers.value.length - 1) return;
+    if (i === 0 || i === headers.value.length - 1 || (rowSectionType.toLowerCase() === 'file' && i == 1)) return;
     row.attributes.push({name: header, value: ''});
   });
   theseRows.value.push(row);
@@ -101,6 +102,20 @@ const updateColumnName = (event, index) => {
 
 const isCollapsed = ref((props?.depth ?? 0) >= 2);
 const toggle = () => (isCollapsed.value = !isCollapsed.value);
+
+const attributesComponent = ref([]);
+const headerComponent = ref([])
+const isValid = ref(true);
+const validate = () => {
+  let v = true;
+  attributesComponent?.value.forEach(a => {
+    a.validate();
+    v = v && a.value?.isValid;
+  });
+  isValid.value = !!v;
+}
+defineExpose({validate, isValid});
+
 </script>
 <template>
   <div class="section-block ">
@@ -126,7 +141,8 @@ const toggle = () => (isCollapsed.value = !isCollapsed.value);
             <th :class="{ fixed: i === 0 || i === headers?.length - 1 || getFieldType(header)?.display==='required' }">
               <span class="form-control-sm" v-if="getFieldType(header)?.display==='required'">{{ header }}</span>
               <div v-else-if="i > 0 && i < headers.length - 1" class="input-group input-group-sm">
-                <input type="text" class="form-control" :value="header" @change.stop="(e) => updateColumnName(e, i)">
+                <input type="text" class="form-control" :value="header" @change.stop="(e) => updateColumnName(e, i)"
+                ref="headerComponent">
                 <button class="btn btn-outline-secondary icon" type="button"
                         v-if="getFieldType(header)?.display!=='required' ">
                   <font-awesome-icon class="fa-sm" icon="fa-trash" @click="deleteColumn(i)"></font-awesome-icon>
@@ -155,6 +171,7 @@ const toggle = () => (isCollapsed.value = !isCollapsed.value);
                   :parent="row.attributes"
                   :isTableAttribute="true"
                   @deleteAttribute="(v) => emits('deleteAttribute', index)"
+                  ref="attributesComponent"
                 />
               </td>
               <td class="grip">

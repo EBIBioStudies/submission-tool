@@ -4,12 +4,13 @@
       <div class="col text-end">
         <font-awesome-icon v-if="isSaving" :icon="['far','floppy-disk']" beat-fade class="pe-2"/>
         <button class="btn btn-primary" type="button" @click="submitDraft()">Submit</button>
+        <button class="btn btn-outline-danger ms-2" type="button" @click="revertDraft()">Revert</button>
       </div>
     </div>
     <div class="row">
       <div class="col-1"></div>
       <div class="col-8">
-          <Submission :submission="submission" :template="template" ref="submissionComponent"/>
+        <Submission :submission="submission" :template="template" ref="submissionComponent"/>
       </div>
       <div id="json" class="json col-3"></div>
     </div>
@@ -34,6 +35,7 @@ import Default from './templates/Default.json';
 import Submission from './components/Submission.vue';
 import axios from "axios";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
+import utils from "@/utils";
 
 const props = defineProps(['accession']);
 const submission = ref({});
@@ -47,6 +49,18 @@ const submitDraft = () => {
   submissionComponent.value.validate();
   if (!submissionComponent.value.isValid) {
     console.log("Not valid")
+  }
+}
+
+const revertDraft = async () => {
+  if (!await utils.confirm("Revert to released version",
+    "⚠️You are about to discard all changes made to this submission since it was last released. This operation cannot be undone.",
+    "Revert")) return;
+  const response = await axios.delete(
+    `${window.config.backendUrl}/api/submissions/drafts/${props.accession}`,
+  );
+  if (response.status===200) {
+    location.href = location.href;
   }
 }
 

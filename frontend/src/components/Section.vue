@@ -11,8 +11,13 @@ const props = defineProps(['section', 'sectionType', 'depth']);
 const emits = defineEmits(['delete', 'addTable']);
 
 const componentInstance = getCurrentInstance();
+
 const attributesComponent = ref(null);
 const sectionsComponent = ref(null);
+const filesComponent = ref(null);
+const subsectionsRef = ref([])
+const sectionTablesRef = ref([])
+
 const thisSection = ref(props.section);
 const deleteTag = (msg) => deleteAttribute(msg.index);
 
@@ -153,25 +158,26 @@ const updateColumnName = (subsection, update) => {
   sectionsRefreshKey.value += 1;
 };
 
-const subsectionsRef = ref([])
 const isValid = ref(true);
 const validate = () => {
   let v = attributesComponent.value?.validate();
-  subsectionsRef?.value.forEach ( a=> {
+  filesComponent?.value?.validate();
+  v = v && filesComponent?.value?.isValid;
+  subsectionsRef?.value.forEach(a => {
     a.validate();
     v = v && a.value.isValid;
   });
   isValid.value = !!v;
 }
-defineExpose({ validate, isValid});
+defineExpose({validate, isValid});
 
 </script>
 
 <template>
   <div v-if="canRender(props.section)" class="section-block pb-2" :class="{ collapsed: isCollapsed }">
     <!-- section title -->
-    <div>
-      <span :class="[depth > 0 ? 'branch' : 'branch spacer']"></span>
+    <div class="align-text-bottom">
+      <span class="col" :class="[depth > 0 ? 'branch' : 'branch spacer']"></span>
       <span
         class="input-group-text text-start btn btn-lg ps-1 mt-2 section-title"
         @click="isCollapsed = !isCollapsed"
@@ -198,8 +204,8 @@ defineExpose({ validate, isValid});
           ></font-awesome-icon
           ></span>
       </span>
+      <span v-if="depth===0" class="float-end text-danger" style="font-size: 8pt; padding-top:35px">* Required</span>
     </div>
-
     <!-- section content -->
     <transition name="slide">
       <div v-if="!isCollapsed">
@@ -235,6 +241,7 @@ defineExpose({ validate, isValid});
               :sectionType="(props.sectionType?.tableTypes ?? []).find( type=> type.name==='File')"
               @rowsReordered="(e) => rowsReordered(e, Array.isArray(section.files[0]) ? section.files[0] : section.files  )"
               @columnUpdated="(msg) => updateColumnName(Array.isArray(section.files[0]) ? section.files[0] : section.files, msg)"
+              ref="filesComponent"
             />
 
             <!-- Subsections start -->
@@ -259,13 +266,14 @@ defineExpose({ validate, isValid});
                 @columnUpdated="(msg) => updateColumnName(subsection, msg)"
                 @columnsReordered="(msg) => sectionsRefreshKey+= 1"
                 @delete="deleteSubSection(section.subsections, i)"
+                ref="sectionTablesRef"
               />
 
               <SubsectionMenu v-if="canRender(subsection)"
-                :sectionType="sectionType"
-                @newAttribute="addAttribute(section)"
-                @newSection="(type)=> addSubsection(section,i+1, type)"
-                @newTable="(type)=> addTable(section,i+1, type)"
+                              :sectionType="sectionType"
+                              @newAttribute="addAttribute(section)"
+                              @newSection="(type)=> addSubsection(section,i+1, type)"
+                              @newTable="(type)=> addTable(section,i+1, type)"
               ></SubsectionMenu>
 
             </div>

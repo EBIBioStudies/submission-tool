@@ -102,7 +102,11 @@ const validationMessage = ref([]);
 const validate = () => {
   validationMessage.value = [];
   //validate text fields
-  if (props.fieldType?.display === 'required' && (!thisAttribute.value?.value || thisAttribute?.value?.value?.trim() === '')) {
+  if (thisAttribute?.value?.type === 'file') {
+    if (props.fieldType?.display === 'required' && (!thisAttribute?.value?.path || thisAttribute?.value?.path === '')) {
+      validationMessage.value.push('Required');
+    }
+  } else if (props.fieldType?.display === 'required' && (!thisAttribute.value?.value || thisAttribute?.value?.value?.trim() === '')) {
     validationMessage.value.push('Required');
   }
   if (props.fieldType?.controlType?.minlength > (thisAttribute.value?.value?.trim().length ?? 0)) {
@@ -119,13 +123,13 @@ const showHelp = () => {
     `<p>${props.fieldType?.helpContextual?.description}</p>` +
     (!props.fieldType?.helpContextual?.examples ? '' :
       `<p><h6>Examples:</h6><i>${props.fieldType?.helpContextual?.examples?.join('<p> </p>')}</i></p>`),
-    "Close",true, false);
+    "Close", true, false);
 }
 
 </script>
 
 <template>
-  <div class="input-group branch pb-2">
+  <div class="input-group" :class="{'branch pb-2': !props.isTableAttribute}">
     <!--label-->
     <label class="input-group-text attribute" v-if="!props.isTableAttribute">
       <font-awesome-icon
@@ -139,7 +143,9 @@ const showHelp = () => {
         inverse
         icon="fa-check"
       ></font-awesome-icon>
-      <span class="text-muted" v-if="fieldType">{{ fieldType.name }}</span>
+      <span class="text-muted" v-if="fieldType">{{ fieldType.name }}<span class="text-danger"
+                                                                          v-if="fieldType?.display==='required' || fieldType?.controlType?.minlength >0">*</span>
+ </span>
       <span v-else>
       <input
         type="text"
@@ -150,7 +156,8 @@ const showHelp = () => {
         style="margin-left: -1em"
       />
     </span>
-      <font-awesome-icon v-if="fieldType?.helpContextual" :icon="['fas','circle-question']" class="text-black-50 ps-1 small"
+      <font-awesome-icon v-if="fieldType?.helpContextual" :icon="['fas','circle-question']"
+                         class="text-black-50 ps-1 small"
                          role="button" @click="showHelp()"/>
     </label>
 
@@ -247,7 +254,7 @@ const showHelp = () => {
       v-else-if="fieldType?.valueType?.name === 'file'"
       :file="thisAttribute"
       :class="{'border-danger':!isValid}"
-      @change="validate()"
+      @select="validate()"
     />
 
     <!-- default / text -->
@@ -255,7 +262,7 @@ const showHelp = () => {
       v-else
       type="text"
       class="form-control"
-      :class="{'border-danger':!isValid}"
+      :class="{'border-danger':!isValid, 'form-control-sm':isTableAttribute}"
       :placeholder="fieldType?.controlType?.placeholder"
       v-model="thisAttribute.value"
       :required="fieldType?.display==='required' || fieldType?.controlType?.minlength >0"
@@ -284,13 +291,15 @@ const showHelp = () => {
 label.attribute {
   min-width: 18em;
 }
+
 :root {
-  --ms-ring-color:  rgba(13,110,253,.25);
+  --ms-ring-color: rgba(13, 110, 253, .25);
   --ms-option-bg-selected: var(--bs-secondary);
   --ms-option-bg-selected-pointed: var(--bs-secondary);
   --ms-option-bg-pointed: var(--bs-secondary-bg);
   --ms-option-pointed: white;
 }
+
 .multiselect-tags {
   padding-left: 0 !important;
 }
@@ -302,11 +311,13 @@ label.attribute {
   font-size: 1em !important;
   color: #333 !important;
 }
+
 .multiselect-tag-remove {
   background: #dedede !important;
 }
+
 .multiselect-multiple-label, .multiselect-placeholder, .multiselect-single-label {
-  padding-left:0 !important;
+  padding-left: 0 !important;
 }
 
 </style>
