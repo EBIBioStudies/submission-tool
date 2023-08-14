@@ -125,7 +125,11 @@ defineExpose({validate, isValid});
       <span class="input-group-text text-start btn btn-lg ps-1 mt-2 section-title" @click="toggle()">
         <font-awesome-icon class="section-control"
                            :icon="'fa-caret-' + (isCollapsed ? 'right' : 'down')"/>
-        <span v-if="sectionType?.name" class="ms-2">{{ tableType }}</span>
+        <span v-if="sectionType?.name" class="ms-2" :data-bs-toggle="sectionType?.description ? 'tooltip' : false"
+              :data-bs-title="sectionType?.description"><font-awesome-icon v-if="sectionType?.icon" class="icon"
+                                                                           :icon="sectionType?.icon"/>{{
+            tableType
+          }}</span>
         <span v-else>
           <input class="ms-2" @click.stop="" type="text" placeholder="Enter table name" v-model="tableType"/>
           <font-awesome-icon class="icon ps-2" role="button" size="sm" @click="$emit('delete')" @click.stop=""
@@ -142,7 +146,7 @@ defineExpose({validate, isValid});
               <span class="form-control-sm" v-if="getFieldType(header)?.display==='required'">{{ header }}</span>
               <div v-else-if="i > 0 && i < headers.length - 1" class="input-group input-group-sm">
                 <input type="text" class="form-control" :value="header" @change.stop="(e) => updateColumnName(e, i)"
-                ref="headerComponent">
+                       ref="headerComponent">
                 <button class="btn btn-outline-secondary icon" type="button"
                         v-if="getFieldType(header)?.display!=='required' ">
                   <font-awesome-icon class="fa-sm" icon="fa-trash" @click="deleteColumn(i)"></font-awesome-icon>

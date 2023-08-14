@@ -180,13 +180,14 @@ defineExpose({validate, isValid});
       <span class="col" :class="[depth > 0 ? 'branch' : 'branch spacer']"></span>
       <span
         class="input-group-text text-start btn btn-lg ps-1 mt-2 section-title"
-        @click="isCollapsed = !isCollapsed"
-      >
+        @click="isCollapsed = !isCollapsed">
         <font-awesome-icon
           class="section-control"
           :icon="'fa-caret-' + (isCollapsed ? 'right' : 'down')"
         ></font-awesome-icon>
-        <span v-if="sectionType?.name" class="ms-2">{{ section.type }}</span>
+        <span v-if="sectionType?.name" class="ms-2"
+              :data-bs-toggle="sectionType?.description ? 'tooltip' : false" :data-bs-title="sectionType?.description"><font-awesome-icon
+          v-if="sectionType?.icon" class="icon" :icon="sectionType?.icon"/>{{ section.type }}</span>
         <span v-else>
           <input
             class="ms-2"
@@ -210,7 +211,6 @@ defineExpose({validate, isValid});
     <transition name="slide">
       <div v-if="!isCollapsed">
         <div class="has-child-section ms-3 slide-in">
-
 
           <!-- attributes -->
           <Attributes
@@ -288,30 +288,6 @@ defineExpose({validate, isValid});
 </template>
 
 <style>
-
-.new-button {
-  line-height: 8pt;
-}
-
-.new-button:before {
-  content: ' ';
-  width: 6px;
-  color: transparent;
-  border-top: 1px dashed #efefef;
-  display: inline-block;
-}
-
-
-.new-button [role='button'] {
-  margin-left: -2px;
-  margin-bottom: -5px;
-  color: #eeeeee;
-}
-
-.new-button [role='button']:hover {
-  color: #aaaaaa;
-  line-height: 16pt;
-}
 
 .plus-icon {
   color: #dedede;

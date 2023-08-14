@@ -9,7 +9,7 @@
             Submissions
           </router-link>
         </li>
-        <li  v-if="AuthService.isAuthenticated()" class="nav-item">
+        <li v-if="AuthService.isAuthenticated()" class="nav-item">
           <router-link :to="`/drafts`" class="nav-link"
                        :class="{ active:router.currentRoute.value.name==='Drafts' }">
             Drafts
@@ -25,11 +25,10 @@
                        :class="{ active:router.currentRoute.value.name==='Help'  }">Help
           </router-link>
         </li>
-        <li v-if="AuthService.isAuthenticated()" class="nav-item dropdown">
+        <li v-if="AuthService.isAuthenticated()" class="nav-item dropdown" data-bs-toggle="tooltip"
+            :data-bs-title="AuthService.user.value.fullname" icon="fa-user-circle">
           <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">
-            <font-awesome-icon data-bs-toggle="tooltip"
-                               :data-bs-title="AuthService.user.value.fullname" icon="fa-user-circle"
-                               class="fa-lg"></font-awesome-icon>
+            <font-awesome-icon icon="fa-user-circle" class="fa-lg"></font-awesome-icon>
           </a>
           <ul class="dropdown-menu dropdown-menu-end ">
             <li><a class="dropdown-item" href="#" @click="logout">Logout</a></li>
@@ -66,6 +65,7 @@ onMounted(() => {
 .nav-tabs {
   border-bottom: 0 !important;
 }
+
 .nav-link {
   color: white
 }

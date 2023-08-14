@@ -17,8 +17,11 @@
         <td>{{ draft.key }}</td>
         <td>{{ getTitle(draft) }}</td>
         <td>
-          <button class="btn btn-link text-primary" @click.stop="edit(draft.key)">
-            <font-awesome-icon icon="fa-edit"></font-awesome-icon>
+          <button class="btn btn-link text-primary" @click.stop="editDraft(draft.key)">
+            <font-awesome-icon icon="fa-edit" class="fa-fw"></font-awesome-icon>
+          </button>
+          <button class="btn btn-link text-danger" @click.stop="deleteDraft(draft.key)">
+            <font-awesome-icon icon="fa-trash-can" class="fa-fw"></font-awesome-icon>
           </button>
         </td>
       </tr>
@@ -61,6 +64,7 @@ import moment from "moment";
 import router from "./router";
 import axios from "axios";
 import NewSubmissionModal from "@/components/NewSubmissionModal.vue";
+import utils from "@/utils";
 
 const accession = ref('S-BIAD796');
 const drafts = ref([])
@@ -78,8 +82,20 @@ const getTitle = (draft) => {
   return draft.content?.section?.attributes?.find( attr=> attr.name==='Title')?.value || draft.content?.attributes?.find( attr=> attr.name==='Title')?.value
 }
 
-const edit = (accno) => {
+const editDraft = (accno) => {
   router.push(`/edit/${accno}`)
+}
+
+const deleteDraft = async (accno) => {
+  if (!await utils.confirm("Delete draft",
+    "⚠️The draft with accession number S-BIAD248 has not been submitted yet. If you proceed, it will be permanently deleted.",
+    "Delete")) return;
+  const response = await axios.delete(
+    `${window.config.backendUrl}/api/submissions/drafts/${accno}`,
+  );
+  if (response.status===200) {
+    location.href = location.href;
+  }
 }
 
 </script>
