@@ -1,16 +1,12 @@
 <script setup>
 import Section from './Section.vue';
-import {ref} from "vue";
+import {computed, ref} from "vue";
 
 defineProps(['section', 'sectionType']);
 const sectionComponent = ref(null)
 
-const isValid = ref(true);
-const validate = () => {
-  sectionComponent.value.validate();
-  isValid.value = !!sectionComponent.value.isValid;
-}
-defineExpose({validate, isValid});
+const errors = computed(() => sectionComponent.value.errors)
+defineExpose({errors});
 </script>
 
 <template>

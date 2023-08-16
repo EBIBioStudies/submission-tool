@@ -1,5 +1,5 @@
 <script setup>
-import {allTemplates} from "@/templates/templates";
+import {allTemplates, latestTemplates} from "@/templates/templates";
 import {ref} from "vue";
 import axios from "axios";
 import router from "@/router";
@@ -7,23 +7,7 @@ import utils from '@/utils'
 
 const emits = defineEmits(['select'])
 const showMoreWasPressed = ref(false)
-const nameLatestVersionMap = new Map()
-const nameTemplateMap = new Map()
 const selectedTemplate = ref(null)
-
-allTemplates.map((tmpl, i) => {
-  const templateNameRe = /^(.+?)(?:\.v(\d+))?$/;
-  let [_, collection, version] = templateNameRe.exec(tmpl.name) || [null, '', 0];
-  version = Number(version) || 0;
-  nameTemplateMap.set(`${collection}.v${version}`, tmpl);
-  if (!nameLatestVersionMap.has(collection) || nameLatestVersionMap.get(collection) < version) {
-    nameLatestVersionMap.set(collection, version);
-  }
-})
-
-const latestTemplates = [...nameLatestVersionMap.keys()].map((collection) => nameTemplateMap.get(`${collection}.v${nameLatestVersionMap.get(collection)}`))
-//TODO: Filter on user collection allow list
-
 
 const createNewSubmission = async ()=> {
 

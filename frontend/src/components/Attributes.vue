@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import {computed, ref} from 'vue';
 import Attribute from './Attribute.vue';
 
 const props = defineProps(['attributes', 'fieldTypes']);
@@ -36,7 +36,7 @@ const  attributeRefs = ref([]);
 const processed = (attribute) => duplicateAttributes.includes(attribute);
 
 const getFieldType = (attribute) => {
-  return props.fieldTypes?.find((f) => f.name === attribute?.name);
+  return props.fieldTypes?.find((f) => f.name?.toLowerCase() === attribute?.name?.toLowerCase());
 };
 
 const addMissingAttributes = () => {
@@ -51,20 +51,20 @@ const addMissingAttributes = () => {
     // template attribute is not in the pagetab. Create it (only if it's required).
     // desirable should not be added in a re-render. They should only be part of the initial empty pagetab
     attr = { name: fieldType.name, value: '' };
-    attributeList?.value.splice(i, 0, attr);
+    attributeList?.value?.splice(i, 0, attr);
   }
 };
 
-const isValid = ref(true);
-const validate = () => {
-  let v = true;
-  attributeRefs.value.forEach ( a=> {
-    a.validate();
-    v = v && a.isValid;
+const errors = computed(() => {
+  const _errors = []
+  // validate subsections
+  attributeRefs?.value.forEach((a) => {
+    const err = a.errors;
+    if (err)  _errors.push ( {errorMessage: err,control: a,  element: document.getElementById(a.attributeId) })
   });
-  isValid.value = v;
-}
-defineExpose({ validate, isValid});
+  return _errors;
+});
+defineExpose({errors});
 
 addMissingAttributes();
 </script>

@@ -1,16 +1,12 @@
 <script setup>
 import StudySection from './StudySection.vue';
-import {ref} from "vue";
+import {computed, ref} from "vue";
 
 defineProps(['submission', 'template']);
 const studyComponent = ref(null)
 
-const isValid = ref(true);
-const validate = () => {
-  studyComponent.value.validate();
-  isValid.value = !!studyComponent.value.isValid;
-}
-defineExpose({validate, isValid});
+const errors = computed(() => studyComponent.value.errors)
+defineExpose({errors});
 </script>
 
 <template>

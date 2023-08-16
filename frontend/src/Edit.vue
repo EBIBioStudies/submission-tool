@@ -14,6 +14,26 @@
       </div>
       <div id="json" class="json col-3"></div>
     </div>
+
+    <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1"
+         id="offcanvasErrors" aria-labelledby="offcanvasScrollingLabel">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasScrollingLabel">Errors</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+        <p>Please fix these errors before submitting</p>
+        <ul class="list-group">
+          <template v-for="error in validationErrors">
+            <li v-if="error?.control?.errors?.length" role="button"
+                class="list-group-item list-group-item-action" @click="error.element?.scrollIntoView()">
+              <strong>{{ error?.element?.querySelector('.attribute-name').innerText }}:</strong> {{ error.errorMessage }}
+            </li>
+          </template>
+        </ul>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -27,28 +47,34 @@
 </style>
 
 <script setup>
-import {computed, ref, watch, watchEffect} from 'vue';
+import {computed, onMounted, ref, watch, watchEffect} from 'vue';
 
-import BioImages from './templates/BioImages.v4.json';
-import ArrayExpress from './templates/ArrayExpress.json';
 import Default from './templates/Default.json';
 import Submission from './components/Submission.vue';
-import axios from "axios";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
+import {allTemplates} from "@/templates/templates";
+import {Offcanvas} from "bootstrap";
+import axios from "axios";
 import utils from "@/utils";
+import { provide } from 'vue'
 
 const props = defineProps(['accession']);
 const submission = ref({});
 const template = ref({});
-const allTemplates = [BioImages, Default, ArrayExpress];
-const isSaving = ref(true)
+const isSaving = ref(true);
+const hasValidated = ref(false);
+provide('hasValidated', hasValidated)
 
 const submissionComponent = ref({})
 
+let offCanvasErrors = null;
+let validationErrors = ref([]);
+
 const submitDraft = () => {
-  submissionComponent.value.validate();
-  if (!submissionComponent.value.isValid) {
-    console.log("Not valid")
+  hasValidated.value = true;
+  validationErrors.value = submissionComponent.value?.errors;
+  if (validationErrors.value.length) {
+    offCanvasErrors.show();
   }
 }
 
@@ -59,10 +85,14 @@ const revertDraft = async () => {
   const response = await axios.delete(
     `${window.config.backendUrl}/api/submissions/drafts/${props.accession}`,
   );
-  if (response.status===200) {
+  if (response.status === 200) {
     location.href = location.href;
   }
 }
+
+onMounted(() => {
+  offCanvasErrors = Offcanvas.getOrCreateInstance('#offcanvasErrors', {'backdrop': false});
+})
 
 watchEffect(async () => {
   if (props.accession) {
@@ -99,6 +129,7 @@ watchEffect(async () => {
     }
 
     submission.value = submissionJson;
+
     const templateNode = submission.value?.attributes?.find(
       (n) => n?.name?.toLowerCase() === 'template',
     );
@@ -109,11 +140,17 @@ watchEffect(async () => {
       const collection = submission.value?.attributes?.find(
         (n) => n?.name?.toLowerCase() === 'attachto',
       );
+      // try finding the template with the same name as the collection
       tmpl = allTemplates.find(
-        (t) => t?.name?.toLowerCase() === collection?.value?.toLowerCase(),
+        (t) => t?.title?.toLowerCase() === collection?.value?.toLowerCase(),
+      );
+      // try finding the template with the same name collection.v1 (works for BioImages)
+      if (!tmpl) tmpl = allTemplates.find(
+        (t) => t?.title?.toLowerCase() === collection?.value?.toLowerCase() + '.v1',
       );
     }
-    template.value = tmpl;
+    console.log(`Using template ${tmpl.name}`)
+    template.value = tmpl ?? Default;
   } else {
     //TODO: display error
     console.log('No such submission')
@@ -125,6 +162,7 @@ const updatedSubmission = computed(() =>
 
 let lastUpdated = Date.now();
 let pendingSave = null;
+
 watch(updatedSubmission, async (sub) => {
   const draft = JSON.parse(updatedSubmission.value);
   // Remove ReleaseDate from Study. It remains in the Submission

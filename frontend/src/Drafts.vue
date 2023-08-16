@@ -20,7 +20,7 @@
           <button class="btn btn-link text-primary" @click.stop="editDraft(draft.key)">
             <font-awesome-icon icon="fa-edit" class="fa-fw"></font-awesome-icon>
           </button>
-          <button class="btn btn-link text-danger" @click.stop="deleteDraft(draft.key)">
+          <button class="btn btn-link icon " @click.stop="deleteDraft(draft.key)">
             <font-awesome-icon icon="fa-trash-can" class="fa-fw"></font-awesome-icon>
           </button>
         </td>

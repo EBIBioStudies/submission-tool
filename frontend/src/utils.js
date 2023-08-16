@@ -56,11 +56,16 @@ const fillTemplate = (section, tmpl) => {
   );
 
   // fill sections
-  section.subsections = [];
   [...(tmpl?.tableTypes ?? []), ...(tmpl?.sectionTypes ?? [])].forEach(
     (sectionTemplate) => {
       const subsection = {type: sectionTemplate.name};
-      section.subsections.push(subsection);
+      if (subsection.type?.toLowerCase()==='file') {
+        if (!section.files) section.files = [];
+        section.files.push(subsection);
+      } else {
+        if (!section.subsections) section.subsections = [];
+        section.subsections.push(subsection);
+      }
       fillTemplate(subsection, sectionTemplate);
     },
   );

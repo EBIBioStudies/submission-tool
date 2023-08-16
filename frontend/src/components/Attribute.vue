@@ -1,11 +1,14 @@
 <script setup>
-import {computed, ref} from 'vue';
+import {computed, getCurrentInstance, ref} from 'vue';
 import Multiselect from '@vueform/multiselect';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import DatePicker from 'vue-datepicker-next';
 import 'vue-datepicker-next/index.css';
 import FileFolderSelectModal from "@/components/FileFolderSelectModal.vue";
+import Link from "@/components/Link.vue";
 import utils from "@/utils";
+import { inject } from 'vue'
+const hasValidated = inject('hasValidated')
 
 const props = defineProps({
   'attribute': Object,
@@ -14,6 +17,7 @@ const props = defineProps({
   'isTableAttribute': Boolean
 });
 const emits = defineEmits(['createTag', 'deleteTag', 'deleteAttribute']);
+const attributeId = 'attribute-'+getCurrentInstance().uid;
 const thisAttribute = ref(props.attribute);
 const thisMultiValuedAttribute = ref(
   props.parent
@@ -68,7 +72,6 @@ const onChangeSelect = (newValue, control) => {
   // TODO: Figure out a way to bind the selected option instead of copying the individual properties
   const selected = control.options.find((o) => o.value === newValue);
   thisAttribute.value.valqual = selected?.valqual;
-  validate();
 };
 
 const onCreateTag = (newTag) => {
@@ -96,26 +99,27 @@ const withinThreeYears = (date) => {
   );
 };
 
-const isValid = ref(true);
-const validationMessage = ref([]);
-
-const validate = () => {
-  validationMessage.value = [];
+const errors = computed(() => {
+  const _errors = []
   //validate text fields
   if (thisAttribute?.value?.type === 'file') {
     if (props.fieldType?.display === 'required' && (!thisAttribute?.value?.path || thisAttribute?.value?.path === '')) {
-      validationMessage.value.push('Required');
+      _errors.push(`Required`);
+    }
+  } else if (thisAttribute?.value?.hasOwnProperty('url')) {
+    if (props.fieldType?.display === 'required' && (!thisAttribute?.value?.url || thisAttribute?.value?.url === '')) {
+      _errors.push(`Required`);
     }
   } else if (props.fieldType?.display === 'required' && (!thisAttribute.value?.value || thisAttribute?.value?.value?.trim() === '')) {
-    validationMessage.value.push('Required');
+    _errors.push(`Required`);
   }
   if (props.fieldType?.controlType?.minlength > (thisAttribute.value?.value?.trim().length ?? 0)) {
-    validationMessage.value.push(`Please enter at least ${props.fieldType?.controlType?.minlength} characters. `)
+    _errors.push(`Please enter at least ${props.fieldType?.controlType?.minlength} characters. `)
   }
+  return _errors.length ? _errors.join('. ').trim() : null;
+})
 
-  isValid.value = validationMessage.value.length === 0;
-}
-defineExpose({validate, isValid});
+defineExpose({errors, attributeId});
 
 
 const showHelp = () => {
@@ -129,7 +133,7 @@ const showHelp = () => {
 </script>
 
 <template>
-  <div class="input-group" :class="{'branch pb-2': !props.isTableAttribute}">
+  <div class="input-group" :class="{'branch pt-2': !props.isTableAttribute}" :id="attributeId">
     <!--label-->
     <label class="input-group-text attribute" v-if="!props.isTableAttribute">
       <font-awesome-icon
@@ -143,16 +147,16 @@ const showHelp = () => {
         inverse
         icon="fa-check"
       ></font-awesome-icon>
-      <span class="text-muted" v-if="fieldType">{{ fieldType.name }}<span class="text-danger"
-                                                                          v-if="fieldType?.display==='required' || fieldType?.controlType?.minlength >0">*</span>
- </span>
+      <span class="text-muted" v-if="fieldType"><span class="attribute-name">{{ fieldType.name }}</span>
+        <span class="text-danger" v-if="fieldType?.display==='required' || fieldType?.controlType?.minlength >0">*</span>
+      </span>
       <span v-else>
       <input
         type="text"
         class="form-control attribute-name"
         v-model="thisAttribute.name"
         placeholder="Attribute name"
-        :class="{'border-danger':!isValid}"
+        :class="{'is-invalid':errors.length}"
         style="margin-left: -1em"
       />
     </span>
@@ -169,11 +173,9 @@ const showHelp = () => {
       rows="3"
       :placeholder="fieldType?.controlType?.placeholder"
       v-model="thisAttribute.value"
-      :class="{'border-danger':!isValid}"
+      :class="{'is-invalid':errors && hasValidated}"
       :required="fieldType?.display==='required' || fieldType?.controlType?.minlength >0"
-      @change="validate()"
     ></textarea>
-
     <!-- select  -->
     <Multiselect
       v-else-if="
@@ -186,10 +188,9 @@ const showHelp = () => {
       class="form-control"
       :searchable="true"
       :options="singleSelectValues"
-      :class="{'border-danger':!isValid}"
+      :class="{'is-invalid':errors && hasValidated}"
       :allow-empty="false"
       @change="onChangeSelect"
-      @select="validate()"
     >
     </Multiselect>
 
@@ -212,8 +213,7 @@ const showHelp = () => {
       @create="onCreateTag"
       @deselect="onDeleteTag"
       @select="onCreateTag"
-      @change="validate()"
-      :class="{'border-danger':!isValid}"
+      :class="{'is-invalid':errors && hasValidated}"
       object
     >
       <template v-slot:tag="{ option, handleTagRemove, disabled }">
@@ -245,16 +245,22 @@ const showHelp = () => {
       placeholder="Select date"
       format="YYYY-MM-DD"
       :disabledDate="withinThreeYears"
-      :class="{'border-danger':!isValid}"
-      @change="validate()"
+      :class="{'is-invalid':errors && hasValidated}"
     />
 
     <!--file-->
     <FileFolderSelectModal
       v-else-if="fieldType?.valueType?.name === 'file'"
       :file="thisAttribute"
-      :class="{'border-danger':!isValid}"
-      @select="validate()"
+      :class="{'is-invalid':errors && hasValidated}"
+    />
+
+    <!-- link -->
+    <Link
+      v-else-if="thisAttribute.hasOwnProperty('url')"
+      :link="thisAttribute"
+      :class="{'is-invalid':errors && hasValidated}"
+      :placeholder="fieldType?.controlType?.placeholder"
     />
 
     <!-- default / text -->
@@ -262,12 +268,12 @@ const showHelp = () => {
       v-else
       type="text"
       class="form-control"
-      :class="{'border-danger':!isValid, 'form-control-sm':isTableAttribute}"
+      :class="{'is-invalid':errors && hasValidated, 'form-control-sm':isTableAttribute}"
       :placeholder="fieldType?.controlType?.placeholder"
       v-model="thisAttribute.value"
       :required="fieldType?.display==='required' || fieldType?.controlType?.minlength >0"
-      @change="validate()"
     />
+
     <!-- delete icon -->
     <div
       class="input-group-text btn-group-vertical"
@@ -281,8 +287,8 @@ const showHelp = () => {
       ></font-awesome-icon>
     </div>
   </div>
-  <div class="pb-2 ps-2 text-danger text-end" v-if="!isValid">
-    {{ validationMessage.join('. ') }}
+    <div class="pb-2 ps-2 text-danger text-end small" v-if="errors?.length && hasValidated">
+    {{ errors }}
     <font-awesome-icon :icon="['fas','arrow-turn-up']" transform="shrink-6 up-2"/>
   </div>
 </template>
@@ -310,6 +316,7 @@ label.attribute {
   font-weight: normal !important;
   font-size: 1em !important;
   color: #333 !important;
+  white-space: inherit !important;
 }
 
 .multiselect-tag-remove {
@@ -320,5 +327,8 @@ label.attribute {
   padding-left: 0 !important;
 }
 
+.small {
+  font-size: 0.8em;
+}
 </style>
 <style src="@vueform/multiselect/themes/default.css"></style>

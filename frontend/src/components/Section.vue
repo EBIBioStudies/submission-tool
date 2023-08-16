@@ -1,5 +1,5 @@
 <script setup>
-import {getCurrentInstance, nextTick, ref} from 'vue';
+import {computed, getCurrentInstance, nextTick, ref} from 'vue';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import Attributes from '@/components/Attributes.vue';
 import SectionTable from '@/components/SectionTable.vue';
@@ -14,9 +14,11 @@ const componentInstance = getCurrentInstance();
 
 const attributesComponent = ref(null);
 const sectionsComponent = ref(null);
-const filesComponent = ref(null);
+
 const subsectionsRef = ref([])
 const sectionTablesRef = ref([])
+const sectionFilesRef = ref(null)
+const sectionLinksRef = ref(null)
 
 const thisSection = ref(props.section);
 const deleteTag = (msg) => deleteAttribute(msg.index);
@@ -158,19 +160,17 @@ const updateColumnName = (subsection, update) => {
   sectionsRefreshKey.value += 1;
 };
 
-const isValid = ref(true);
-const validate = () => {
-  let v = attributesComponent.value?.validate();
-  filesComponent?.value?.validate();
-  v = v && filesComponent?.value?.isValid;
-  subsectionsRef?.value.forEach(a => {
-    a.validate();
-    v = v && a.value.isValid;
+const errors = computed( () => {
+  let _errors = [...attributesComponent.value?.errors]
+  // validate subsections
+  subsectionsRef?.value.forEach(subsec => {
+    if (!canRender(subsec.thisSection)) return
+    _errors = [..._errors, ...subsec.errors]
   });
-  isValid.value = !!v;
-}
-defineExpose({validate, isValid});
+  return _errors
+});
 
+defineExpose({errors, thisSection});
 </script>
 
 <template>
@@ -186,7 +186,8 @@ defineExpose({validate, isValid});
           :icon="'fa-caret-' + (isCollapsed ? 'right' : 'down')"
         ></font-awesome-icon>
         <span v-if="sectionType?.name" class="ms-2"
-              :data-bs-toggle="sectionType?.description ? 'tooltip' : false" :data-bs-title="sectionType?.description"><font-awesome-icon
+              :data-bs-toggle="sectionType?.description ? 'tooltip' : false" data-bs-html="true"
+              :data-bs-title="sectionType?.description"><font-awesome-icon
           v-if="sectionType?.icon" class="icon" :icon="sectionType?.icon"/>{{ section.type }}</span>
         <span v-else>
           <input
@@ -205,11 +206,11 @@ defineExpose({validate, isValid});
           ></font-awesome-icon
           ></span>
       </span>
-      <span v-if="depth===0" class="float-end text-danger" style="font-size: 8pt; padding-top:35px">* Required</span>
+      <span v-if="depth===0" class="float-end text-secondary" style="font-size: 8pt; padding-top:35px">* Required</span>
     </div>
     <!-- section content -->
     <transition name="slide">
-      <div v-if="!isCollapsed">
+      <div :class="{'visually-hidden': isCollapsed}">
         <div class="has-child-section ms-3 slide-in">
 
           <!-- attributes -->
@@ -232,19 +233,42 @@ defineExpose({validate, isValid});
 
 
           <div class="p-0" :key="sectionsRefreshKey">
-
-            <!-- Files -->
-            <SectionTable
-              v-if="section.files && section.files.length"
-              :rows="Array.isArray(section.files[0]) ? section.files[0] : section.files "
-              :depth="props.depth+1"
-              :sectionType="(props.sectionType?.tableTypes ?? []).find( type=> type.name==='File')"
-              @rowsReordered="(e) => rowsReordered(e, Array.isArray(section.files[0]) ? section.files[0] : section.files  )"
-              @columnUpdated="(msg) => updateColumnName(Array.isArray(section.files[0]) ? section.files[0] : section.files, msg)"
-              ref="filesComponent"
-            />
+            <!--            &lt;!&ndash; Files &ndash;&gt;-->
+            <!--            <SectionTable-->
+            <!--              v-if="section.files && section.files.length"-->
+            <!--              :rows="Array.isArray(section.files[0]) ? section.files[0] : section.files "-->
+            <!--              :depth="props.depth+1"-->
+            <!--              :sectionType="(props.sectionType?.tableTypes ?? []).find( type=> type.name==='File')"-->
+            <!--              @rowsReordered="(e) => rowsReordered(e, Array.isArray(section.files[0]) ? section.files[0] : section.files  )"-->
+            <!--              @columnUpdated="(msg) => updateColumnName(Array.isArray(section.files[0]) ? section.files[0] : section.files, msg)"-->
+            <!--              ref="filesComponent"-->
+            <!--            />-->
 
             <!-- Subsections start -->
+            <SectionTable
+              v-if="section.files"
+              :rows="section.files"
+              :depth="props.depth+1"
+              :sectionType="getSectionType(section.files)"
+              sectionSubType="Files"
+              @rowsReordered="(e) => rowsReordered(e, section.files)"
+              @columnUpdated="(msg) => updateColumnName(section.files, msg)"
+              @columnsReordered="(msg) => sectionsRefreshKey+= 1"
+              @delete="deleteSubSection(section.files, 0)"
+              ref="sectionFilesRef"
+            />
+            <SectionTable
+              v-if="section.links"
+              :rows="section.links"
+              :depth="props.depth+1"
+              :sectionType="getSectionType(section.links)"
+              sectionSubType="Links"
+              @rowsReordered="(e) => rowsReordered(e, section.links)"
+              @columnUpdated="(msg) => updateColumnName(section.links, msg)"
+              @columnsReordered="(msg) => sectionsRefreshKey+= 1"
+              @delete="deleteSubSection(section.links, 0)"
+              ref="sectionLinksRef"
+            />
             <div v-for="(subsection, i) in section.subsections" key="i" ref="sectionsComponent">
               <!-- section -->
               <Section
@@ -262,6 +286,7 @@ defineExpose({validate, isValid});
                 :rows="subsection"
                 :depth="props.depth+1"
                 :sectionType="getSectionType(subsection)"
+                sectionSubType="Table"
                 @rowsReordered="(e) => rowsReordered(e, subsection)"
                 @columnUpdated="(msg) => updateColumnName(subsection, msg)"
                 @columnsReordered="(msg) => sectionsRefreshKey+= 1"

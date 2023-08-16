@@ -56,7 +56,10 @@ const logout = async () => {
 onMounted(() => {
   new Tooltip(document.body, {
     selector: "[data-bs-toggle='tooltip']",
+    delay: { "hide": 1000 },
   })
+  const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
+  const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl))
 });
 
 </script>

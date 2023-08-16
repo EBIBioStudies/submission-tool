@@ -4,43 +4,60 @@ import draggable from 'vuedraggable';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import Attribute from "@/components/Attribute.vue";
 
-const props = defineProps(['rows', 'depth', 'sectionType']);
+const props = defineProps(['rows', 'depth', 'sectionType', 'sectionSubType']);
 const emits = defineEmits([
   'rowsReordered',
   'columnUpdated',
   'columnsReordered',
   'delete'
 ]);
-const rowSectionType = props.rows[0].type ? ('' + props.rows[0].type) : 'file';
-const tableType = ref(rowSectionType === 'file' ? 'Files' : rowSectionType)
+const thisSection = ref(props.rows);
+const rowSectionType = props.rows && props.rows[0].type ? ('' + props.rows[0].type) : '';
+const tableType = ref(props.sectionSubType ?? rowSectionType)
+const theseRows = ref(Array.isArray(props.rows[0]) ? props.rows[0] : props.rows);
 const headerMap = new Map();
-if (rowSectionType.toLowerCase() === 'file') {
+if (tableType.value === 'Files') {
   headerMap.set('File', [])
+} else if (tableType.value === 'Links') {
+  headerMap.set('Link', [])
 }
-props.rows.forEach((row) =>
-  row?.attributes?.forEach((attr) => {
-    if (!headerMap.has(attr.name)) headerMap.set(attr.name, []);
-    headerMap.get(attr.name).push(attr);
-  }),
+theseRows?.value?.forEach((row) => {
+    row?.attributes?.forEach((attr) => {
+      if (!headerMap.has(attr.name)) headerMap.set(attr.name, []);
+      headerMap.get(attr.name).push(attr);
+    })
+  }
 );
 const keys = ['', ...headerMap.keys(), ''];
 const headers = ref(keys);
-const theseRows = ref(Array.isArray(props.rows[0]) ? props.rows[0] : props.rows);
 const refresh = ref(0);
 
 const getFieldType = (attribute) => {
-  const name = attribute?.type?.toLowerCase() === 'file' ? 'File' : attribute?.name || attribute
+  let name = attribute?.type?.toLowerCase() === 'file' ? 'File' : attribute?.name || attribute
+  name = attribute.hasOwnProperty('url') ? 'Link' : name;
   // return the column type. Expects either an object or a column name (for use in draggable)
-  return props.sectionType?.columnTypes?.find((f) => f.name?.toLowerCase() === name?.toLowerCase())
+  let fieldType = props.sectionType?.columnTypes?.find((f) => f.name?.toLowerCase() === name?.toLowerCase());
+  if (!fieldType && name) {
+    fieldType = {
+      "name": name,
+      "valueType": {
+        "name": name?.toLowerCase()
+      },
+      "display": "required"
+    }
+  }
+  return fieldType;
 }
 
 
 // Add all column to the first row. We will use it to control column dragging
 const getCell = (row, col) => {
-  let attribute = row?.attributes.find(
+  let attribute = row?.attributes?.find(
     (att) => att?.name?.toLowerCase() === col?.toLowerCase(),
   );
-  if (!attribute && rowSectionType.toLowerCase() === 'file' && col === 'File') {
+  if (!attribute && (
+    (tableType.value === 'Files' && col === 'File')
+    || (tableType.value === 'Links' && col === 'Link'))) {
     return row;
   }
   if (!attribute) {
@@ -64,18 +81,30 @@ const reorderColumns = (event) => {
 const addColumn = (event) => {
   const columnName = 'Column ' + (headers.value.length - 1);
   headers.value.splice(-1, 0, columnName);
-  theseRows.value.forEach((row) =>
-    row.attributes.push({name: columnName, value: ''}),
+  theseRows.value.forEach((row) => {
+      if (!row.attributes) row.attributes = []
+      row.attributes.push({name: columnName, value: ''})
+    }
   );
 };
 
 const addRow = (event) => {
-  const row = {type: rowSectionType, attributes: []};
-  if (rowSectionType.toLowerCase() === 'file') {
+  const row = {};
+  if (tableType.value === 'Files') {
     row.path = null;
+    row.attributes = [];
+    row.type = rowSectionType
+  } else if (tableType.value === 'Links') {
+    row.url = '';
+    row.attributes = [];
+  } else {
+    row.type = rowSectionType;
+    row.attributes = [];
   }
   headers.value.forEach((header, i) => {
-    if (i === 0 || i === headers.value.length - 1 || (rowSectionType.toLowerCase() === 'file' && i == 1)) return;
+    if (i === 0 || i === headers.value.length - 1
+      || ((tableType.value === 'Files' || tableType.value === 'Links') && i == 1))
+      return;
     row.attributes.push({name: header, value: ''});
   });
   theseRows.value.push(row);
@@ -114,7 +143,7 @@ const validate = () => {
   });
   isValid.value = !!v;
 }
-defineExpose({validate, isValid});
+defineExpose({validate, isValid, thisSection});
 
 </script>
 <template>
@@ -125,7 +154,9 @@ defineExpose({validate, isValid});
       <span class="input-group-text text-start btn btn-lg ps-1 mt-2 section-title" @click="toggle()">
         <font-awesome-icon class="section-control"
                            :icon="'fa-caret-' + (isCollapsed ? 'right' : 'down')"/>
-        <span v-if="sectionType?.name" class="ms-2" :data-bs-toggle="sectionType?.description ? 'tooltip' : false"
+        <span v-if="sectionType?.name || props.sectionSubType ==='Files' || props.sectionSubType==='Links' "
+              class="ms-2"
+              :data-bs-toggle="sectionType?.description ? 'tooltip' : false"
               :data-bs-title="sectionType?.description"><font-awesome-icon v-if="sectionType?.icon" class="icon"
                                                                            :icon="sectionType?.icon"/>{{
             tableType

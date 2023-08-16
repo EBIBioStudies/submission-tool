@@ -8,10 +8,10 @@
     </div>
     <table v-if="submissions?.length" class="table table-responsive table-striped table-hover">
       <thead>
-      <th>Accession</th>
+      <th style="min-width: 120px">Accession</th>
       <th>Title</th>
-      <th>Release Date</th>
-      <th>Last Modified</th>
+      <th style="min-width: 120px">Release Date</th>
+      <th style="min-width: 120px">Last Modified</th>
       <th>Actions</th>
       </thead>
       <tbody>

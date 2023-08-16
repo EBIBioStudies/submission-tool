@@ -4,17 +4,18 @@ import {getCurrentInstance, onMounted, ref} from "vue";
 import FileTree from "./FileTree.vue";
 import {Modal} from "bootstrap";
 
-const props = defineProps(['file','class'])
+const props = defineProps(['file', 'class'])
 const emits = defineEmits(['select'])
-
 const thisFile = ref(props.file);
 let modal = null;
 const thisComponent = getCurrentInstance();
 const filetree = ref(null);
 onMounted(() => {
-  modal = new Modal(document.getElementById('fileFolderSelectModal' + thisComponent.uid), {
-    backdrop: 'static'
-  })
+  let elementById = document.getElementById('fileFolderSelectModal' + thisComponent.uid);
+  if (elementById)
+    modal = new Modal(elementById, {
+      backdrop: 'static'
+    })
 })
 const select = (node) => {
   modal.hide();
@@ -22,7 +23,7 @@ const select = (node) => {
   thisFile.value.size = node.size;
   emits('select', thisFile.value);
 }
-const loadTree=() =>{
+const loadTree = () => {
   thisComponent.refs.filetree.show();
 }
 </script>
@@ -30,7 +31,8 @@ const loadTree=() =>{
 <template>
   <div class="input-group input-group-sm" :class="props.class">
     <input type="text" class="form-control bg-body-secondary" v-model="thisFile.path" readonly data-bs-toggle="modal"
-           :data-bs-target="'#fileFolderSelectModal'+thisComponent.uid">
+           :data-bs-target="'#fileFolderSelectModal'+thisComponent.uid"
+           @click="loadTree()">
     <button class="btn btn-secondary" type="button" data-bs-toggle="modal"
             @click="loadTree()"
             :data-bs-target="'#fileFolderSelectModal'+thisComponent.uid">
