@@ -26,7 +26,7 @@
         <ul class="list-group">
           <template v-for="error in validationErrors">
             <li v-if="error?.control?.errors?.length" role="button"
-                class="list-group-item list-group-item-action" @click="error.element?.scrollIntoView()">
+                class="list-group-item list-group-item-action" @click="expandAndFocus(error?.element)">
               <strong>{{ error?.element?.querySelector('.attribute-name').innerText }}:</strong> {{ error.errorMessage }}
             </li>
           </template>
@@ -186,5 +186,17 @@ watch(updatedSubmission, async (sub) => {
   lastUpdated = Date.now();
   document.getElementById('json').innerText = JSON.stringify(draft, null, 2);
 });
+
+
+const expandAndFocus = async (el) => {
+  let p = el.parentElement;
+  while (p.localName!='body') { // walk up the ancestors and expand
+    if (p.classList.contains('section-block') && p.classList.contains('collapsed')) {
+      await p.querySelector('.section-title').click();
+    }
+    p = p.parentElement;
+  }
+  await el.scrollIntoView()
+}
 
 </script>
