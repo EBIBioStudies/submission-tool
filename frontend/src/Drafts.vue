@@ -8,21 +8,19 @@
     </div>
     <table v-if="drafts?.length" class="table table-responsive table-striped table-hover">
       <thead>
-      <th>Draft Key</th>
+      <th style="width: 180px">Draft Key</th>
       <th>Title</th>
-      <th>Actions</th>
+      <th style="width: 75px">Actions</th>
       </thead>
       <tbody>
       <tr v-for="draft in drafts">
         <td>{{ draft.key }}</td>
         <td>{{ getTitle(draft) }}</td>
         <td>
-          <button class="btn btn-link text-primary" @click.stop="editDraft(draft.key)">
-            <font-awesome-icon icon="fa-edit" class="fa-fw"></font-awesome-icon>
-          </button>
-          <button class="btn btn-link icon " @click.stop="deleteDraft(draft.key)">
-            <font-awesome-icon icon="fa-trash-can" class="fa-fw"></font-awesome-icon>
-          </button>
+          <font-awesome-icon role="button" icon="fa-edit" class="text-primary fa-fw"
+                             @click.stop="editDraft(draft.key)"></font-awesome-icon>
+          <font-awesome-icon role="button" icon="fa-trash-can" class="icon fa-fw text-secondary ps-2"
+                             @click.stop="deleteDraft(draft.key)"></font-awesome-icon>
         </td>
       </tr>
       </tbody>
@@ -46,21 +44,20 @@
     </div>
 
 
-<!--    <div class="input-group w-25">-->
-<!--      <input type="text" class="form-control" v-model="accession" placeholder="Enter accession"-->
-<!--             aria-label="Enter accession" autofocus/>-->
-<!--      <router-link :to="`/edit/${accession}`" class="btn btn-primary" role="button">Edit</router-link>-->
-<!--    </div>-->
+    <!--    <div class="input-group w-25">-->
+    <!--      <input type="text" class="form-control" v-model="accession" placeholder="Enter accession"-->
+    <!--             aria-label="Enter accession" autofocus/>-->
+    <!--      <router-link :to="`/edit/${accession}`" class="btn btn-primary" role="button">Edit</router-link>-->
+    <!--    </div>-->
   </div>
 
-  <NewSubmissionModal @select="(e)=>console.log(e)" ></NewSubmissionModal>
+  <NewSubmissionModal @select="(e)=>console.log(e)"></NewSubmissionModal>
 </template>
 
 <script setup>
 import {ref, watchEffect} from 'vue';
 import AuthService from "./services/AuthService";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
-import moment from "moment";
 import router from "./router";
 import axios from "axios";
 import NewSubmissionModal from "@/components/NewSubmissionModal.vue";
@@ -79,7 +76,7 @@ watchEffect(async () => {
 })
 
 const getTitle = (draft) => {
-  return draft.content?.section?.attributes?.find( attr=> attr.name==='Title')?.value || draft.content?.attributes?.find( attr=> attr.name==='Title')?.value
+  return draft.content?.section?.attributes?.find(attr => attr.name === 'Title')?.value || draft.content?.attributes?.find(attr => attr.name === 'Title')?.value
 }
 
 const editDraft = (accno) => {
@@ -93,7 +90,7 @@ const deleteDraft = async (accno) => {
   const response = await axios.delete(
     `${window.config.backendUrl}/api/submissions/drafts/${accno}`,
   );
-  if (response.status===200) {
+  if (response.status === 200) {
     location.href = location.href;
   }
 }

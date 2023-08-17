@@ -35,41 +35,4 @@ const confirm = (title, message, okayLabel = 'Close', isLarge = false, showCance
     })
   })
 }
-
-// fill attributes and subsections of a given section according to the given template
-const fillTemplate = (section, tmpl) => {
-  section.type = tmpl.name
-  // fill attributes
-  section.attributes = [];
-  [...(tmpl?.fieldTypes ?? []), ...(tmpl?.columnTypes ?? [])].forEach(
-    (field) => {
-      const attr = {name: field.name};
-      if (field?.controlType?.defaultValue) {
-        attr.value = field?.controlType?.defaultValue;
-        if (field?.controlType?.values?.filter((value) => value?.valqual != null).length) {
-          attr.valqual = field?.controlType?.values?.find((v) => v.value === attr.value)?.valqual
-        }
-      } else if (field?.controlType?.name === 'select')
-        attr.value = '';
-      section.attributes.push(attr);
-    },
-  );
-
-  // fill sections
-  [...(tmpl?.tableTypes ?? []), ...(tmpl?.sectionTypes ?? [])].forEach(
-    (sectionTemplate) => {
-      const subsection = {type: sectionTemplate.name};
-      if (subsection.type?.toLowerCase()==='file') {
-        if (!section.files) section.files = [];
-        section.files.push(subsection);
-      } else {
-        if (!section.subsections) section.subsections = [];
-        section.subsections.push(subsection);
-      }
-      fillTemplate(subsection, sectionTemplate);
-    },
-  );
-}
-
-
-export default {confirm, fillTemplate}
+export default {confirm}

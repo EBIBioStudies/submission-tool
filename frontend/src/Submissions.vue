@@ -12,7 +12,7 @@
       <th>Title</th>
       <th style="min-width: 120px">Release Date</th>
       <th style="min-width: 120px">Last Modified</th>
-      <th>Actions</th>
+      <th style="min-width: 100px">Actions</th>
       </thead>
       <tbody>
       <tr v-for="submission in submissions">

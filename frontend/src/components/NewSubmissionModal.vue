@@ -1,9 +1,9 @@
 <script setup>
-import {allTemplates, latestTemplates} from "@/templates/templates";
+import {allTemplates, latestTemplates, fillTemplate} from "@/templates/templates";
 import {ref} from "vue";
 import axios from "axios";
 import router from "@/router";
-import utils from '@/utils'
+
 
 const emits = defineEmits(['select'])
 const showMoreWasPressed = ref(false)
@@ -22,7 +22,7 @@ const createNewSubmission = async ()=> {
   };
   const tmpl = thisTemplate.sectionType;
   draft.section = { type: tmpl.name };
-  utils.fillTemplate(draft.section, tmpl);
+  fillTemplate(draft.section, tmpl);
   const response = await axios.post (
     `${window.config.backendUrl}/api/submissions/drafts`,
     draft
@@ -57,14 +57,14 @@ const createNewSubmission = async ()=> {
                      v-model="selectedTemplate"
                      :value="tmpl.name"
               />
-              <label class="input-group" :for="`template_${i}`">
+              <label class="input-group" :for="`template_${i}`"  :title="tmpl.name">
               <span class="input-group-text p-4">
                 <img :alt="tmpl.displayName" style="max-height: 50px"
                      :src="`/src/assets/images/template-icons/${tmpl.title||'Default'}.png`"
                      @error="(e)=>e.target.src='/src/assets/images/template-icons/Default.png'"/>
               </span>
                 <div class="form-control btn-group-vertical">
-                  <div><strong>{{ tmpl.name }}</strong></div>
+                  <div><strong>{{ tmpl.title }}</strong></div>
                   {{ tmpl.description }}
                 </div>
               </label>

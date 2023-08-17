@@ -1,5 +1,5 @@
 <script setup>
-import {computed, getCurrentInstance, ref} from 'vue';
+import {computed, getCurrentInstance, inject, ref} from 'vue';
 import Multiselect from '@vueform/multiselect';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import DatePicker from 'vue-datepicker-next';
@@ -7,7 +7,8 @@ import 'vue-datepicker-next/index.css';
 import FileFolderSelectModal from "@/components/FileFolderSelectModal.vue";
 import Link from "@/components/Link.vue";
 import utils from "@/utils";
-import { inject } from 'vue'
+import Reference from "@/components/Reference.vue";
+
 const hasValidated = inject('hasValidated')
 
 const props = defineProps({
@@ -17,7 +18,7 @@ const props = defineProps({
   'isTableAttribute': Boolean
 });
 const emits = defineEmits(['createTag', 'deleteTag', 'deleteAttribute']);
-const attributeId = 'attribute-'+getCurrentInstance().uid;
+const attributeId = 'attribute-' + getCurrentInstance().uid;
 const thisAttribute = ref(props.attribute);
 const thisMultiValuedAttribute = ref(
   props.parent
@@ -148,7 +149,8 @@ const showHelp = () => {
         icon="fa-check"
       ></font-awesome-icon>
       <span class="text-muted" v-if="fieldType"><span class="attribute-name">{{ fieldType.name }}</span>
-        <span class="text-danger" v-if="fieldType?.display==='required' || fieldType?.controlType?.minlength >0">*</span>
+        <span class="text-danger"
+              v-if="fieldType?.display==='required' || fieldType?.controlType?.minlength >0">*</span>
       </span>
       <span v-else>
       <input
@@ -156,7 +158,7 @@ const showHelp = () => {
         class="form-control attribute-name"
         v-model="thisAttribute.name"
         placeholder="Attribute name"
-        :class="{'is-invalid':errors.length}"
+        :class="{'is-invalid':errors?.length}"
         style="margin-left: -1em"
       />
     </span>
@@ -176,6 +178,7 @@ const showHelp = () => {
       :class="{'is-invalid':errors && hasValidated}"
       :required="fieldType?.display==='required' || fieldType?.controlType?.minlength >0"
     ></textarea>
+
     <!-- select  -->
     <Multiselect
       v-else-if="
@@ -263,6 +266,15 @@ const showHelp = () => {
       :placeholder="fieldType?.controlType?.placeholder"
     />
 
+    <!-- reference  -->
+    <Reference
+      v-else-if="fieldType?.controlType?.name === 'reference'"
+      v-model="thisAttribute.value"
+      :class="{'is-invalid':errors && hasValidated}"
+      :fieldType="fieldType"
+    >
+    </Reference>
+
     <!-- default / text -->
     <input
       v-else
@@ -287,7 +299,7 @@ const showHelp = () => {
       ></font-awesome-icon>
     </div>
   </div>
-    <div class="pb-2 ps-2 text-danger text-end small" v-if="errors?.length && hasValidated">
+  <div class="pb-2 ps-2 text-danger text-end small" v-if="errors?.length && hasValidated">
     {{ errors }}
     <font-awesome-icon :icon="['fas','arrow-turn-up']" transform="shrink-6 up-2"/>
   </div>

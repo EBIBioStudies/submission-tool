@@ -64,6 +64,7 @@ const template = ref({});
 const isSaving = ref(true);
 const hasValidated = ref(false);
 provide('hasValidated', hasValidated)
+provide('submission', submission)
 
 const submissionComponent = ref({})
 

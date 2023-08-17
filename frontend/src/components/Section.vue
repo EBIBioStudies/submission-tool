@@ -4,7 +4,7 @@ import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import Attributes from '@/components/Attributes.vue';
 import SectionTable from '@/components/SectionTable.vue';
 import SubsectionMenu from "@/components/SubsectionMenu.vue";
-import utils from "@/utils";
+import {fillTemplate} from "@/templates/templates";
 
 
 const props = defineProps(['section', 'sectionType', 'depth']);
@@ -56,7 +56,7 @@ const addSubsection = async (aSection, i, type) => {
   aSection.subsections = aSection.subsections || [];
   const obj = {}
   if (type != null)
-    utils.fillTemplate(obj, type)
+    fillTemplate(obj, type)
   else {
     obj.accno = (props.section.accno ?? Date.now()) + '-' + (props.section.subsections.length + 1);
     obj.type = '';
@@ -82,7 +82,7 @@ const addTable = async (aSection, i, type) => {
   aSection.subsections = aSection.subsections || [];
   const obj = {}
   if (type != null)
-    utils.fillTemplate(obj, type)
+    fillTemplate(obj, type)
   else {
     obj.accno = (props.section.accno ?? Date.now()) + '-' + (props.section.subsections.length + 1);
     obj.type = 'Table';
@@ -210,7 +210,7 @@ defineExpose({errors, thisSection});
     </div>
     <!-- section content -->
     <transition name="slide">
-      <div :class="{'visually-hidden': isCollapsed}">
+      <div :class="{'visually-hidden3': isCollapsed}">
         <div class="has-child-section ms-3 slide-in">
 
           <!-- attributes -->
