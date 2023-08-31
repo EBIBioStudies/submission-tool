@@ -10,7 +10,7 @@
     <div class="row">
       <div class="col-1"></div>
       <div class="col-8">
-        <Submission :submission="submission" :template="template" ref="submissionComponent"/>
+        <Submission :submission="submission" :template="template" :accession="props.accession" ref="submissionComponent"/>
       </div>
       <div id="json" class="json col-3"></div>
     </div>
@@ -18,19 +18,31 @@
     <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1"
          id="offcanvasErrors" aria-labelledby="offcanvasScrollingLabel">
       <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="offcanvasScrollingLabel">Errors</h5>
+        <h5 class="offcanvas-title" id="offcanvasScrollingLabel">Validation</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
       </div>
       <div class="offcanvas-body">
-        <p>Please fix these errors before submitting</p>
-        <ul class="list-group">
-          <template v-for="error in validationErrors">
-            <li v-if="error?.control?.errors?.length" role="button"
-                class="list-group-item list-group-item-action" @click="expandAndFocus(error?.element)">
-              <strong>{{ error?.element?.querySelector('.attribute-name').innerText }}:</strong> {{ error.errorMessage }}
-            </li>
-          </template>
-        </ul>
+        <p v-if="validationErrors?.filter((e)=>e.control.errors).length">Please fix these errors before submitting.
+          <ul class="list-group">
+            <template v-for="error in validationErrors">
+              <li v-if="error?.control?.errors?.length" role="button"
+                  class="list-group-item list-group-item-action" @click="expandAndFocus(error?.element)">
+                <strong>{{ error?.element.id}}:</strong> {{
+                  error.errorMessage
+                }}
+              </li>
+            </template>
+          </ul>
+        </p>
+        <p v-else>
+          <div class="pb-2">
+            <font-awesome-icon icon="check" class="text-success"/>
+            All good to go!
+          </div>
+          <div class="text-center">
+            <button class="btn btn-primary text-center" type="button" @click="submitDraft()">Close and Submit</button>
+          </div>
+        </p>
       </div>
     </div>
 
@@ -47,7 +59,7 @@
 </style>
 
 <script setup>
-import {computed, onMounted, ref, watch, watchEffect} from 'vue';
+import {computed, onMounted, provide, ref, watch, watchEffect} from 'vue';
 
 import Default from './templates/Default.json';
 import Submission from './components/Submission.vue';
@@ -56,7 +68,6 @@ import {allTemplates} from "@/templates/templates";
 import {Offcanvas} from "bootstrap";
 import axios from "axios";
 import utils from "@/utils";
-import { provide } from 'vue'
 
 const props = defineProps(['accession']);
 const submission = ref({});
@@ -71,11 +82,16 @@ const submissionComponent = ref({})
 let offCanvasErrors = null;
 let validationErrors = ref([]);
 
-const submitDraft = () => {
+const submitDraft = async () => {
   hasValidated.value = true;
   validationErrors.value = submissionComponent.value?.errors;
+
   if (validationErrors.value.length) {
     offCanvasErrors.show();
+  } else {
+    offCanvasErrors.hide();
+    const response = await axios.post(`${window.config.backendUrl}/api/submissions/drafts/${props.accession}/submit`);
+    console.log(response)
   }
 }
 
@@ -150,8 +166,8 @@ watchEffect(async () => {
         (t) => t?.title?.toLowerCase() === collection?.value?.toLowerCase() + '.v1',
       );
     }
-    console.log(`Using template ${tmpl.name}`)
     template.value = tmpl ?? Default;
+    console.log(`Using template ${template?.value?.name}`)
   } else {
     //TODO: display error
     console.log('No such submission')
@@ -191,7 +207,7 @@ watch(updatedSubmission, async (sub) => {
 
 const expandAndFocus = async (el) => {
   let p = el.parentElement;
-  while (p.localName!='body') { // walk up the ancestors and expand
+  while (p.localName != 'body') { // walk up the ancestors and expand
     if (p.classList.contains('section-block') && p.classList.contains('collapsed')) {
       await p.querySelector('.section-title').click();
     }

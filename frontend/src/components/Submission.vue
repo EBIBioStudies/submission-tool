@@ -2,7 +2,7 @@
 import StudySection from './StudySection.vue';
 import {computed, ref} from "vue";
 
-defineProps(['submission', 'template']);
+defineProps(['submission', 'template', 'accession']);
 const studyComponent = ref(null)
 
 const errors = computed(() => studyComponent.value.errors)
@@ -15,13 +15,8 @@ defineExpose({errors});
          :style="`background-color: ${template?.sectionType?.banner?.backgroundColor}`">
       <img height="70" :src="'/src/assets/'+template?.sectionType?.banner?.src"/>
     </div>
-    <div class="accession">{{ submission.accno }}</div>
-    <div v-for="(attribute, i) in submission.attributes" :key="i">
-      <div>
-        {{ attribute.name }} :
-        {{ attribute.value }}
-      </div>
-    </div>
+    <h5 class="text-success">{{ accession }}</h5>
+    <h4>{{submission?.attributes?.find(a=>a.name.toLowerCase()==='title').value}}&nbsp;</h4>
     <StudySection
       :section="submission.section"
       :sectionType="template?.sectionType"

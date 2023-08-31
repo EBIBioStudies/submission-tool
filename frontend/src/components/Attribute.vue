@@ -26,10 +26,7 @@ const thisMultiValuedAttribute = ref(
       // save the original index -- needed when deleting
       return {index: i, ...a};
     })
-    ?.filter(
-      (a) =>
-        a.name === thisAttribute.value.name && thisAttribute.value.value !== '',
-    ),
+    ?.filter((a) => a.name === thisAttribute.value.name && thisAttribute.value.value !== ''),
 );
 
 function isString(val) {
@@ -105,14 +102,14 @@ const errors = computed(() => {
   //validate text fields
   if (thisAttribute?.value?.type === 'file') {
     if (props.fieldType?.display === 'required' && (!thisAttribute?.value?.path || thisAttribute?.value?.path === '')) {
-      _errors.push(`Required`);
+      _errors.push(`File required`);
     }
   } else if (thisAttribute?.value?.hasOwnProperty('url')) {
     if (props.fieldType?.display === 'required' && (!thisAttribute?.value?.url || thisAttribute?.value?.url === '')) {
-      _errors.push(`Required`);
+      _errors.push(`Link required`);
     }
   } else if (props.fieldType?.display === 'required' && (!thisAttribute.value?.value || thisAttribute?.value?.value?.trim() === '')) {
-    _errors.push(`Required`);
+    _errors.push(`${thisAttribute?.value?.name} required`);
   }
   if (props.fieldType?.controlType?.minlength > (thisAttribute.value?.value?.trim().length ?? 0)) {
     _errors.push(`Please enter at least ${props.fieldType?.controlType?.minlength} characters. `)

@@ -4,6 +4,7 @@
   "description": "General submission",
   "sectionType": {
     "name": "Study",
+    "display": "required",
     "tableGroups": [
       [
         "Link",

@@ -1,10 +1,10 @@
 <script setup>
-import {ref} from 'vue';
+import {computed, ref} from 'vue';
 import draggable from 'vuedraggable';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import Attribute from "@/components/Attribute.vue";
 
-const props = defineProps(['rows', 'depth', 'sectionType', 'sectionSubType']);
+const props = defineProps(['rows', 'depth', 'sectionType', 'sectionSubType', 'parent']);
 const emits = defineEmits([
   'rowsReordered',
   'columnUpdated',
@@ -12,10 +12,11 @@ const emits = defineEmits([
   'delete'
 ]);
 const thisSection = ref(props.rows);
-const rowSectionType = props.rows && props.rows[0].type ? ('' + props.rows[0].type) : '';
+const rowSectionType = props.rows && props.rows[0]?.type ? ('' + props.rows[0].type) : '';
 const tableType = ref(props.sectionSubType ?? rowSectionType)
 const theseRows = ref(Array.isArray(props.rows[0]) ? props.rows[0] : props.rows);
 const headerMap = new Map();
+
 if (tableType.value === 'Files') {
   headerMap.set('File', [])
 } else if (tableType.value === 'Links') {
@@ -107,6 +108,7 @@ const addRow = (event) => {
       return;
     row.attributes.push({name: header, value: ''});
   });
+  debugger
   theseRows.value.push(row);
 };
 
@@ -132,31 +134,32 @@ const updateColumnName = (event, index) => {
 const isCollapsed = ref((props?.depth ?? 0) >= 2);
 const toggle = () => (isCollapsed.value = !isCollapsed.value);
 
-const attributesComponent = ref([]);
+const attributeRefs = ref([]);
 const headerComponent = ref([])
-const isValid = ref(true);
-const validate = () => {
-  let v = true;
-  attributesComponent?.value.forEach(a => {
-    a.validate();
-    v = v && a.value?.isValid;
+
+const errors = computed(() => {
+  const _errors = []
+  attributeRefs?.value.forEach((a) => {
+    const err = a.errors;
+    if (err)  _errors.push ( {errorMessage: err,control: a,  element: document.getElementById(a.attributeId) })
   });
-  isValid.value = !!v;
-}
-defineExpose({validate, isValid, thisSection});
+  return _errors;
+});
+
+defineExpose({errors, thisSection});
 
 </script>
 <template>
   <div class="section-block ">
     <!-- section table title -->
     <div>
-      <span :class="[depth > 0 ? 'branch' : 'branch spacer']"></span>
+      <span :class="[depth > 0  ? 'branch' : 'branch spacer']"></span>
       <span class="input-group-text text-start btn btn-lg ps-1 mt-2 section-title" @click="toggle()">
         <font-awesome-icon class="section-control"
                            :icon="'fa-caret-' + (isCollapsed ? 'right' : 'down')"/>
-        <span v-if="sectionType?.name || props.sectionSubType ==='Files' || props.sectionSubType==='Links' "
+        <span v-if="sectionType?.name || props.sectionSubType ==='Files' || props.sectionSubType==='Links'"
               class="ms-2"
-              :data-bs-toggle="sectionType?.description ? 'tooltip' : false"
+              :data-bs-toggle="sectionType?.description ? 'tooltip' : false" data-bs-html="true"
               :data-bs-title="sectionType?.description"><font-awesome-icon v-if="sectionType?.icon" class="icon"
                                                                            :icon="sectionType?.icon"/>{{
             tableType
@@ -206,7 +209,7 @@ defineExpose({validate, isValid, thisSection});
                   :parent="row.attributes"
                   :isTableAttribute="true"
                   @deleteAttribute="(v) => emits('deleteAttribute', index)"
-                  ref="attributesComponent"
+                  ref="attributeRefs"
                 />
               </td>
               <td class="grip">

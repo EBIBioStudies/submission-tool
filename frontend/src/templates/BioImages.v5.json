@@ -35,13 +35,6 @@
         }
       },
       {
-        "name": "#2 Req. & not in pagetab",
-        "display": "required"
-      },
-      {
-        "name": "Not in pagetab and not required at position 3"
-      },
-      {
         "name": "ReleaseDate",
         "title": "Release Date",
         "icon": "fa-calendar-alt",

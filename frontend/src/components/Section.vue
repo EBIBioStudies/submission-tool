@@ -5,6 +5,7 @@ import Attributes from '@/components/Attributes.vue';
 import SectionTable from '@/components/SectionTable.vue';
 import SubsectionMenu from "@/components/SubsectionMenu.vue";
 import {fillTemplate} from "@/templates/templates";
+import utils from "@/utils";
 
 
 const props = defineProps(['section', 'sectionType', 'depth']);
@@ -29,25 +30,20 @@ const deleteTag = (msg) => deleteAttribute(msg.index);
 const attributesRefreshKey = ref(0);
 const sectionsRefreshKey = ref(0);
 
-
-const getSectionType = (aSubsection) => {
-  const subsection = Array.isArray(aSubsection) ? aSubsection[0] : aSubsection;
+const subSectionTypeMap = new Map();
+props.section?.subsections?.forEach((s) => {
+  const subsection = Array.isArray(s) ? s[0] : s;
+  const typeName = subsection?.type?.toLowerCase() === 'author' ? 'contact' : subsection?.type?.toLowerCase();
   const subsections = [
     ...(props.sectionType?.sectionTypes ?? []),
     ...(props.sectionType?.tableTypes ?? []),
   ];
-  return subsections.find(
-    (f) => f?.name?.toLowerCase() === subsection?.type?.toLowerCase(),
+  const type = subsections.find(
+    (f) => f?.name?.toLowerCase() === typeName,
   );
-};
+  subSectionTypeMap.set(s, type)
+});
 
-const canRender = (sec) => {
-  return (
-    ['author', 'organisation', 'organization'].indexOf(
-      sec.type?.toLowerCase(),
-    ) < 0
-  );
-};
 const isCollapsed = ref((props?.depth ?? 0) >= 2);
 
 // children are not allowed to change properties of a parent
@@ -90,7 +86,6 @@ const addTable = async (aSection, i, type) => {
   }
 
   aSection.subsections.splice(i, 0, [obj]);
-
   sectionsRefreshKey.value += 1
 
   // wait till the UI is updated and the focus the first attribute name
@@ -106,6 +101,7 @@ const addTable = async (aSection, i, type) => {
 };
 
 const deleteSubSection = async (someSubSections, index) => {
+  if (!await utils.confirm("Delete Section", `Do you want to delete the section ${someSubSections[index].type}?`, "Delete")) return
   thisSection.value.subsections = someSubSections.filter((v, i) => i !== index);
   sectionsRefreshKey.value += 1;
 };
@@ -160,13 +156,27 @@ const updateColumnName = (subsection, update) => {
   sectionsRefreshKey.value += 1;
 };
 
-const errors = computed( () => {
+const renderedRowSections = new Set();
+const getSectionsWithRowsAsSections = (type) => {
+  renderedRowSections.add(type?.toLowerCase());
+  const combined = thisSection?.value?.subsections?.filter(s => s?.type?.toLowerCase() === type.toLowerCase() && subSectionTypeMap.get(s)?.rowAsSection)
+  return combined
+}
+
+const canRender = (sec) => {
+  return ['author', 'organisation', 'organization'].indexOf(sec.type?.toLowerCase()) < 0;
+}
+
+const errors = computed(() => {
   let _errors = [...attributesComponent.value?.errors]
   // validate subsections
-  subsectionsRef?.value.forEach(subsec => {
-    if (!canRender(subsec.thisSection)) return
-    _errors = [..._errors, ...subsec.errors]
-  });
+  // subsectionsRef?.value.forEach(subsec => {
+  //   if (!canRender(subsec.thisSection)) return
+  //   _errors = [..._errors, ...subsec.errors]
+  // });
+  if (sectionFilesRef) {
+    _errors = [..._errors, ...sectionFilesRef?.value?.errors ?? []]
+  }
   return _errors
 });
 
@@ -196,15 +206,15 @@ defineExpose({errors, thisSection});
             type="text"
             placeholder="Enter section type"
             v-model="thisSection.type"/>
-          <font-awesome-icon
-            class="icon ps-2"
-            role="button"
-            size="sm"
-            @click="$emit('delete')"
-            @click.stop=""
-            icon="fa-trash"
-          ></font-awesome-icon
-          ></span>
+        </span>
+      </span>
+      <span v-if="sectionType?.display!='required'" class="mt-2 btn btn-sm btn-delete" role="button">
+        <font-awesome-icon
+          role="button"
+          @click="$emit('delete')"
+          @click.stop=""
+          icon="fa-trash"
+        ></font-awesome-icon>
       </span>
       <span v-if="depth===0" class="float-end text-secondary" style="font-size: 8pt; padding-top:35px">* Required</span>
     </div>
@@ -245,36 +255,12 @@ defineExpose({errors, thisSection});
             <!--            />-->
 
             <!-- Subsections start -->
-            <SectionTable
-              v-if="section.files"
-              :rows="section.files"
-              :depth="props.depth+1"
-              :sectionType="getSectionType(section.files)"
-              sectionSubType="Files"
-              @rowsReordered="(e) => rowsReordered(e, section.files)"
-              @columnUpdated="(msg) => updateColumnName(section.files, msg)"
-              @columnsReordered="(msg) => sectionsRefreshKey+= 1"
-              @delete="deleteSubSection(section.files, 0)"
-              ref="sectionFilesRef"
-            />
-            <SectionTable
-              v-if="section.links"
-              :rows="section.links"
-              :depth="props.depth+1"
-              :sectionType="getSectionType(section.links)"
-              sectionSubType="Links"
-              @rowsReordered="(e) => rowsReordered(e, section.links)"
-              @columnUpdated="(msg) => updateColumnName(section.links, msg)"
-              @columnsReordered="(msg) => sectionsRefreshKey+= 1"
-              @delete="deleteSubSection(section.links, 0)"
-              ref="sectionLinksRef"
-            />
-            <div v-for="(subsection, i) in section.subsections" key="i" ref="sectionsComponent">
+            <div v-for="(subsection, i) in section.subsections" :key="i" ref="sectionsComponent">
               <!-- section -->
               <Section
                 v-if="!Array.isArray(subsection)"
                 :section="subsection"
-                :sectionType="getSectionType(subsection)"
+                :sectionType="subSectionTypeMap.get(subsection)"
                 :depth="props.depth + 1"
                 @delete="deleteSubSection(section.subsections, i)"
                 @addTable="(msg)=>addTable(msg.section, msg.instance)"
@@ -285,15 +271,15 @@ defineExpose({errors, thisSection});
                 v-else
                 :rows="subsection"
                 :depth="props.depth+1"
-                :sectionType="getSectionType(subsection)"
-                sectionSubType="Table"
+                :sectionType="subSectionTypeMap.get(subsection)"
+                :sectionSubType="subSectionTypeMap.get(subsection)?.name"
+                :parent = section
                 @rowsReordered="(e) => rowsReordered(e, subsection)"
                 @columnUpdated="(msg) => updateColumnName(subsection, msg)"
                 @columnsReordered="(msg) => sectionsRefreshKey+= 1"
                 @delete="deleteSubSection(section.subsections, i)"
                 ref="sectionTablesRef"
               />
-
               <SubsectionMenu v-if="canRender(subsection)"
                               :sectionType="sectionType"
                               @newAttribute="addAttribute(section)"
@@ -303,7 +289,32 @@ defineExpose({errors, thisSection});
 
             </div>
             <!-- Subsections end -->
-
+            <!-- Files -->
+            <SectionTable
+              v-if="section.files"
+              :rows="section.files"
+              :depth="props.depth+1"
+              :sectionType="subSectionTypeMap.get(section.files)"
+              sectionSubType="Files"
+              @rowsReordered="(e) => rowsReordered(e, section.files)"
+              @columnUpdated="(msg) => updateColumnName(section.files, msg)"
+              @columnsReordered="(msg) => sectionsRefreshKey+= 1"
+              @delete="deleteSubSection(section.files, 0)"
+              ref="sectionFilesRef"
+            />
+            <!-- Links -->
+            <SectionTable
+              v-if="section.links"
+              :rows="section.links"
+              :depth="props.depth+1"
+              :sectionType="subSectionTypeMap.get(section.links)"
+              sectionSubType="Links"
+              @rowsReordered="(e) => rowsReordered(e, section.links)"
+              @columnUpdated="(msg) => updateColumnName(section.links, msg)"
+              @columnsReordered="(msg) => sectionsRefreshKey+= 1"
+              @delete="deleteSubSection(section.links, 0)"
+              ref="sectionLinksRef"
+            />
           </div>
         </div>
       </div>
@@ -322,4 +333,13 @@ defineExpose({errors, thisSection});
   color: #bcbcbc;
 }
 
+.btn-delete {
+  padding-top: 7px;
+  opacity: 0.6;
+}
+
+.btn-delete:hover {
+  color: var(--bs-danger);
+  opacity: 1;
+}
 </style>
