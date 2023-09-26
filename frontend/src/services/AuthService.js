@@ -12,8 +12,9 @@ const login = (credentials) => {
       .then(async (response) => {
         if (response.status === 200) {
           const json = response.data
-          localStorage.setItem(USER_KEY, JSON.stringify(json));
           user.value = json
+          axios.defaults.headers.common['x-session-token'] =  json?.sessid; //axios config isn't reactive
+          localStorage.setItem(USER_KEY, JSON.stringify(json));
           resolve(json);
         }
         resolve(null)
@@ -21,6 +22,7 @@ const login = (credentials) => {
   });
 }
 const logout = () => {
+  axios.defaults.headers.common['x-session-token'] =  null; //axios config isn't reactive
   localStorage.removeItem(USER_KEY);
   user.value= {}
 }

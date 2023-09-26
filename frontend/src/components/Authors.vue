@@ -18,6 +18,19 @@ const authors = computed(() => {
         <div class="author">{{ author?.attributes?.find(a => a?.name?.toLowerCase() === 'name').value }}</div>
       </template>
     </div>
+    <div>
+      <SectionTable
+        :rows="authors"
+        :depth="2"
+        :sectionType=sectionType
+        sectionSubType="Contacts"
+        :isTableAttribute="true"
+        @rowsReordered=""
+        @columnUpdated=""
+        @columnsReordered=""
+        @delete=""
+      />
+    </div>
   </div>
 </template>
 

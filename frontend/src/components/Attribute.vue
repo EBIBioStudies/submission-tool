@@ -188,7 +188,7 @@ const showHelp = () => {
       class="form-control"
       :searchable="true"
       :options="singleSelectValues"
-      :class="{'is-invalid':errors && hasValidated}"
+      :class="{'is-invalid':errors && hasValidated, 'form-control-sm':isTableAttribute}"
       :allow-empty="false"
       @change="onChangeSelect"
     >
@@ -213,7 +213,7 @@ const showHelp = () => {
       @create="onCreateTag"
       @deselect="onDeleteTag"
       @select="onCreateTag"
-      :class="{'is-invalid':errors && hasValidated}"
+      :class="{'is-invalid':errors && hasValidated , 'form-control-sm':isTableAttribute}"
       object
     >
       <template v-slot:tag="{ option, handleTagRemove, disabled }">
@@ -317,6 +317,14 @@ label.attribute {
 
 .multiselect-tags {
   padding-left: 0 !important;
+}
+
+.multiselect-wrapper, .multiselect  {
+  min-height: calc( 1.2rem + calc(var(--bs-border-width) * 2)) !important;
+}
+
+.multiselect.form-control.form-control-sm  {
+  font-size: 0.875em !important;
 }
 
 .multiselect-tag {

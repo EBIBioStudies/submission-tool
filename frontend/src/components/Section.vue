@@ -220,7 +220,7 @@ defineExpose({errors, thisSection});
     </div>
     <!-- section content -->
     <transition name="slide">
-      <div :class="{'visually-hidden3': isCollapsed}">
+      <div :class="{'visually-hidden': isCollapsed}">
         <div class="has-child-section ms-3 slide-in">
 
           <!-- attributes -->

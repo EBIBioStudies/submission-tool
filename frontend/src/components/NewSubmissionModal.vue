@@ -3,6 +3,7 @@ import {allTemplates, latestTemplates, fillTemplate} from "@/templates/templates
 import {ref} from "vue";
 import axios from "axios";
 import router from "@/router";
+import AuthService from "@/services/AuthService";
 
 
 const emits = defineEmits(['select'])
@@ -23,6 +24,24 @@ const createNewSubmission = async ()=> {
   const tmpl = thisTemplate.sectionType;
   draft.section = { type: tmpl.name };
   fillTemplate(draft.section, tmpl);
+  const author =  {
+    accno : "author-1",
+    type : "Author",
+    attributes : [ {
+      name : "Name",
+      value : AuthService.user?.value?.fullname
+    }, {
+      name : "E-mail",
+      value : AuthService.user?.value?.email
+    }, {
+      name : "Role",
+      value : "submitter"
+    }]
+  };
+  if (AuthService.user?.value?.orcid) {
+    author.attributes.push({name:"ORCID", value:AuthService.user?.value?.orcid})
+  }
+  draft.section.subsections.push(author);
   const response = await axios.post (
     `${window.config.backendUrl}/api/submissions/drafts`,
     draft

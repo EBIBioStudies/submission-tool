@@ -47,6 +47,7 @@ export const fillTemplate = (section, tmpl) => {
   // fill sections
   [...(tmpl?.tableTypes ?? []), ...(tmpl?.sectionTypes ?? [])].forEach(
     (sectionTemplate) => {
+      if (sectionTemplate?.name==='Contact') return
       const subsection = {type: sectionTemplate.name};
       if (subsection.type?.toLowerCase()==='file') {
         if (!section.files) section.files = [];

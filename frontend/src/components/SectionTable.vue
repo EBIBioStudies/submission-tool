@@ -108,7 +108,6 @@ const addRow = (event) => {
       return;
     row.attributes.push({name: header, value: ''});
   });
-  debugger
   theseRows.value.push(row);
 };
 

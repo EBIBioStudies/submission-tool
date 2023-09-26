@@ -6,31 +6,38 @@
         <li class="nav-item">
           <router-link :to="`/`" class="nav-link"
                        :class="{ active:router.currentRoute.value.name==='Submissions' || router.currentRoute.value.name==='Sign In' }">
+            <font-awesome-icon icon="fa-cloud-arrow-up"/>
             Submissions
           </router-link>
         </li>
         <li v-if="AuthService.isAuthenticated()" class="nav-item">
           <router-link :to="`/drafts`" class="nav-link"
                        :class="{ active:router.currentRoute.value.name==='Drafts' }">
+            <font-awesome-icon icon="fa-tags"/>
             Drafts
           </router-link>
         </li>
         <li v-if="AuthService.isAuthenticated()" class="nav-item">
           <router-link :to="`/files`" class="nav-link"
-                       :class="{ active:router.currentRoute.value.name==='Files'  }">Files
+                       :class="{ active:router.currentRoute.value.name==='Files'  }">
+            <font-awesome-icon icon="fa-box-archive"/>
+            Files
           </router-link>
         </li>
         <li class="nav-item">
           <router-link :to="`/help`" class="nav-link"
-                       :class="{ active:router.currentRoute.value.name==='Help'  }">Help
+                       :class="{ active:router.currentRoute.value.name==='Help'  }">
+            <font-awesome-icon icon="fa-circle-question"/>
+            Help
           </router-link>
         </li>
-        <li v-if="AuthService.isAuthenticated()" class="nav-item dropdown" data-bs-toggle="tooltip"
-            :data-bs-title="AuthService.user.value.fullname" icon="fa-user-circle">
+        <li v-if="AuthService.isAuthenticated()" class="dropdown" icon="fa-user-circle">
           <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">
             <font-awesome-icon icon="fa-user-circle" class="fa-lg"></font-awesome-icon>
           </a>
-          <ul class="dropdown-menu dropdown-menu-end ">
+          <ul class="dropdown-menu">
+            <li class="dropdown-header">{{ AuthService.user.value.fullname }}</li>
+            <li><a class="dropdown-item" href="#" >Profile</a></li>
             <li><a class="dropdown-item" href="#" @click="logout">Logout</a></li>
           </ul>
         </li>
@@ -48,15 +55,18 @@ import {onMounted} from "vue";
 import {Tooltip} from "bootstrap";
 
 const router = useRouter();
+let tooltips = null;
+
 const logout = async () => {
   AuthService.logout()
-  await router.push('/signin')
+  await router.push('/')
 }
 
 onMounted(() => {
-  new Tooltip(document.body, {
+  tooltips = new Tooltip(document.body, {
     selector: "[data-bs-toggle='tooltip']",
-    delay: { "hide": 600 },
+    delay: {"hide": 300},
+    trigger: 'mouseover'
   })
   const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
   const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl))
@@ -72,4 +82,12 @@ onMounted(() => {
 .nav-link {
   color: white
 }
+
+.nav-link svg {
+  color: white
+}
+.active svg {
+  color:#75C8EC;
+}
 </style>
+
