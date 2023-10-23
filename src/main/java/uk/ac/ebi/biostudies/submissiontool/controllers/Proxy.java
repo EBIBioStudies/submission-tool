@@ -78,7 +78,7 @@ public class Proxy {
 //    }
 
     @CrossOrigin(origins = "http://localhost:5173")
-    @RequestMapping(value = "/api/**", method = {RequestMethod.GET, RequestMethod.DELETE, RequestMethod.POST, RequestMethod.PUT})
+    @RequestMapping(value = "/api/**", method = {RequestMethod.GET, RequestMethod.DELETE, RequestMethod.POST, RequestMethod.PUT, RequestMethod.OPTIONS})
     public void getResponse(@RequestParam(required = false) MultipartFile files,
                             @RequestBody(required = false) String requestBody,
                             HttpServletRequest request,
