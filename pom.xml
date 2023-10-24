@@ -88,7 +88,7 @@
                             <goal>install-node-and-npm</goal>
                         </goals>
                         <configuration>
-                            <nodeVersion>v20.4.0</nodeVersion>
+                            <nodeVersion>v21.0.0</nodeVersion>
                         </configuration>
                     </execution>
                     <execution>
