@@ -13,7 +13,7 @@ defineExpose({errors});
   <div>
     <div v-if="template?.sectionType?.banner" class="card"
          :style="`background-color: ${template?.sectionType?.banner?.backgroundColor}`">
-      <img height="70" :src="'/src/assets/'+template?.sectionType?.banner?.src"/>
+      <img height="70" :src="`${template?.sectionType?.banner?.src}`"/>
     </div>
     <h5 class="text-success">{{ accession }}</h5>
     <h4>{{submission?.attributes?.find(a=>a.name.toLowerCase()==='title').value}}&nbsp;</h4>

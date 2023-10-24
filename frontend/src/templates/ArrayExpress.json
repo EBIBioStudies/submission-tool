@@ -8,7 +8,7 @@
     "displayAnnotations": true,
     "display": "readonly",
     "banner": {
-      "src": "images/ae-logo-64.svg",
+      "src": "/images/ae-logo-64.svg",
       "alt": "ArrayExpress logo",
       "backgroundColor": "rgb(94, 140, 192)"
     },

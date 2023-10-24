@@ -30,6 +30,7 @@ import java.util.Objects;
 public class Proxy {
 
     public static final String SESSION_HEADER = "x-session-token";
+    private static final String[] ALLOWED_URLS = {"/api/login", "/api/logout"};
 
     private final Environment environments;
     private final RestTemplate restTemplate;
@@ -78,7 +79,14 @@ public class Proxy {
 //    }
 
     @CrossOrigin(origins = "http://localhost:5173")
-    @RequestMapping(value = "/api/**", method = {RequestMethod.GET, RequestMethod.DELETE, RequestMethod.POST, RequestMethod.PUT, RequestMethod.OPTIONS})
+    @RequestMapping(value = {
+            "/api/files/**",
+            "/api/submissions/drafts/**",
+            "/api/submissions",
+            "/api/auth/login",
+            "/api/auth/logout"
+
+    }, method = {RequestMethod.GET, RequestMethod.DELETE, RequestMethod.POST, RequestMethod.PUT, RequestMethod.OPTIONS})
     public void getResponse(@RequestParam(required = false) MultipartFile files,
                             @RequestBody(required = false) String requestBody,
                             HttpServletRequest request,

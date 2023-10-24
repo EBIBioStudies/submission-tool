@@ -79,8 +79,8 @@ const createNewSubmission = async ()=> {
               <label class="input-group" :for="`template_${i}`"  :title="tmpl.name">
               <span class="input-group-text p-4">
                 <img :alt="tmpl.displayName" style="max-height: 50px"
-                     :src="`/src/assets/images/template-icons/${tmpl.title||'Default'}.png`"
-                     @error="(e)=>e.target.src='/src/assets/images/template-icons/Default.png'"/>
+                     :src="`/images/template-icons/${tmpl.title||'Default'}.png`"
+                     @error="(e)=>e.target.src='/images/template-icons/Default.png'"/>
               </span>
                 <div class="form-control btn-group-vertical">
                   <div><strong>{{ tmpl.title }}</strong></div>

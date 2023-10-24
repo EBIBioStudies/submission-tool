@@ -11,6 +11,7 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-  outputDir: 'target/dist',
-  assetsDir: 'static',
+  build : {
+    chunkSizeWarningLimit: 1024000
+  }
 });
