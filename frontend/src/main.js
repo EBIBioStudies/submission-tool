@@ -19,7 +19,7 @@ const app = createApp(App);
 app.use(router);
 app.component('font-awesome-icon', FontAwesomeIcon);
 axios.defaults.headers.common['x-session-token'] =  AuthService.user?.value?.sessid
-window.config = config
+window.config = location.host==='localhost:5173' ? config : {backendUrl:''}
 
 app.mount('#app')
 

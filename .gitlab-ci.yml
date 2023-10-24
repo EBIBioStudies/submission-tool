@@ -24,9 +24,9 @@ deploy:
     - chmod 700 ~/.ssh/id_rsa
     - host0=`awk '{print $1}' <<< $host`
     - scp -oStrictHostKeyChecking=no ./target/*.jar "$user"@"$host0":"$deployDirectory"
-    - cp "$application_properties" application.properties
-    - echo -e "\ngit.commit.id.abbrev=$CI_COMMIT_SHORT_SHA" >> application.properties
-    - scp application.properties "$user"@"$host0":"$deployDirectory"/application.properties
+    - cp "$application_yml" application.yml
+    - echo -e "\ngit.commit.id.abbrev=$CI_COMMIT_SHORT_SHA" >> application.yml
+    - scp application.yml "$user"@"$host0":"$deployDirectory"/application.yml
     - scp "$restart_script" "$user"@"$host0":"$deployDirectory"/restart.sh
 
     - >
