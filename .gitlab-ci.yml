@@ -25,7 +25,8 @@ deploy:
     - host0=`awk '{print $1}' <<< $host`
     - scp -oStrictHostKeyChecking=no ./target/*.jar "$user"@"$host0":"$deployDirectory"
     - cp "$application_yml" application.yml
-    - echo -e "\nversion: $CI_COMMIT_SHORT_SHA" >> application.yml
+    - |
+      echo -e "\nversion: $CI_COMMIT_SHORT_SHA" >> application.yml
     - scp application.yml "$user"@"$host0":"$deployDirectory"/application.yml
     - scp "$restart_script" "$user"@"$host0":"$deployDirectory"/restart.sh
 
