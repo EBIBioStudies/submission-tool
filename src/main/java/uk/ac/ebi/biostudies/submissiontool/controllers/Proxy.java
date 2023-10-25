@@ -1,11 +1,11 @@
 package uk.ac.ebi.biostudies.submissiontool.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
@@ -16,14 +16,11 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Files;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Objects;
 
 @Controller
@@ -34,6 +31,7 @@ public class Proxy {
 
     private final Environment environments;
     private final RestTemplate restTemplate;
+    Logger logger = LoggerFactory.getLogger(Proxy.class);
 
     public Proxy(RestTemplate restTemplate, Environment environments) {
         this.restTemplate = restTemplate;
@@ -125,10 +123,11 @@ public class Proxy {
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         }
 
-        HttpEntity httpEntity = new HttpEntity( files!=null ? bodyMap : requestBody , headers);
+        HttpEntity<Object> httpEntity = new HttpEntity<>( files!=null ? bodyMap : requestBody , headers);
         ResponseEntity<Resource> resp;
         ServletOutputStream out = response.getOutputStream();
         try {
+            logger.debug("Proxying {}", url);
             resp = restTemplate.exchange(url, HttpMethod.valueOf(request.getMethod()), httpEntity, Resource.class);
             response.setStatus(resp.getStatusCode().value());
             resp.getHeaders().forEach((header, values) -> response.setHeader(header, String.join(",", values))); // https://www.rfc-editor.org/rfc/rfc7230#section-3.2.2
@@ -140,6 +139,8 @@ public class Proxy {
             e.printStackTrace();
         }
         out.flush();
+        out.close();
+        logger.debug("Proxied {}", url);
     }
 
 //    @CrossOrigin(origins = "http://localhost:5173")
