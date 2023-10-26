@@ -29,7 +29,7 @@ public class FileList {
     @Autowired
     private Environment environments;
 
-    @CrossOrigin(origins = "http://localhost:5173")
+    @CrossOrigin(origins = "*")
     @GetMapping(value = "/filelist/{*path}")
     public void getFileList(@PathVariable String path, HttpServletRequest request,
                             HttpServletResponse response) throws IOException {

@@ -37,46 +37,7 @@ public class Proxy {
         this.restTemplate = restTemplate;
         this.environments = environments;
     }
-
-//    @CrossOrigin(origins = "http://localhost:5173")
-//    @PostMapping(value = "/api/{*path}")
-//    public ResponseEntity<String> postFile(@PathVariable String path, @RequestParam("file") MultipartFile file, @RequestHeader(SESSION_HEADER) String token) throws Exception {
-//        String url = "%s/%s".formatted(environments.getProperty("backend.url"), path.startsWith("/") ? path.substring(1) : path);
-//
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.set(SESSION_HEADER, token);
-//        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-//
-//        MultiValueMap<String, Object> bodyMap = new LinkedMultiValueMap<>();
-//        bodyMap.add("file", file);
-//
-//        HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(bodyMap, headers);
-//
-//        String resp;
-//        try {
-//            resp = restTemplate.postForObject(url, httpEntity, String.class);
-//        } catch (HttpStatusCodeException e) {
-//            e.printStackTrace();
-//            return ResponseEntity.status(e.getStatusCode()).headers(e.getResponseHeaders()).body(e.getResponseBodyAsString());
-//        }
-//        return ResponseEntity.ok(resp);
-//    }
-//
-//    @CrossOrigin(origins = "http://localhost:5173")
-//    @PostMapping(value = "/api/{*path}", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public ResponseEntity<String> postResponse(@PathVariable String path, @RequestBody(required = false) String body ) throws Exception {
-//        String url = "%s/%s".formatted(environments.getProperty("backend.url"), path.startsWith("/") ? path.substring(1) : path);
-//        Map<String, Object> jsonObject = new ObjectMapper().readValue(body, Map.class);
-//        String response;
-//        try {
-//            response = restTemplate.postForObject(url, jsonObject, String.class);
-//        } catch (HttpStatusCodeException e) {
-//            return ResponseEntity.status(e.getStatusCode()).headers(e.getResponseHeaders()).body(e.getResponseBodyAsString());
-//        }
-//        return ResponseEntity.ok(response);
-//    }
-
-    @CrossOrigin(origins = "http://localhost:5173")
+    @CrossOrigin(origins = "*")
     @RequestMapping(value = {
             "/api/files/**",
             "/api/submissions/drafts/**",
@@ -130,7 +91,10 @@ public class Proxy {
             logger.debug("Proxying {}", url);
             resp = restTemplate.exchange(url, HttpMethod.valueOf(request.getMethod()), httpEntity, Resource.class);
             response.setStatus(resp.getStatusCode().value());
-            resp.getHeaders().forEach((header, values) -> response.setHeader(header, String.join(",", values))); // https://www.rfc-editor.org/rfc/rfc7230#section-3.2.2
+            resp.getHeaders().forEach((header, values) -> {
+                if (header!=null && !header.equalsIgnoreCase("Transfer-Encoding"))// must not return chunked data or the fetch request will wait
+                response.setHeader(header, String.join(",", values));
+            }); // https://www.rfc-editor.org/rfc/rfc7230#section-3.2.2
             if (resp.hasBody())
                 IOUtils.copyLarge(Objects.requireNonNull(resp.getBody()).getInputStream(), out);
         } catch (HttpStatusCodeException e) {
@@ -142,21 +106,6 @@ public class Proxy {
         out.close();
         logger.debug("Proxied {}", url);
     }
-
-//    @CrossOrigin(origins = "http://localhost:5173")
-//    @GetMapping(value = "/api/study/{accession}", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public ResponseEntity<String> getStudy(@PathVariable String accession) throws Exception {
-//        Resource resource = new ClassPathResource(accession + ".json");
-//        if (resource.exists()) {
-//            byte[] fileData = Files.readAllBytes(resource.getFile().toPath());
-//            String jsonContent = new String(fileData);
-//            return ResponseEntity.ok(jsonContent);
-//        }
-//        RestTemplate restTemplate = new RestTemplate();
-//        String url = "https://www.ebi.ac.uk/biostudies/files/%s/%s.json".formatted(accession, accession);
-//        String body = restTemplate.getForObject(url, String.class);
-//        return ResponseEntity.ok(body);
-//    }
 
     @RequestMapping(value = {"/signin/**", "/edit/**", "/files/**", "/help/**", "/logout/**"})
     public String redirect() {
