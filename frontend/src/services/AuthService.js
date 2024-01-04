@@ -8,17 +8,36 @@ const user = ref({...JSON.parse(existingUser||'{}')})
 
 const login = (credentials) => {
   return new Promise((resolve, reject) => {
-    axios.post (`${window.config.backendUrl}/api/auth/login`, credentials)
+
+    axios.post(`${window.config.backendUrl}/api/auth/login`, credentials)
       .then(async (response) => {
         if (response.status === 200) {
           const json = response.data
           user.value = json
-          axios.defaults.headers.common['x-session-token'] =  json?.sessid; //axios config isn't reactive
+          axios.defaults.headers.common['x-session-token'] = json?.sessid; //axios config isn't reactive
           localStorage.setItem(USER_KEY, JSON.stringify(json));
           resolve(json);
         }
         resolve(null)
+      }).catch((error)=> {
+       reject(error);
+    });
+  });
+}
+
+const generalPost = (url='', data) => {
+  return new Promise((resolve, reject) => {
+    axios.post(`${window.config.backendUrl}${url}`, data)
+      .then(async (response) => {
+        // Handle the response if the request was successful
+        console.log('Response:', response.data);
+        resolve(response);
       })
+      .catch(error => {
+        // Handle errors
+        console.error('Error:', error);
+        reject(error);
+      });
   });
 }
 const logout = () => {
@@ -31,4 +50,4 @@ const isAuthenticated = () => {
   return !!user.value?.sessid;
 }
 
-export default { user, login, logout, isAuthenticated }
+export default { user, login, logout, isAuthenticated, generalPost }
