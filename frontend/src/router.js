@@ -17,22 +17,22 @@ const routes = [
   {
     path: '/signin',
     name: 'Sign In',
-    component: () => import('./pages/login/Login.vue'),
+    component: () => import('./Login.vue'),
   },
   {
     path: '/signup',
     name: 'Sign Up',
-    component: () => import('./pages/login/Register.vue'),
+    component: () => import('./Register.vue'),
   },
   {
     path: '/reset',
     name: 'Reset Password',
-    component: () => import('./pages/login/ResetPassword.vue'),
+    component: () => import('./ResetPassword.vue'),
   },
   {
     path: '/activation',
     name: 'Send Activation Email',
-    component: () => import('./pages/login/EmailActivation.vue'),
+    component: () => import('./EmailActivation.vue'),
   },
   {
     path: '/edit/:accession',

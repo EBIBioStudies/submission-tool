@@ -25,21 +25,6 @@ const login = (credentials) => {
   });
 }
 
-const generalPost = (url='', data) => {
-  return new Promise((resolve, reject) => {
-    axios.post(`${window.config.backendUrl}${url}`, data)
-      .then(async (response) => {
-        // Handle the response if the request was successful
-        console.log('Response:', response.data);
-        resolve(response);
-      })
-      .catch(error => {
-        // Handle errors
-        console.error('Error:', error);
-        reject(error);
-      });
-  });
-}
 const logout = () => {
   axios.defaults.headers.common['x-session-token'] =  null; //axios config isn't reactive
   localStorage.removeItem(USER_KEY);
@@ -50,4 +35,4 @@ const isAuthenticated = () => {
   return !!user.value?.sessid;
 }
 
-export default { user, login, logout, isAuthenticated, generalPost }
+export default { user, login, logout, isAuthenticated }

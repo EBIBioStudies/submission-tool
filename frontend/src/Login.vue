@@ -12,15 +12,15 @@
           <form @submit.prevent="doLogin" name="signInForm" data-testid="signInForm">
             <div class="form-group mb-2">
               <label for="email">Email address</label>
-              <input  id="email" name="email" autofocus required class="form-control" v-model="username" placeholder="Username" >
-              <div v-if="invalidUsername" class="invalid-inp">Please enter a valid email</div>
+              <input  id="email" name="email" autofocus required class="form-control" :class="{'is-invalid': invalidUsername}" v-model="username" placeholder="Username" >
+              <div v-if="invalidUsername" class="invalid-feedback">Please enter a valid email with more than 6 characters</div>
             </div>
             <div class="form-group mb-2">
               <label for="password">Password</label>
-              <input type="password" id="password" name="password" required class="form-control" v-model="password" placeholder="Password">
-              <div class="invalid-inp" v-if="invalidPassword">Please enter a password</div>
+              <input type="password" id="password" name="password" required class="form-control" :class="{'is-invalid': invalidPassword}" v-model="password" placeholder="Password">
+              <div class="invalid-feedback" v-if="invalidPassword">Please enter a password with more than 6 characters</div>
             </div>
-            <button type="submit" :disabled="invalidPassword || invalidUsername" class="btn btn-primary"> Log In </button>
+            <button type="submit"  class="btn btn-primary"> Log In </button>
             <div class="text-right">
               <a  href="/reset">Forgot your password?</a>
             </div>
@@ -37,7 +37,7 @@
 
 <script setup>
 import {ref} from "vue";
-import AuthService from "../../services/AuthService";
+import AuthService from "./services/AuthService";
 import {useRouter} from "vue-router";
 
 const router = useRouter();

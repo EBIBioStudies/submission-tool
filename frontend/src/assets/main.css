@@ -7,13 +7,6 @@ body {
   width: 200px;
 }
 
-.invalid-inp {
-  width: 100%;
-  margin-top: 0.25rem;
-  font-size: 80%;
-  color: #dc3545;
-}
-
 .slide-leave-active,
 .slide-enter-active {
   transition: all 0.1s ease-out;
