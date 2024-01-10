@@ -69,7 +69,7 @@ const doLogin = async () => {
   }
 }
 
-let minLength = 6
+let minLength = 4
 function isValidUsername(){
   if(!username.value || username.value.length<minLength)
     invalidUsername.value = true

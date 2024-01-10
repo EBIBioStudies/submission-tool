@@ -2,6 +2,7 @@ import {createRouter, createWebHistory} from 'vue-router';
 import AuthService from "./services/AuthService";
 
 const routes = [
+  // ⚠ Any path added here must also be added to Proxy::redirect
   {
     path: '/',
     name: 'Submissions',
