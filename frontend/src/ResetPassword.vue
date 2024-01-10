@@ -55,7 +55,7 @@ const validEmail = computed(() => {
   return regex.test(email.value);
 });
 const validCaptcha = computed(() => {
-  return captchaPublicKey.value===''?false:true;
+  return recaptchaToken.value===''?false:true;
 });
 
 const onCaptchaVerified = (response) => {
