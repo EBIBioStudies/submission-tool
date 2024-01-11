@@ -19,7 +19,7 @@ app.use(router);
 app.component('font-awesome-icon', FontAwesomeIcon);
 axios.defaults.headers.common['x-session-token'] = AuthService.user?.value?.sessid;
 window.config = {backendUrl: location.host === 'localhost:5173' ? 'http://localhost:8080' : ''};
-await axios.get(`${window.config.backendUrl}/config`)
+axios.get(`${window.config.backendUrl}/config`)
   .then(async (response) => {
     if (response.status === 200) {
       window.config = {...window.config, ...response.data}
