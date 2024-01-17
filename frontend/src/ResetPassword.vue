@@ -7,30 +7,32 @@
   </div>
   <div class="row">
     <div class="col"></div>
-    <div class="card col-6 gy-6">
-      <div class="card-body">
-        <div v-if="success">
-          <h4 class="card-title">Password reset accepted</h4>
-          <h6 class="card-subtitle mb-2 text-muted">The link to reset your password has been sent to {{ email }}. Please check your email, including the spam/trash folder.</h6>
+    <div class="col-6 gy-6">
+      <div class="card">
+        <div class="card-body">
+          <div v-if="success">
+            <h4 class="card-title">Password reset accepted</h4>
+            <h6 class="card-subtitle mb-2 text-muted">The link to reset your password has been sent to {{ email }}. Please check your email, including the spam/trash folder.</h6>
+          </div>
+          <div v-else>
+            <h4 class="card-title">Set new password</h4>
+            <h6 class="card-subtitle mb-2 text-muted">Please enter your email and we will send you a link to set your new password.</h6>
+            <form @submit.prevent="submitData" name="pwdReqForm" data-testid="resetReqForm" class="">
+              <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" autofocus required v-model="email" placeholder="Email" class="form-control" :class="{'is-invalid': email && !validEmail}">
+                <div v-if="email && !validEmail" class="invalid-feedback">Please enter a valid email</div>
+              </div>
+              <button type="submit" class="btn btn-primary my-2">Get reset link</button>
+              <vue-recaptcha v-if="!validCaptcha" class="captcha-root" required :sitekey="captchaPublicKey" @verify="onCaptchaVerified" :class="{'is-invalid': !validCaptcha}"/>
+            </form>
+          </div>
         </div>
-        <div v-else>
-          <h4 class="card-title">Set new password</h4>
-          <h6 class="card-subtitle mb-2 text-muted">Please enter your email and we will send you a link to set your new password.</h6>
-          <form @submit.prevent="submitData" name="pwdReqForm" data-testid="resetReqForm" class="">
-            <div class="form-group">
-              <label for="email">Email</label>
-              <input type="email" id="email" name="email" autofocus required v-model="email" placeholder="Email" class="form-control" :class="{'is-invalid': email && !validEmail}">
-              <div v-if="email && !validEmail" class="invalid-feedback">Please enter a valid email</div>
-            </div>
-            <button type="submit" class="btn btn-primary my-2">Get reset link</button>
-            <vue-recaptcha v-if="!validCaptcha" class="captcha-root" required :sitekey="captchaPublicKey" @verify="onCaptchaVerified" :class="{'is-invalid': !validCaptcha}"/>
-          </form>
+        <div class="card-footer text-muted">
+          <a href="/signin">
+            <font-awesome-icon :icon="['fas', 'chevron-circle-left']" /> Back to Log in
+          </a>
         </div>
-      </div>
-      <div class="card-footer text-muted">
-        <a href="/signin">
-          <i aria-hidden="true" class="fa fa-chevron-circle-left"></i> Back to Log in
-        </a>
       </div>
     </div>
     <div class="col"/>

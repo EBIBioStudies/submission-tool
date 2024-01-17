@@ -7,32 +7,34 @@
   </div>
   <div class="row">
     <div class="col"></div>
-    <div class="card col-6 gy-6">
-      <div class="card-body">
-        <div v-if="success">
-          <h4 class="card-title">Activation email sent</h4>
-          <h6 class="card-subtitle mb-2 text-muted">The activation link has been sent to {{ email }}. Please check your
-            email, including the spam/trash folder.</h6>
+    <div class="col-6 gy-6">
+      <div class="card">
+        <div class="card-body">
+          <div v-if="success">
+            <h4 class="card-title">Activation email sent</h4>
+            <h6 class="card-subtitle mb-2 text-muted">The activation link has been sent to {{ email }}. Please check your
+              email, including the spam/trash folder.</h6>
+          </div>
+          <div v-else>
+            <h4 class="card-title">Send activation email</h4>
+            <h6 class="card-subtitle mb-2 text-muted">Please enter your email and we will send you a link to activate your
+              account.</h6>
+            <form class="" data-testid="resetReqForm" name="pwdReqForm" @submit.prevent="submitData">
+              <div class="form-group">
+                <label for="email">Email</label> <input id="email" v-model="email" :class="{'is-invalid': email && !validEmail}" autofocus class="form-control"
+                                                        name="email" placeholder="Email" required
+                                                        type="email">
+                <div v-if="email && !validEmail" class="invalid-feedback">Please enter a valid email</div>
+              </div>
+              <button class="btn btn-primary my-2" type="submit">Send activation link</button>
+              <vue-recaptcha v-if="!validCaptcha" :class="{'is-invalid': !validCaptcha}" :sitekey="captchaPublicKey" class="captcha-root"
+                             required @verify="onCaptchaVerified"/>
+            </form>
+          </div>
         </div>
-        <div v-else>
-          <h4 class="card-title">Send activation email</h4>
-          <h6 class="card-subtitle mb-2 text-muted">Please enter your email and we will send you a link to activate your
-            account.</h6>
-          <form class="" data-testid="resetReqForm" name="pwdReqForm" @submit.prevent="submitData">
-            <div class="form-group">
-              <label for="email">Email</label> <input id="email" v-model="email" :class="{'is-invalid': email && !validEmail}" autofocus class="form-control"
-                                                      name="email" placeholder="Email" required
-                                                      type="email">
-              <div v-if="email && !validEmail" class="invalid-feedback">Please enter a valid email</div>
-            </div>
-            <button class="btn btn-primary my-2" type="submit">Send activation link</button>
-            <vue-recaptcha v-if="!validCaptcha" :class="{'is-invalid': !validCaptcha}" :sitekey="captchaPublicKey" class="captcha-root"
-                           required @verify="onCaptchaVerified"/>
-          </form>
+        <div class="card-footer text-muted">
+          <a href="/signin"> <font-awesome-icon :icon="['fas', 'chevron-circle-left']" /> Back to Log in </a>
         </div>
-      </div>
-      <div class="card-footer text-muted">
-        <a href="/signin"> <i aria-hidden="true" class="fa fa-chevron-circle-left"></i> Back to Log in </a>
       </div>
     </div>
     <div class="col"/>

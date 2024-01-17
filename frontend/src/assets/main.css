@@ -56,3 +56,11 @@ body {
   color: #aaa !important;
 }
 
+label {
+  display: inline-block;
+  margin-bottom: .5rem
+}
+
+.form-group {
+  margin-bottom: 1rem
+}

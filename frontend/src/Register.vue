@@ -7,48 +7,50 @@
   </div>
   <div class="row">
     <div class="col"></div>
-    <div class="card col-6 gy-6">
-      <div v-if="success" class="card-body">
-        <h4 class="card-title">Thank you for registering</h4>
-        <h6 class="card-subtitle mb-2 text-muted">An email has been sent with a link to activate your new account.</h6>
+    <div class="col-6 gy-6">
+      <div class="card">
+        <div v-if="success" class="card-body">
+          <h4 class="card-title">Thank you for registering</h4>
+          <h6 class="card-subtitle mb-2 text-muted">An email has been sent with a link to activate your new account.</h6>
+        </div>
+        <div v-if="!success" class="card-body">
+          <h4 class="card-title">Registration</h4>
+          <p class="card-subtitle mb-2 text-muted"> Please provide the information below to create a new account.
+            <br> <mark>Note that <strong>ORCID</strong> field is optional.</mark>
+          </p>
+          <form @submit.prevent="submit" name="signUpForm" data-testid="signUpForm">
+            <div class="form-group mb-2">
+              <label for="name">Name</label>
+              <input type="text" id="name" v-model="form.name" required class="form-control" :class="{'is-invalid': form.name && !validName}">
+              <div v-if="form.name && !validName" class="invalid-feedback">Please enter a valid name</div>
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" v-model="form.email" required class="form-control" :class="{'is-invalid': form.email && !validEmail}">
+              <div v-if="form.email && !validEmail" class="invalid-feedback">Please enter a valid email</div>
+            </div>
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input type="password" id="password" v-model="form.password" minlength="6" required class="form-control" :class="{'is-invalid': form.password && !validPassword}">
+              <div v-if="form.password && !validPassword" class="invalid-feedback">Password minimum length is 6 characters</div>
+            </div>
+            <div class="form-group">
+              <label for="orcid">ORCID</label>
+              <span class="text-muted float-right"><i>Optional</i></span>
+              <input type="text" id="orcid" placeholder="1111-2222-3333-4444" v-model="form.orcid" pattern="\d{4}-\d{4}-\d{4}-\d{3}[0-9X]" class="form-control" :class="{'is-invalid': !validOrcid}">
+              <div v-if="!validOrcid" class="invalid-feedback">Please enter a valid orcid(4*4 digit format)</div>
+            </div>
+            <div class="form-check">
+              <input type="checkbox" id="terms" v-model="form.terms" required class="form-check-input" :class="{'is-invalid': !validTerms}">
+              <label for="terms"> I have read and agree to the <a target="_blank" href="https://www.ebi.ac.uk/data-protection/privacy-notice/biostudies-database">Privacy Notice</a> and <a target="_blank" href="https://www.ebi.ac.uk/about/terms-of-use">Terms of Use</a>, including the limited processing of personal data.</label>
+              <div v-if="!validTerms" class="invalid-feedback">Please accept terms and conditions</div>
+            </div>
+            <button type="submit" class="btn btn-primary"> Register </button>
+            <vue-recaptcha v-if="!isCaptchaVerified" required="" class="captcha-root" :sitekey="captchaPublicKey" @verify="onCaptchaVerified"></vue-recaptcha>
+          </form>
+        </div>
+        <div class="card-footer text-muted"><a href="/signin"><font-awesome-icon :icon="['fas', 'chevron-circle-left']" /> Back to Log in </a></div>
       </div>
-      <div v-if="!success" class="card-body">
-        <h4 class="card-title">Registration</h4>
-        <p class="card-subtitle mb-2 text-muted"> Please provide the information below to create a new account.
-          <br> <mark>Note that <strong>ORCID</strong> field is optional.</mark>
-        </p>
-        <form @submit.prevent="submit" name="signUpForm" data-testid="signUpForm">
-          <div class="form-group mb-2">
-            <label for="name">Name</label>
-            <input type="text" id="name" v-model="form.name" required class="form-control" :class="{'is-invalid': form.name && !validName}">
-            <div v-if="form.name && !validName" class="invalid-feedback">Please enter a valid name</div>
-          </div>
-          <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" id="email" v-model="form.email" required class="form-control" :class="{'is-invalid': form.email && !validEmail}">
-            <div v-if="form.email && !validEmail" class="invalid-feedback">Please enter a valid email</div>
-          </div>
-          <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" v-model="form.password" minlength="6" required class="form-control" :class="{'is-invalid': form.password && !validPassword}">
-            <div v-if="form.password && !validPassword" class="invalid-feedback">Password minimum length is 6 characters</div>
-          </div>
-          <div class="form-group">
-            <label for="orcid">ORCID</label>
-            <span class="text-muted float-right"><i>Optional</i></span>
-            <input type="text" id="orcid" placeholder="1111-2222-3333-4444" v-model="form.orcid" pattern="\d{4}-\d{4}-\d{4}-\d{3}[0-9X]" class="form-control" :class="{'is-invalid': !validOrcid}">
-            <div v-if="!validOrcid" class="invalid-feedback">Please enter a valid orcid(4*4 digit format)</div>
-          </div>
-          <div class="form-check">
-            <input type="checkbox" id="terms" v-model="form.terms" required class="form-check-input" :class="{'is-invalid': !validTerms}">
-            <label for="terms"> I have read and agree to the <a target="_blank" href="https://www.ebi.ac.uk/data-protection/privacy-notice/biostudies-database">Privacy Notice</a> and <a target="_blank" href="https://www.ebi.ac.uk/about/terms-of-use">Terms of Use</a>, including the limited processing of personal data.</label>
-            <div v-if="!validTerms" class="invalid-feedback">Please accept terms and conditions</div>
-          </div>
-          <button type="submit" class="btn btn-primary"> Register </button>
-          <vue-recaptcha v-if="!isCaptchaVerified" required="" class="captcha-root" :sitekey="captchaPublicKey" @verify="onCaptchaVerified"></vue-recaptcha>
-        </form>
-      </div>
-      <div class="card-footer text-muted"><a href="/signin"><font-awesome-icon :icon="['fas', 'chevron-circle-left']" /> Back to Log in </a></div>
     </div>
     <div class="col"></div>
   </div>
