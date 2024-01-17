@@ -57,7 +57,7 @@ const validEmail = computed(() => {
   return regex.test(email.value);
 });
 const validCaptcha = computed(() => {
-  return recaptchaToken.value===''?false:true;
+  return recaptchaToken.value !== '';
 });
 
 const onCaptchaVerified = (response) => {
@@ -70,7 +70,6 @@ const submitData = async () => {
   if (validEmail.value & validCaptcha.value) {
     const parameters = {
       email: email.value,
-      instanceKey: import.meta.env.VITE_INSTANCE_KEY,
       path: '/biostudies/submissions/activate',
       'recaptcha2-response': recaptchaToken.value
     };

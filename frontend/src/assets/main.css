@@ -64,3 +64,11 @@ label {
 .form-group {
   margin-bottom: 1rem
 }
+
+a:not([class*="btn"]) {
+  text-decoration: none;
+}
+
+a:not([class*="btn"]):hover {
+  text-decoration: underline;
+}

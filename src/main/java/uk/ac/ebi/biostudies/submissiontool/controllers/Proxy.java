@@ -116,7 +116,7 @@ public class Proxy {
     }
 
     private String getUpdatedRequestBody(String url, String requestBody) {
-        if (url.contains("/auth/retryact") || url.contains("/auth/activation")) {
+        if (url.contains("/auth/retryact") || url.contains("/auth/activation") || url.contains("password/reset")) {
             requestBody = requestBody.substring(0,requestBody.length()-1)
                     + ", \"instanceKey\":\""+ environments.getProperty("backend.instance-key") +"\"}";
         }
