@@ -78,7 +78,7 @@ export default {
     const errorMessage = ref('');
     const isCaptchaVerified = ref(false);
     const success = ref(false);
-    const captchaPublicKey = ref(import.meta.env.VITE_CAPTCHA_PUBLIC_KEY);
+    const captchaPublicKey = window.config.recaptchaKey;
 
     const onCaptchaVerified = (response) => {
       form.value['recaptcha2-response']=response;
@@ -126,10 +126,8 @@ export default {
           success.value = true;
         }catch (error){
           hasError.value = true;
-          if(error.message)
-            errorMessage.value = error.message
-          else
-            errorMessage.value = 'Unknown Error';
+          errorMessage.value = error?.response?.data?.log?.message || 'Unknown Error';
+
         }
       } else {
         hasError.value = true;

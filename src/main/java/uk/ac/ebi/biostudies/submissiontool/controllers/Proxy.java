@@ -44,10 +44,11 @@ public class Proxy {
             "/api/submissions",
             "/api/auth/login",
             "/api/auth/logout",
-            "/api/auth/activate",
+            "/api/auth/activate/**",
             "/api/auth/retryact",
             "/api/auth/password/reset",
-            "/api/auth/register"
+            "/api/auth/register",
+            "/api/auth/password/change"
     }, method = {RequestMethod.GET, RequestMethod.DELETE, RequestMethod.POST, RequestMethod.PUT})
     public void getResponse(@RequestParam(required = false) MultipartFile files,
                             @RequestBody(required = false) String requestBody,
@@ -116,7 +117,7 @@ public class Proxy {
     }
 
     private String getUpdatedRequestBody(String url, String requestBody) {
-        if (url.contains("/auth/retryact") || url.contains("/auth/activation") || url.contains("password/reset")) {
+        if (url.contains("/auth/retryact") || url.contains("/auth/activation") || url.contains("password/reset") || url.contains("/register")) {
             requestBody = requestBody.substring(0,requestBody.length()-1)
                     + ", \"instanceKey\":\""+ environments.getProperty("backend.instance-key") +"\"}";
         }

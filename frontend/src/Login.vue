@@ -3,7 +3,10 @@
     <div class="col"></div>
     <div class="col-6 gy-6">
       <div class="alert-container">
-        <div v-if="serverError" role="alert" class="alert alert-danger"> Please check the fields below and try again, if the problem persists, drop an email to <a href="mailto:biostudies@ebi.ac.uk">biostudies@ebi.ac.uk</a></div>
+        <div v-if="serverError" role="alert" class="alert alert-danger">
+          <div v-if="!errorMessage">Please check the fields below and try again, if the problem persists, drop an email to <a href="mailto:biostudies@ebi.ac.uk">biostudies@ebi.ac.uk</a></div>
+          <div v-else>{{errorMessage}}</div>
+        </div>
       </div>
       <div class="card">
         <div class="card-body">
@@ -46,6 +49,7 @@ const password = ref('');
 const serverError = ref(false);
 const invalidUsername = ref(false);
 const invalidPassword = ref(false);
+const errorMessage = ref('');
 
 const doLogin = async () => {
   if(!isValidPassword() | !isValidUsername())
@@ -60,12 +64,12 @@ const doLogin = async () => {
     if (userCreds) {
       await router.push('/');
     } else {
-      console.log("Login error")
       serverError.value = true;
     }
   } catch (error) {
-    console.error('Login failed:', error);
     serverError.value = true;
+    if(error?.response?.data?.log?.message)
+      errorMessage.value = error.response.data.log.message;
   }
 }
 
