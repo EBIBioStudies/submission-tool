@@ -33,27 +33,22 @@ const routes = [
   {
     path: '/activation',
     name: 'Send Activation Email',
-    component: () => import('./EmailActivationRequest.vue'),
+    component: () => import('./ResendActivationRequest.vue'),
   },
   {
     path: '/activate/:activationCode',
-    name: 'Account Activation Result',
-    component: () => import('./ActivateEmail.vue'),
+    name: 'Activate Account',
+    component: () => import('./ActivateAccount.vue'),
   },
   {
     path: '/activate',
-    name: 'Email Activation',
-    component: () => import('./EmailActivationRequest.vue'),
+    name: 'Resend Activation Request',
+    component: () => import('./ResendActivationRequest.vue'),
   },
   {
     path: '/password_reset/:activationCode',
     name: 'Reset Password',
     component: () => import('./ResetPassword.vue'),
-  },
-  {
-    path: '/password_reset',
-    // name: '',
-    component: () => import('./Register.vue'),
   },
   {
     path: '/edit/:accession',

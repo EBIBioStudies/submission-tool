@@ -3,27 +3,26 @@
     <div class="col"></div>
     <div class="col-6 gy-6">
       <div class="alert-container">
-        <div v-if="serverError" role="alert" class="alert alert-danger">
-          <div v-if="!errorMessage">Please check the fields below and try again, if the problem persists, drop an email to <a href="mailto:biostudies@ebi.ac.uk">biostudies@ebi.ac.uk</a></div>
-          <div v-else>{{errorMessage}}</div>
+        <div v-if="errorMessage" role="alert" class="alert alert-danger">
+          <div v-html="errorMessage"></div>
         </div>
       </div>
       <div class="card">
         <div class="card-body">
           <h4 class="card-title">Welcome</h4>
-          <h6 class="card-subtitle mb-2 text-muted">Please sign in to access to your studies.</h6>
+          <h6 class="card-subtitle mb-4 text-muted">Please sign in to access to your studies.</h6>
           <form @submit.prevent="doLogin" name="signInForm" data-testid="signInForm">
             <div class="form-group mb-2">
               <label for="email">Email address</label>
-              <input  id="email" name="email" autofocus required class="form-control" :class="{'is-invalid': invalidUsername}" v-model="username" placeholder="Username" >
-              <div v-if="invalidUsername" class="invalid-feedback">Please enter a valid email with more than 6 characters</div>
+              <input  id="email" name="email" autofocus required class="form-control" :class="{'is-invalid': invalidUsername}" v-model="username" @change="validateUsername" placeholder="Username" >
+              <div v-if="invalidUsername" class="invalid-feedback">Please enter a valid email</div>
             </div>
             <div class="form-group mb-2">
               <label for="password">Password</label>
-              <input type="password" id="password" name="password" required class="form-control" :class="{'is-invalid': invalidPassword}" v-model="password" placeholder="Password">
-              <div class="invalid-feedback" v-if="invalidPassword">Please enter a password with more than 6 characters</div>
+              <input type="password" id="password" name="password" required class="form-control" :class="{'is-invalid': invalidPassword}" v-model="password" @change="validatePassword" placeholder="Password">
+              <div class="invalid-feedback" v-if="invalidPassword">Please enter a valid password</div>
             </div>
-            <button type="submit"  class="btn btn-primary"> Log In </button>
+            <button type="submit" class="btn btn-primary" :class="{disabled: (!username || !password)}">Log In</button>
             <div class="text-right">
               <a  href="/reset">Forgot your password?</a>
             </div>
@@ -46,49 +45,32 @@ import {useRouter} from "vue-router";
 const router = useRouter();
 const username = ref('');
 const password = ref('');
-const serverError = ref(false);
 const invalidUsername = ref(false);
 const invalidPassword = ref(false);
-const errorMessage = ref('');
+const errorMessage = ref(null);
+
+const defaultErrorMessage = 'Unexpected Error - Please try again and if the problem persists, drop an email to <a href="mailto:biostudies@ebi.ac.uk">biostudies@ebi.ac.uk</a>';
+
+const validateUsername = () => invalidUsername.value = !username.value;
+const validatePassword = () => invalidPassword.value = !password.value;
 
 const doLogin = async () => {
-  if(!isValidPassword() | !isValidUsername())
-    return;
+  if (invalidUsername.value || !invalidPassword) return;
   try {
-    const creds = {
+    const credentials = {
       login: username.value,
       password: password.value,
     };
-    serverError.value = false;
-    const userCreds = await AuthService.login(creds);
-    if (userCreds) {
+    const user = await AuthService.login(credentials);
+    if (user) {
       await router.push('/');
     } else {
-      serverError.value = true;
+      errorMessage.value = defaultErrorMessage
     }
   } catch (error) {
-    serverError.value = true;
-    if(error?.response?.data?.log?.message)
-      errorMessage.value = error.response.data.log.message;
+    errorMessage.value = error?.response?.status === 401 ? 'Invalid username or password' : error?.response?.data?.log?.message || defaultErrorMessage;
   }
 }
-
-let minLength = 4
-function isValidUsername(){
-  if(!username.value || username.value.length<minLength)
-    invalidUsername.value = true
-  else
-    invalidUsername.value = false;
-  return !invalidUsername.value;
-}
-function isValidPassword(){
-  if(!password.value || password.value.length<minLength)
-    invalidPassword.value = true
-  else
-    invalidPassword.value = false;
-  return !invalidPassword.value
-}
-
 </script>
 
 <style>

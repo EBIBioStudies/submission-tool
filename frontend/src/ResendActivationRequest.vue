@@ -12,7 +12,7 @@
         <div class="card-body">
           <div v-if="success">
             <h4 class="card-title">Activation email sent</h4>
-            <h6 class="card-subtitle mb-2 text-muted">The activation link has been sent to {{ email }}. Please check your
+            <h6 class="card-subtitle mb-2 text-muted">The activation link has been sent to <b>{{ email }}</b>. Please check your
               email, including the spam/trash folder.</h6>
           </div>
           <div v-else>
@@ -26,7 +26,7 @@
                                                         type="email">
                 <div v-if="email && !validEmail" class="invalid-feedback">Please enter a valid email</div>
               </div>
-              <button class="btn btn-primary my-2" type="submit">Send activation link</button>
+              <button class="btn btn-primary my-2" :class="{'disabled': !validEmail}" type="submit">Send activation link</button>
               <vue-recaptcha v-if="!validCaptcha" :class="{'is-invalid': !validCaptcha}" :sitekey="captchaPublicKey" class="captcha-root"
                              required @verify="onCaptchaVerified"/>
             </form>

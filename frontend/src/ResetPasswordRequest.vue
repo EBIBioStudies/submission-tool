@@ -12,7 +12,7 @@
         <div class="card-body">
           <div v-if="success">
             <h4 class="card-title">Password reset accepted</h4>
-            <h6 class="card-subtitle mb-2 text-muted">The link to reset your password has been sent to {{ email }}. Please check your email, including the spam/trash folder.</h6>
+            <h6 class="card-subtitle mb-2 text-muted">The link to reset your password has been sent to <b>{{ email }}</b>. Please check your email, including the spam/trash folder.</h6>
           </div>
           <div v-else>
             <h4 class="card-title">Set new password</h4>
