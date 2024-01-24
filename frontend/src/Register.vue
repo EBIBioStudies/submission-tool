@@ -36,16 +36,15 @@
             </div>
             <div class="form-group">
               <label for="orcid">ORCID</label>
-              <span class="text-muted float-right"><i>Optional</i></span>
+              <span class="text-muted float-end"><i>Optional</i></span>
               <input type="text" id="orcid" placeholder="1111-2222-3333-4444" v-model="form.orcid" pattern="\d{4}-\d{4}-\d{4}-\d{3}[0-9X]" class="form-control" :class="{'is-invalid': !validOrcid}">
               <div v-if="!validOrcid" class="invalid-feedback">Please enter a valid orcid(4*4 digit format)</div>
             </div>
             <div class="form-check">
-              <input type="checkbox" id="terms" v-model="form.terms" required class="form-check-input" :class="{'is-invalid': !validTerms}">
+              <input type="checkbox" id="terms" v-model="form.terms" required class="form-check-input">
               <label for="terms"> I have read and agree to the <a target="_blank" href="https://www.ebi.ac.uk/data-protection/privacy-notice/biostudies-database">Privacy Notice</a> and <a target="_blank" href="https://www.ebi.ac.uk/about/terms-of-use">Terms of Use</a>, including the limited processing of personal data.</label>
-              <div v-if="!validTerms" class="invalid-feedback">Please accept terms and conditions</div>
             </div>
-            <button type="submit" class="btn btn-primary"> Register </button>
+            <button type="submit" :class="{disabled: !formValid}" class="btn btn-primary"> Register </button>
             <vue-recaptcha v-if="!isCaptchaVerified" required="" class="captcha-root" :sitekey="captchaPublicKey" @verify="onCaptchaVerified"></vue-recaptcha>
           </form>
         </div>
@@ -93,7 +92,7 @@ export default {
       return  regex.test(form.value.email);
     });
     const validName = computed(() => {
-      return form.value.name===''?false:true;
+      return form.value.name!=='';
     });
     const validOrcid = computed(() => {
       if (form.value.orcid === '') {
@@ -122,7 +121,7 @@ export default {
       form.value['instanceKey'] = import.meta.env.VITE_INSTANCE_KEY;
       if (formValid.value) {
         try{
-          const response = await axios.post(`${window.config.backendUrl}/api/auth/register`, form.value);
+          await axios.post(`${window.config.backendUrl}/api/auth/register`, form.value);
           success.value = true;
         }catch (error){
           hasError.value = true;
@@ -139,3 +138,9 @@ export default {
   }
 };
 </script>
+
+<style>
+.btn{
+  margin-bottom: 10px;
+}
+</style>
