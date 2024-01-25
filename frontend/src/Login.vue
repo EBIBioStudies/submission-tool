@@ -24,7 +24,7 @@
             </div>
             <button type="submit" class="btn btn-primary" :class="{disabled: (!username || !password)}">Log In</button>
             <div class="text-right">
-              <a  href="/reset">Forgot your password?</a>
+              <a  href="/password_reset_request">Forgot your password?</a>
             </div>
             <div class="text-right"><a href="/activation">Resend activation email</a></div>
           </form>

@@ -23,8 +23,9 @@
                 <input type="email" id="email" name="email" autofocus required v-model="email" placeholder="Email" class="form-control" :class="{'is-invalid': email && !validEmail}">
                 <div v-if="email && !validEmail" class="invalid-feedback">Please enter a valid email</div>
               </div>
-              <button type="submit" class="btn btn-primary my-2">Get reset link</button>
+              <button type="submit" :class="{disabled: !validEmail}" class="btn btn-primary my-2">Get reset link</button>
               <vue-recaptcha v-if="!validCaptcha" class="captcha-root" required :sitekey="captchaPublicKey" @verify="onCaptchaVerified" :class="{'is-invalid': !validCaptcha}"/>
+              <div v-if="validEmail && !validCaptcha" class="invalid-feedback">Please select captcha</div>
             </form>
           </div>
         </div>
@@ -69,7 +70,7 @@ const submitData = async () => {
   if (validEmail.value && validCaptcha.value) {
     const parameters = {
       email: email.value,
-      path: '/biostudies/submissions/password_reset',
+      path: '/biostudies/submissions/password_reset_request',
       'recaptcha2-response': recaptchaToken.value
     };
     try {
@@ -77,7 +78,7 @@ const submitData = async () => {
       success.value = true;
     } catch (error) {
       hasError.value = true;
-      errorMessage.value = error.response.data.message ? error.response.data.message : error.message || 'Unknown Error';
+      errorMessage.value = error?.response?.data?.log?.message || 'Unknown Error';
     }
   }
 };
