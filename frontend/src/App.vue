@@ -38,7 +38,9 @@
           <ul class="dropdown-menu">
             <li class="dropdown-header">{{ AuthService.user.value.fullname }}</li>
             <li><a class="dropdown-item" href="#" >Profile</a></li>
-            <li><a class="dropdown-item" href="#" @click="logout">Logout</a></li>
+            <li><a class="dropdown-item" href="#" @click="logout">Log out</a></li>
+            <li v-if=" AuthService.user?.value?.superuser" ><hr class="dropdown-divider"></li>
+            <li v-if=" AuthService.user?.value?.superuser" ><a role="button" class="dropdown-item" data-bs-target="#impersonateModal" data-bs-toggle="modal">Log in as</a></li>
           </ul>
         </li>
       </ul>
@@ -47,12 +49,14 @@
   <div class="container p-4">
     <router-view></router-view>
   </div>
+  <ImpersonateModal></ImpersonateModal>
 </template>
 <script setup>
 import AuthService from "./services/AuthService";
 import {useRouter} from "vue-router";
 import {onMounted} from "vue";
 import {Tooltip} from "bootstrap";
+import ImpersonateModal from './components/ImpersonateModal.vue';
 
 const router = useRouter();
 let tooltips = null;
@@ -74,6 +78,11 @@ onMounted(() => {
     window.ebiFrameworkRunDataProtectionBanner('other');
   }
 });
+
+const loginas = async () => {
+  AuthService.logout()
+  await router.push('/')
+}
 
 </script>
 
