@@ -58,16 +58,14 @@
           </td>
           <td>
             <div class="btn-group">
-              <button v-if="file.type.toLowerCase()!=='dir'" class="btn btn-link text-primary"
-                      @click.stop="downloadFile(file)">
-                <font-awesome-icon icon="fa-download"></font-awesome-icon>
-              </button>
-              <button v-else class="btn btn-link text-primary" @click.stop="downloadFileList(file)">
-                <font-awesome-icon icon="fa-regular fa-file-lines"></font-awesome-icon>
-              </button>
-              <button class="btn btn-link text-danger" @click.stop="deleteFile(file)">
-                <font-awesome-icon icon="fa-regular fa-trash-can"></font-awesome-icon>
-              </button>
+              <font-awesome-icon v-if="file.type.toLowerCase()!=='dir'" class="fa-fw btn btn-link text-primary"
+                                 icon="fa-download" title="Download"
+                                 @click.stop="downloadFile(file)"></font-awesome-icon>
+              <font-awesome-icon v-else class="fa-fw btn btn-link text-primary" icon="fa-regular fa-file-lines"
+                                 title="Download File List"
+                                 @click.stop="downloadFileList(file)"></font-awesome-icon>
+              <font-awesome-icon class="fa-fw btn btn-link text-danger" icon="fa-regular fa-trash-can" title="Delete"
+                                 @click.stop="deleteFile(file)"></font-awesome-icon>
             </div>
           </td>
         </tr>
@@ -155,7 +153,11 @@ watchEffect(async () => {
 
 const navigate = async (path, name) => {
   path = path.split('/').map(path => encodeURIComponent(path)).join('/');
-  await router.push(`/files/${path}/${name}`);
+  if (`${path}/${name}` === currentPath.value.join('/') + '/') {
+    location.reload();
+  } else {
+    await router.push(`/files/${path}/${name}`);
+  }
 };
 
 const downloadFile = (file) => {
@@ -220,7 +222,7 @@ const uploadFiles = async (uploads, isFolderUpload) => {
     : file.name)
     .filter(name => fileNames.includes(name));
 
-  if (overlap.length>0) {
+  if (overlap.length > 0) {
     const overlapString = overlap.length === 1 ? overlap[0] + '?' : overlap.length + ' files? (' + overlap.join(', ') + ')';
     const proceed = await utils.confirm(
       `Overwrite files?`,
