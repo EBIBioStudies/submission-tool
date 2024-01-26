@@ -1,8 +1,4 @@
 backend:
-  url: http://biostudies-beta.ebi.ac.uk:8788
-logging:
-  level:
-    root: debug
-server:
-  address: 0.0.0.0
-
+  url: <url>
+  instance-key: <instance-key>
+  recaptcha-key: <recaptcha-key>
