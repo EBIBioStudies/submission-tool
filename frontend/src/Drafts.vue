@@ -85,7 +85,7 @@ const editDraft = (accno) => {
 
 const deleteDraft = async (accno) => {
   if (!await utils.confirm("Delete draft",
-    "⚠️The draft with accession number S-BIAD248 has not been submitted yet. If you proceed, it will be permanently deleted.",
+    `⚠️The draft with accession number ${accno} has not been submitted yet. If you proceed, it will be permanently deleted.`,
     "Delete")) return;
   const response = await axios.delete(
     `${window.config.backendUrl}/api/submissions/drafts/${accno}`,
