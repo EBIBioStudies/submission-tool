@@ -8,7 +8,10 @@
             <h5 class="card-subtitle mb-2 text-muted">Activating <font-awesome-icon :icon="['fas', 'cog']" spin /></h5>
           </div>
           <div v-else>
-            <h5 class="card-subtitle mb-2 text-muted"><font-awesome-icon :icon="['fa-solid', 'fa-triangle-exclamation']" /> {{message}} </h5>
+            <h5 class="card-subtitle mb-2 text-muted">
+              <font-awesome-icon :icon="['fa-solid', 'fa-triangle-exclamation']" class="me-2" />
+              <span v-html="message"></span>
+            </h5>
           </div>
         </div>
         <div class="card-footer text-muted">
@@ -38,7 +41,9 @@
       message.value = 'The activation was successful';
     } catch (error) {
       success.value=false;
-      message.value = error?.response?.data?.log?.message || 'Unknown Error';
+      message.value = error?.response?.data?.log?.message || 'Your activation request was sent but is taking more time ' +
+        'than usual. Please try to log in after a minute or two. In case of any issues, please drop us an email ' +
+        'at <a href="mailto://biostudies@ebi.ac.uk">biostudies@ebi.ac.uk</a>.';
     }
   };
 
