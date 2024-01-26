@@ -1,5 +1,6 @@
 package uk.ac.ebi.biostudies.submissiontool.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -27,7 +28,6 @@ import java.util.Objects;
 public class Proxy {
 
     public static final String SESSION_HEADER = "x-session-token";
-    private static final String[] ALLOWED_URLS = {"/api/login", "/api/logout"};
 
     private final Environment environments;
     private final RestTemplate restTemplate;
@@ -43,9 +43,13 @@ public class Proxy {
             "/api/submissions/drafts/**",
             "/api/submissions",
             "/api/auth/login",
-            "/api/auth/logout"
-
-    }, method = {RequestMethod.GET, RequestMethod.DELETE, RequestMethod.POST, RequestMethod.PUT, RequestMethod.OPTIONS})
+            "/api/auth/logout",
+            "/api/auth/activate/**",
+            "/api/auth/retryact",
+            "/api/auth/password/reset",
+            "/api/auth/register",
+            "/api/auth/password/change"
+    }, method = {RequestMethod.GET, RequestMethod.DELETE, RequestMethod.POST, RequestMethod.PUT})
     public void getResponse(@RequestParam(required = false) MultipartFile files,
                             @RequestBody(required = false) String requestBody,
                             HttpServletRequest request,
@@ -69,6 +73,7 @@ public class Proxy {
         String url = "%s/%s".formatted(environments.getProperty("backend.url"), request.getRequestURI().substring(5));
         if (request.getQueryString() != null) url += "?" + request.getQueryString();
 
+        // Add existing headers
         HttpHeaders headers = new HttpHeaders();
         headers.set(SESSION_HEADER, request.getHeader(SESSION_HEADER));
         Collections.list(request.getHeaderNames()).forEach(header -> headers.set(header, String.join(",", request.getHeader(header) )));
@@ -84,7 +89,7 @@ public class Proxy {
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         }
 
-        HttpEntity<Object> httpEntity = new HttpEntity<>( files!=null ? bodyMap : requestBody , headers);
+        HttpEntity<Object> httpEntity = new HttpEntity<>( files!=null ? bodyMap : getUpdatedRequestBody(url, requestBody) , headers);
         ResponseEntity<Resource> resp;
         ServletOutputStream out = response.getOutputStream();
         try {
@@ -93,12 +98,16 @@ public class Proxy {
             response.setStatus(resp.getStatusCode().value());
             resp.getHeaders().forEach((header, values) -> {
                 if (header!=null && !header.equalsIgnoreCase("Transfer-Encoding"))// must not return chunked data or the fetch request will wait
-                response.setHeader(header, String.join(",", values));
+                    response.setHeader(header, String.join(",", values));
             }); // https://www.rfc-editor.org/rfc/rfc7230#section-3.2.2
             if (resp.hasBody())
                 IOUtils.copyLarge(Objects.requireNonNull(resp.getBody()).getInputStream(), out);
         } catch (HttpStatusCodeException e) {
-            response.sendError(e.getStatusCode().value(), e.getResponseBodyAsString());
+            response.setStatus(e.getStatusCode().value());
+            e.getResponseHeaders().forEach((header, values) -> {
+                    response.setHeader(header, String.join(",", values));
+            });
+            out.print(e.getResponseBodyAsString());
             System.err.println("Error: "+ url );
             e.printStackTrace();
         }
@@ -107,7 +116,24 @@ public class Proxy {
         logger.debug("Proxied {}", url);
     }
 
-    @RequestMapping(value = {"/signin/**", "/edit/**", "/files/**", "/help/**", "/logout/**"})
+    private String getUpdatedRequestBody(String url, String requestBody) {
+        if (url.contains("/auth/retryact") || url.contains("/auth/activation") || url.contains("password/reset") || url.contains("/register")) {
+            requestBody = requestBody.substring(0,requestBody.length()-1)
+                    + ", \"instanceKey\":\""+ environments.getProperty("backend.instance-key") +"\"}";
+        }
+        return requestBody;
+    }
+
+    @RequestMapping(value = {
+            "/signin/**",
+            "/signup/**",
+            "/reset/**",
+            "/activation/**",
+            "/drafts/**",
+            "/edit/**",
+            "/files/**",
+            "/help/**",
+            "/logout/**"})
     public String redirect() {
         return "forward:/";
     }

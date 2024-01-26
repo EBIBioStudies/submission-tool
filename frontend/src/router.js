@@ -2,6 +2,7 @@ import {createRouter, createWebHistory} from 'vue-router';
 import AuthService from "./services/AuthService";
 
 const routes = [
+  // ⚠ Any path added here must also be added to Proxy::redirect
   {
     path: '/',
     name: 'Submissions',
@@ -18,6 +19,36 @@ const routes = [
     path: '/signin',
     name: 'Sign In',
     component: () => import('./Login.vue'),
+  },
+  {
+    path: '/signup',
+    name: 'Sign Up',
+    component: () => import('./Register.vue'),
+  },
+  {
+    path: '/password_reset_request',
+    name: 'Reset Password Request',
+    component: () => import('./ResetPasswordRequest.vue'),
+  },
+  {
+    path: '/activation',
+    name: 'Send Activation Email',
+    component: () => import('./ResendActivationRequest.vue'),
+  },
+  {
+    path: '/activate/:activationCode',
+    name: 'Activate Account',
+    component: () => import('./ActivateAccount.vue'),
+  },
+  {
+    path: '/activate',
+    name: 'Resend Activation Request',
+    component: () => import('./ResendActivationRequest.vue'),
+  },
+  {
+    path: '/password_reset/:activationCode',
+    name: 'Reset Password',
+    component: () => import('./ResetPassword.vue'),
   },
   {
     path: '/edit/:accession',

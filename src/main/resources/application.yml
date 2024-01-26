@@ -6,4 +6,6 @@ spring:
 
 backend:
   url: {BACKEND_URL}
+  instance-key: {INSTANCE_KEY}
+  recaptcha-key: {RECAPTCHA_KEY}
 
