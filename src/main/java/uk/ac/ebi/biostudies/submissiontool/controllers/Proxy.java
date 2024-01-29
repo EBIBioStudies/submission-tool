@@ -48,7 +48,8 @@ public class Proxy {
             "/api/auth/retryact",
             "/api/auth/password/reset",
             "/api/auth/register",
-            "/api/auth/password/change"
+            "/api/auth/password/change",
+            "/api/collections"
     }, method = {RequestMethod.GET, RequestMethod.DELETE, RequestMethod.POST, RequestMethod.PUT})
     public void getResponse(@RequestParam(required = false) MultipartFile files,
                             @RequestBody(required = false) String requestBody,
@@ -133,6 +134,7 @@ public class Proxy {
             "/edit/**",
             "/files/**",
             "/help/**",
+            "/profile/**",
             "/logout/**"})
     public String redirect() {
         return "forward:/";
