@@ -3,7 +3,8 @@ import Default from '@/templates/Default.json';
 import BioImagesv1 from "@/templates/BioImages.v1.json";
 import BioImagesv4 from "@/templates/BioImages.v4.json";
 import BioImagesv5 from "@/templates/BioImages.v5.json";
-export const allTemplates = [BioImagesv1, BioImagesv4, BioImagesv5, Default, ArrayExpress]
+import MicrobioRaman from "@/templates/MicrobioRaman.json";
+export const allTemplates = [BioImagesv1, BioImagesv4, BioImagesv5, Default, ArrayExpress, MicrobioRaman]
 const nameLatestVersionMap = new Map()
 const nameTemplateMap = new Map()
 allTemplates.map((tmpl, i) => {
