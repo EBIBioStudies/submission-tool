@@ -82,6 +82,13 @@ const routes = [
     component: () => import('./Files.vue'),
     props: true,
     meta: {requiresAuth: true}
+  },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: () => import('./Profile.vue'),
+    props: true,
+    meta: {requiresAuth: true}
   }
 ];
 

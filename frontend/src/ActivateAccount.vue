@@ -43,7 +43,7 @@
       success.value=false;
       message.value = error?.response?.data?.log?.message || 'Your activation request was sent but is taking more time ' +
         'than usual. Please try to log in after a minute or two. In case of any issues, please drop us an email ' +
-        'at <a href="mailto://biostudies@ebi.ac.uk">biostudies@ebi.ac.uk</a>.';
+        'at <a href="mailto:biostudies@ebi.ac.uk">biostudies@ebi.ac.uk</a>.';
     }
   };
 

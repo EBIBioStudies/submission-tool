@@ -1,4 +1,0 @@
-backend:
-  url: <url>
-  instance-key: <instance-key>
-  recaptcha-key: <recaptcha-key>
