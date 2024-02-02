@@ -12,7 +12,7 @@
       <th>Title</th>
       <th style="min-width: 120px">Release Date</th>
       <th style="min-width: 120px">Last Modified</th>
-      <th style="min-width: 100px">Actions</th>
+      <th style="min-width: 140px">Actions</th>
       </thead>
       <tbody>
       <tr v-for="submission in submissions">
@@ -21,8 +21,14 @@
         <td>{{ moment(submission.rtime).format("DD MMM YYYY") }}</td>
         <td>{{ moment(submission.mtime).format("DD MMM YYYY") }}</td>
         <td>
-          <button class="btn btn-link text-primary" @click.stop="edit(submission.accno)">
+          <button v-if="submission.status==='PROCESSED'" class="btn btn-link text-primary" @click.stop="open(submission.accno)">
+            <font-awesome-icon icon="fa-solid fa-arrow-up-right-from-square"></font-awesome-icon>
+          </button>
+          <button v-if="submission.status==='PROCESSED'" class="btn btn-link text-primary" @click.stop="edit(submission.accno)">
             <font-awesome-icon icon="fa-edit"></font-awesome-icon>
+          </button>
+          <button v-if="canDelete(submission)" class="btn btn-link text-primary" @click.stop="delete(submission.accno)">
+            <font-awesome-icon icon="fa-regular fa-trash-alt"></font-awesome-icon>
           </button>
         </td>
       </tr>
@@ -71,6 +77,12 @@ const submissions = ref([])
 const offset = ref(0)
 const pageLength = ref(15)
 
+const canDelete = (submission)=> {
+  return (['S-', 'TMP_'].some((prefix) => submission.accno.indexOf(prefix) >= 0)
+    && new Date(submission?.rtime).getTime() > Date.now()
+    && submission.status==='PROCESSED')
+    || AuthService.user?.value?.superuser
+}
 
 watchEffect(async () => {
   if (!AuthService.isAuthenticated()) return
@@ -80,6 +92,10 @@ watchEffect(async () => {
 
 const edit = (accno) => {
   router.push(`/edit/${accno}`)
+}
+
+const open = (accno) => {
+  window.open(`${window.config.frontendUrl}/studies/${accno}`)
 }
 
 </script>
