@@ -14,7 +14,14 @@ const allowedCollections = ref([])
 const createNewSubmission = async ()=> {
 
   // create new
-  const thisTemplate = allTemplates.find((tmpl) => tmpl.name===selectedTemplate.value);
+  let thisTemplate = allTemplates.find((tmpl) => tmpl.name===selectedTemplate.value);
+  if(!thisTemplate) {
+    let oneAllowCollection = allowedCollections.value.find(item => item.accno===selectedTemplate.value)
+    thisTemplate = {'name': oneAllowCollection.accno, 'title': oneAllowCollection.title}
+    thisTemplate.sectionType = allTemplates.find(item => item.name === 'Default')
+    thisTemplate.sectionType.subsections = {};
+  }
+
   const draft = {
     type: 'submission',
     attributes: [
@@ -51,16 +58,39 @@ const createNewSubmission = async ()=> {
 }
 
 const filteredTemplates = computed(() => {
-  return latestTemplates.filter((tmpl) =>
-    allowedCollections.value.some((allowed) => tmpl.name.includes(allowed.accno) || tmpl.name === 'Default')
-  );
+  // return latestTemplates.filter((tmpl) =>
+  //   allowedCollections.value.some((allowed) => tmpl.name.includes(allowed.accno) || tmpl.name === 'Default')
+  // );
+
+  const orderedNames = ['BioImages', 'Default', 'MicrobioRaman'];
+  const latestTemplatesMap = {};
+  const resultTemplatesMap = {};
+  const resultTemplateItem = [];
+  latestTemplates.forEach((tmpl) => {
+    latestTemplatesMap[tmpl.title] = tmpl;
+  });
+  orderedNames.forEach((name)=>{
+    if(allowedCollections.value.some(coll=>coll.accno.includes(name) || name === 'Default')) {
+      resultTemplatesMap[name] = latestTemplatesMap[name];
+      resultTemplateItem.push(latestTemplatesMap[name])
+    }
+  });
+  allowedCollections.value.forEach((item)=>{
+    if(!resultTemplatesMap[item.accno]) {
+      resultTemplatesMap[item.accno] = latestTemplatesMap['Default'];
+      resultTemplateItem.push({'name':item.accno, 'title':item.title});
+    }
+  });
+  return resultTemplateItem;
+
 });
 
 onMounted(async () => {
   if (!AuthService.isAuthenticated()) return;
   try {
-    const response = await axios.get(`${window.config.backendUrl}/api/collections`);
-    allowedCollections.value = response.data;
+    await axios.get(`${window.config.backendUrl}/api/collections`).then(response=>{
+      allowedCollections.value = response.data;
+    });
   } catch (error) {
     //console.error('Failed to fetch collections:', error);
   }
@@ -87,23 +117,25 @@ onMounted(async () => {
             href="https://www.ebi.ac.uk/bioimage-archive/help-images-at-ebi" target="_blank"> EMBL-EBI policy on imaging
             data submissions</a>.</p>
 
-          <div v-for="(tmpl, i) in filteredTemplates" class="form-check template-button">
-            <div v-if="i<3 || showMoreWasPressed">
-              <input :id="`template_${i}`" type="radio" class="form-check visually-hidden" name="template"
-                     v-model="selectedTemplate"
-                     :value="tmpl.name"
-              />
-              <label class="input-group" :for="`template_${i}`"  :title="tmpl.name">
-              <span class="input-group-text p-4">
-                <img :alt="tmpl.displayName"  style="height: 40px; width: 40pt"
-                     :src="`/images/template-icons/${tmpl.title||'Default'}.png`"
-                     @error="(e)=>e.target.src='/images/template-icons/Default.png'"/>
-              </span>
-                <div class="form-control btn-group-vertical">
-                  <div><strong>{{ tmpl.title }}</strong></div>
-                  {{ tmpl.description }}
-                </div>
-              </label>
+          <div v-for="(tmpl, i) in filteredTemplates" >
+            <div v-if="i<3 || showMoreWasPressed" class="form-check template-button">
+              <div v-if="i<3 || showMoreWasPressed">
+                <input :id="`template_${i}`" type="radio" class="form-check visually-hidden" name="template"
+                       v-model="selectedTemplate"
+                       :value="tmpl.name"
+                />
+                <label class="input-group" :for="`template_${i}`"  :title="tmpl.name">
+                <span class="input-group-text p-4">
+                  <img :alt="tmpl.displayName"  style="min-height: 40px; width: 40px"
+                       :src="`/images/template-icons/${tmpl.title||'Default'}.png`"
+                       @error="(e)=>e.target.src='/images/template-icons/Default.png'"/>
+                </span>
+                  <div class="form-control btn-group-vertical">
+                    <div><strong>{{ tmpl.title }}</strong></div>
+                    {{ tmpl.description }}
+                  </div>
+                </label>
+              </div>
             </div>
           </div>
 
@@ -135,9 +167,6 @@ label {
 }
 
 
-.icon img {
-  width: 40pt;
-}
 
 .icon span {
   display: block;
