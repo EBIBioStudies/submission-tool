@@ -1,6 +1,6 @@
 <script setup>
-import {allTemplates, latestTemplates, fillTemplate} from "@/templates/templates";
-import {computed, onMounted, ref} from "vue";
+import {activeTemplates, fillTemplate} from "@/templates/templates";
+import {onMounted, ref} from "vue";
 import axios from "axios";
 import router from "@/router";
 import AuthService from "@/services/AuthService";
@@ -9,18 +9,12 @@ import AuthService from "@/services/AuthService";
 const emits = defineEmits(['select'])
 const showMoreWasPressed = ref(false)
 const selectedTemplate = ref(null)
-const allowedCollections = ref([])
+const allowedTemplates = ref([])
 
 const createNewSubmission = async ()=> {
 
   // create new
-  let thisTemplate = allTemplates.find((tmpl) => tmpl.name===selectedTemplate.value);
-  if(!thisTemplate) {
-    let oneAllowCollection = allowedCollections.value.find(item => item.accno===selectedTemplate.value)
-    thisTemplate = {'name': oneAllowCollection.accno, 'title': oneAllowCollection.title}
-    thisTemplate.sectionType = allTemplates.find(item => item.name === 'Default')
-    thisTemplate.sectionType.subsections = {};
-  }
+  let thisTemplate = activeTemplates.find((tmpl) => tmpl.name===selectedTemplate.value);
 
   const draft = {
     type: 'submission',
@@ -57,39 +51,16 @@ const createNewSubmission = async ()=> {
   await router.push(`/edit/${response.data.key}`)
 }
 
-const filteredTemplates = computed(() => {
-  // return latestTemplates.filter((tmpl) =>
-  //   allowedCollections.value.some((allowed) => tmpl.name.includes(allowed.accno) || tmpl.name === 'Default')
-  // );
-
-  const orderedNames = ['BioImages', 'Default', 'MicrobioRaman'];
-  const latestTemplatesMap = {};
-  const resultTemplatesMap = {};
-  const resultTemplateItem = [];
-  latestTemplates.forEach((tmpl) => {
-    latestTemplatesMap[tmpl.title] = tmpl;
-  });
-  orderedNames.forEach((name)=>{
-    if(allowedCollections.value.some(coll=>coll.accno.includes(name) || name === 'Default')) {
-      resultTemplatesMap[name] = latestTemplatesMap[name];
-      resultTemplateItem.push(latestTemplatesMap[name])
-    }
-  });
-  allowedCollections.value.forEach((item)=>{
-    if(!resultTemplatesMap[item.accno]) {
-      resultTemplatesMap[item.accno] = latestTemplatesMap['Default'];
-      resultTemplateItem.push({'name':item.accno, 'title':item.title});
-    }
-  });
-  return resultTemplateItem;
-
-});
 
 onMounted(async () => {
   if (!AuthService.isAuthenticated()) return;
   try {
     await axios.get(`${window.config.backendUrl}/api/collections`).then(response=>{
-      allowedCollections.value = response.data;
+      const allowedCollections = response.data;
+      allowedTemplates.value = activeTemplates.filter( (tmpl)=> {
+        const collection = tmpl.name.split(".")[0].toLowerCase() || 'default';
+        return collection==='default' || allowedCollections.find( (obj) => collection===obj?.accno?.toLowerCase())
+      })
     });
   } catch (error) {
     //console.error('Failed to fetch collections:', error);
@@ -117,7 +88,7 @@ onMounted(async () => {
             href="https://www.ebi.ac.uk/bioimage-archive/help-images-at-ebi" target="_blank"> EMBL-EBI policy on imaging
             data submissions</a>.</p>
 
-          <div v-for="(tmpl, i) in filteredTemplates" >
+          <div v-for="(tmpl, i) in allowedTemplates" >
             <div v-if="i<3 || showMoreWasPressed" class="form-check template-button">
               <div v-if="i<3 || showMoreWasPressed">
                 <input :id="`template_${i}`" type="radio" class="form-check visually-hidden" name="template"
@@ -125,8 +96,8 @@ onMounted(async () => {
                        :value="tmpl.name"
                 />
                 <label class="input-group" :for="`template_${i}`"  :title="tmpl.name">
-                <span class="input-group-text p-4">
-                  <img :alt="tmpl.displayName"  style="min-height: 40px; width: 40px"
+                <span class="input-group-text p-4"  style="width:70pt; height: 70pt">
+                  <img :alt="tmpl.displayName"  style="width: 48px"
                        :src="`/images/template-icons/${tmpl.title||'Default'}.png`"
                        @error="(e)=>e.target.src='/images/template-icons/Default.png'"/>
                 </span>
@@ -140,7 +111,7 @@ onMounted(async () => {
           </div>
 
           <div class="text-center">
-            <button v-if="filteredTemplates.length>3 && !showMoreWasPressed" type="button"
+            <button v-if="allowedTemplates.length>3 && !showMoreWasPressed" type="button"
                     class="btn btn-link text-decoration-none"
                     @click="showMoreWasPressed=true">show more collections...
             </button>
