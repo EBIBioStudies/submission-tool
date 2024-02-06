@@ -1,6 +1,6 @@
 <script setup>
-import {allTemplates, latestTemplates, fillTemplate} from "@/templates/templates";
-import {ref} from "vue";
+import {activeTemplates, fillTemplate} from "@/templates/templates";
+import {onMounted, ref} from "vue";
 import axios from "axios";
 import router from "@/router";
 import AuthService from "@/services/AuthService";
@@ -9,11 +9,13 @@ import AuthService from "@/services/AuthService";
 const emits = defineEmits(['select'])
 const showMoreWasPressed = ref(false)
 const selectedTemplate = ref(null)
+const allowedTemplates = ref([])
 
 const createNewSubmission = async ()=> {
 
   // create new
-  const thisTemplate = allTemplates.find((tmpl) => tmpl.name===selectedTemplate.value);
+  let thisTemplate = activeTemplates.find((tmpl) => tmpl.name===selectedTemplate.value);
+
   const draft = {
     type: 'submission',
     attributes: [
@@ -50,6 +52,22 @@ const createNewSubmission = async ()=> {
 }
 
 
+onMounted(async () => {
+  if (!AuthService.isAuthenticated()) return;
+  try {
+    await axios.get(`${window.config.backendUrl}/api/collections`).then(response=>{
+      const allowedCollections = response.data;
+      allowedTemplates.value = activeTemplates.filter( (tmpl)=> {
+        const collection = tmpl.name.split(".")[0].toLowerCase() || 'default';
+        return collection==='default' || allowedCollections.find( (obj) => collection===obj?.accno?.toLowerCase())
+      })
+    });
+  } catch (error) {
+    //console.error('Failed to fetch collections:', error);
+  }
+});
+
+
 </script>
 
 <template>
@@ -70,28 +88,30 @@ const createNewSubmission = async ()=> {
             href="https://www.ebi.ac.uk/bioimage-archive/help-images-at-ebi" target="_blank"> EMBL-EBI policy on imaging
             data submissions</a>.</p>
 
-          <div v-for="(tmpl, i) in latestTemplates" class="form-check template-button">
-            <div v-if="i<2 || showMoreWasPressed">
-              <input :id="`template_${i}`" type="radio" class="form-check visually-hidden" name="template"
-                     v-model="selectedTemplate"
-                     :value="tmpl.name"
-              />
-              <label class="input-group" :for="`template_${i}`"  :title="tmpl.name">
-              <span class="input-group-text p-4">
-                <img :alt="tmpl.displayName" style="max-height: 50px"
-                     :src="`/images/template-icons/${tmpl.title||'Default'}.png`"
-                     @error="(e)=>e.target.src='/images/template-icons/Default.png'"/>
-              </span>
-                <div class="form-control btn-group-vertical">
-                  <div><strong>{{ tmpl.title }}</strong></div>
-                  {{ tmpl.description }}
-                </div>
-              </label>
+          <div v-for="(tmpl, i) in allowedTemplates" >
+            <div v-if="i<3 || showMoreWasPressed" class="form-check template-button">
+              <div v-if="i<3 || showMoreWasPressed">
+                <input :id="`template_${i}`" type="radio" class="form-check visually-hidden" name="template"
+                       v-model="selectedTemplate"
+                       :value="tmpl.name"
+                />
+                <label class="input-group" :for="`template_${i}`"  :title="tmpl.name">
+                <span class="input-group-text p-4"  style="width:70pt; height: 70pt">
+                  <img :alt="tmpl.displayName"  style="width: 48px"
+                       :src="`/images/template-icons/${tmpl.title||'Default'}.png`"
+                       @error="(e)=>e.target.src='/images/template-icons/Default.png'"/>
+                </span>
+                  <div class="form-control btn-group-vertical">
+                    <div><strong>{{ tmpl.title }}</strong></div>
+                    {{ tmpl.description }}
+                  </div>
+                </label>
+              </div>
             </div>
           </div>
 
           <div class="text-center">
-            <button v-if="latestTemplates.length>=2 && !showMoreWasPressed" type="button"
+            <button v-if="allowedTemplates.length>3 && !showMoreWasPressed" type="button"
                     class="btn btn-link text-decoration-none"
                     @click="showMoreWasPressed=true">show more collections...
             </button>
@@ -118,9 +138,6 @@ label {
 }
 
 
-.icon img {
-  width: 40pt;
-}
 
 .icon span {
   display: block;
