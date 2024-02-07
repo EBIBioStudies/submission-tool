@@ -89,6 +89,13 @@ const routes = [
     component: () => import('./Profile.vue'),
     props: true,
     meta: {requiresAuth: true}
+  },
+  {
+    path: '/direct_upload',
+    name: 'Direct Upload',
+    component: () => import('./DirectUpload.vue'),
+    props: true,
+    meta: {requiresAuth: true}
   }
 ];
 

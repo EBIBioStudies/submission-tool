@@ -4,6 +4,7 @@ import {ref} from "vue";
 import axios from "axios";
 import router from "@/router";
 import AuthService from "@/services/AuthService";
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 
 const emits = defineEmits(['select'])
@@ -53,7 +54,21 @@ const createNewSubmission = async ()=> {
 </script>
 
 <template>
-  <div class="modal fade modal-lg" id="newSubmissionModal" tabindex="-1" aria-labelledby="newSubmissionModal">
+  <div class="text-end">
+    <div class="btn-group mb-4">
+      <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#NewSubmission">
+        <font-awesome-icon :icon="['fas', 'circle-plus']"></font-awesome-icon>
+        New Submission</button>
+      <button type="button" class="btn btn-success dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+        <span class="visually-hidden">Toggle Dropdown</span>
+      </button>
+      <ul class="dropdown-menu">
+        <li><span role="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#NewSubmission">Submit Form</span></li>
+        <li><router-link to="direct_upload" style="text-decoration: none" role="button" class="dropdown-item">Submit PageTab</router-link></li>
+      </ul>
+    </div>
+  </div>
+  <div class="modal fade modal-lg" id="NewSubmission" tabindex="-1" aria-labelledby="NewSubmission">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">

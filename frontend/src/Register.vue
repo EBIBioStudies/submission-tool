@@ -139,7 +139,7 @@ export default {
 };
 </script>
 
-<style>
+<style class="scoped">
 .btn{
   margin-bottom: 10px;
 }
