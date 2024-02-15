@@ -167,7 +167,6 @@ watchEffect(async () => {
       );
     }
     template.value = tmpl ?? Default;
-    console.log(`Using template ${template?.value?.name}`)
   } else {
     //TODO: display error
     console.log('No such submission')
@@ -217,3 +216,15 @@ const expandAndFocus = async (el) => {
 }
 
 </script>
+
+<style class="scoped">
+label {
+  display: inherit;
+  margin-bottom: inherit;
+}
+
+.form-group {
+  margin-bottom: inherit;
+}
+
+</style>

@@ -73,7 +73,7 @@ const doLogin = async () => {
 }
 </script>
 
-<style>
+<style class="scoped">
 .alert-container {
   height: 90px;
 }
