@@ -1,11 +1,6 @@
 <template>
   <div class="container">
-    <div class="text-end">
-      <button class="btn btn-success  mb-4" data-bs-toggle="modal" data-bs-target="#newSubmissionModal">
-        <font-awesome-icon :icon="['fas', 'circle-plus']"></font-awesome-icon>
-        New Submission
-      </button>
-    </div>
+    <NewSubmission @select="(e)=>console.log(e)"></NewSubmission>
     <table class="table table-responsive table-striped table-hover">
       <thead>
       <th style="width: 180px">Draft Key</th>
@@ -52,8 +47,9 @@
   <div v-if="isLoading" class="d-flex justify-content-center">
     <span v-if="isLoading" class="ps-1"><font-awesome-icon class="fa-spin" icon="fa-solid fa-spinner" /></span>
   </div>
-  <a href="https://www.ebi.ac.uk/biostudies/studies/" target="_blank"> Search published submissions <i class="fa fa-fw fa-external-link-square"></i></a>
-  <NewSubmissionModal @select="(e)=>console.log(e)"></NewSubmissionModal>
+  <a href="https://www.ebi.ac.uk/biostudies/studies/" target="_blank"> Search published submissions
+    <font-awesome-icon icon="fa-solid fa-external-link-square"></font-awesome-icon>
+  </a>
 </template>
 
 <script setup>
@@ -62,7 +58,7 @@ import AuthService from "./services/AuthService";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import router from "./router";
 import axios from "axios";
-import NewSubmissionModal from "@/components/NewSubmissionModal.vue";
+import NewSubmission from "@/components/NewSubmission.vue";
 import utils from "@/utils";
 
 const accession = ref('');

@@ -1,5 +1,8 @@
 package uk.ac.ebi.biostudies.submissiontool.controllers;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
@@ -20,8 +23,10 @@ public class Config {
     @GetMapping(value = "/config", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public String getConfig() throws IOException {
-        return String.format("{\"recaptchaKey\":\"%s\"}",
-                environments.getProperty("backend.recaptcha-key"));
+        ObjectNode config = (new ObjectMapper()).createObjectNode();
+        config.put ("recaptchaKey", environments.getProperty("backend.recaptcha-key"));
+        config.put("frontendUrl", environments.getProperty("frontend.url"));
+        return config.toString();
     }
 
 }
