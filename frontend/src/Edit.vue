@@ -1,7 +1,12 @@
 <template xmlns="http://www.w3.org/1999/html">
+  <teleport to="body">
+    <div class="fixed-top text-end col">
+      <font-awesome-icon icon="fas fa-user-secret" class="p-2 link-dark" type="button" @click="offCanvasJson.show();"></font-awesome-icon>
+    </div>
+  </teleport>
   <div class="container">
     <div class="row">
-      <div class="col text-end">
+      <div class="col text-end pb-4">
         <font-awesome-icon v-if="isSaving" :icon="['far','floppy-disk']" beat-fade class="pe-2"/>
         <button class="btn btn-primary" type="button" @click="submitDraft()">Submit</button>
         <button class="btn btn-outline-danger ms-2" type="button" @click="revertDraft()">Revert</button>
@@ -9,10 +14,20 @@
     </div>
     <div class="row">
       <div class="col-1"></div>
-      <div class="col-8">
+      <div class="col-10">
         <Submission :submission="submission" :template="template" :accession="props.accession" ref="submissionComponent"/>
       </div>
-      <div id="json" class="json col-3"></div>
+      <div class="col-1"></div>
+      <!--div id="json" class="json col-3"></div-->
+    </div>
+    <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" id="offcanvasJson">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasScrollingLabel">Pagetab JSON</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+        <div id="json" class="json"></div>
+      </div>
     </div>
 
     <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1"
@@ -55,6 +70,7 @@
   font-size: 8pt;
   white-space: pre-wrap;
   color: #222222;
+  overflow: both;
 }
 </style>
 
@@ -80,6 +96,7 @@ provide('submission', submission)
 const submissionComponent = ref({})
 
 let offCanvasErrors = null;
+let offCanvasJson = null;
 let validationErrors = ref([]);
 
 const submitDraft = async () => {
@@ -109,6 +126,7 @@ const revertDraft = async () => {
 
 onMounted(() => {
   offCanvasErrors = Offcanvas.getOrCreateInstance('#offcanvasErrors', {'backdrop': false});
+  offCanvasJson = Offcanvas.getOrCreateInstance('#offcanvasJson', {'backdrop': false});
 })
 
 watchEffect(async () => {

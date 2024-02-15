@@ -150,7 +150,6 @@
             "controlType": {
               "name": "text"
             },
-            "display": "desirable",
             "helpContextual": {
               "description": "The full name of the author."
             }
@@ -160,7 +159,6 @@
             "controlType": {
               "name": "text"
             },
-            "display": "desirable",
             "helpContextual": {
               "description": "Author e-mail address."
             }
@@ -190,7 +188,6 @@
                 "submitter"
               ]
             },
-            "display": "desirable",
             "helpContextual": {
               "description": "Author role in the study."
             }
@@ -200,7 +197,6 @@
             "controlType": {
               "name": "orcid"
             },
-            "display": "desirable",
             "helpContextual": {
               "description": "Author ORCID ID."
             }

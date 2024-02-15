@@ -41,7 +41,8 @@ const getFieldType = (attribute) => {
   if (!fieldType && name) {
     fieldType = {
       'name': name,
-      'valueType': {
+      'createdOnRender' : true,
+      'controlType': {
         'name': name?.toLowerCase(),
       },
     };
@@ -171,14 +172,19 @@ defineExpose({ errors, thisSection });
         <draggable v-model="headers" :item-key="(key) => key" tag="tr" @end.stop="reorderColumns">
           <template #item="{ element: header, index: i }">
             <th :class="{ fixed: i === 0 || i === headers?.length - 1 || getFieldType(header)?.display==='required' }">
-              <span v-if="getFieldType(header)?.display==='required'" class="form-control-sm">{{ header }}</span>
-              <div v-else-if="i > 0 && i < headers.length - 1" class="input-group input-group-sm">
-                <input ref="headerComponent" :value="header" class="form-control" type="text"
+              <div v-if="i > 0 && i < headers.length - 1" class="input-group input-group-sm align-items-center">
+                <template v-if="!getFieldType(header)?.createdOnRender">
+                  <span class="form-control-sm">{{ header }}</span>
+                  <font-awesome-icon role="button" @click.prevent="deleteColumn(i)" class="icon fa-sm"
+                                     icon="fa-trash"></font-awesome-icon>
+                </template>
+                <template v-else>
+                  <input ref="headerComponent" :value="header" class="form-control" type="text"
                        @change.stop="(e) => updateColumnName(e, i)">
-                <button v-if="getFieldType(header)?.display!=='required'" class="btn btn-outline-secondary icon"
-                        type="button" @click.prevent="deleteColumn(i)">
-                  <font-awesome-icon class="fa-sm" icon="fa-trash"></font-awesome-icon>
-                </button>
+                  <button class="btn btn-outline-secondary icon" type="button" @click.prevent="deleteColumn(i)">
+                    <font-awesome-icon class="fa-sm" icon="fa-trash"></font-awesome-icon>
+                  </button>
+                </template>
               </div>
             </th>
           </template>

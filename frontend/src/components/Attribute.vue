@@ -250,7 +250,7 @@ const showHelp = () => {
 
     <!--file-->
     <FileFolderSelectModal
-      v-else-if="fieldType?.valueType?.name === 'file'"
+      v-else-if="fieldType?.controlType?.name === 'file'"
       :file="thisAttribute"
       :class="{'is-invalid':errors && hasValidated}"
     />
@@ -321,6 +321,7 @@ label.attribute {
 
 .multiselect-wrapper, .multiselect  {
   min-height: calc( 1.2rem + calc(var(--bs-border-width) * 2)) !important;
+  min-width: 84pt !important;
 }
 
 .multiselect.form-control.form-control-sm  {
