@@ -237,21 +237,21 @@
           },
           {
             "name": "Address",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "optional"
           },
           {
             "name": "Department",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "optional"
           },
           {
             "name": "Funding",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "optional"
@@ -268,14 +268,14 @@
         "columnTypes": [
           {
             "name": "Link",
-            "valueType": {
+            "controlType": {
               "name": "idlink"
             },
             "display": "required"
           },
           {
             "name": "Description",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "desirable"
@@ -292,21 +292,21 @@
         "columnTypes": [
           {
             "name": "File",
-            "valueType": {
+            "controlType": {
               "name": "file"
             },
             "display": "required"
           },
           {
             "name": "Description",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "required"
           },
           {
             "name": "Type",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "desirable"
@@ -323,63 +323,63 @@
         "columnTypes": [
           {
             "name": "PMID",
-            "valueType": {
+            "controlType": {
               "name": "pubmedid"
             },
             "display": "desirable"
           },
           {
             "name": "Authors",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "required"
           },
           {
             "name": "Title",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "required"
           },
           {
             "name": "Year",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "required"
           },
           {
             "name": "Volume",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "desirable"
           },
           {
             "name": "Issue",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "desirable"
           },
           {
             "name": "Type",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "optional"
           },
           {
             "name": "Issn",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "optional"
           },
           {
             "name": "DOI",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "optional"

@@ -172,35 +172,35 @@
           },
           {
             "name":"Volume",
-            "valueType":{
+            "controlType":{
               "name":"text"
             },
             "display":"desirable"
           },
           {
             "name":"Issue",
-            "valueType":{
+            "controlType":{
               "name":"text"
             },
             "display":"desirable"
           },
           {
             "name":"Type",
-            "valueType":{
+            "controlType":{
               "name":"text"
             },
             "display":"optional"
           },
           {
             "name":"Issn",
-            "valueType":{
+            "controlType":{
               "name":"text"
             },
             "display":"optional"
           },
           {
             "name":"DOI",
-            "valueType":{
+            "controlType":{
               "name":"text"
             },
             "display":"optional"
@@ -218,7 +218,7 @@
         "columnTypes":[
           {
             "name":"File",
-            "valueType":{
+            "controlType":{
               "name":"file",
               "allowFolders":false
             },
@@ -226,7 +226,7 @@
           },
           {
             "name":"Type",
-            "valueType":{
+            "controlType":{
               "name":"text",
               "defaultValue":"Raw spectrum"
             },
@@ -245,7 +245,7 @@
           {
             "name":"Name of cell or compound",
             "icon":"fa-file-invoice",
-            "valueType":{
+            "controlType":{
               "name":"text",
               "placeholder":"Sample names"
             },
@@ -254,7 +254,7 @@
           {
             "name":"Source",
             "icon":"fa-vial",
-            "valueType":{
+            "controlType":{
               "name":"text",
               "placeholder":"Source of a sample, such as a strain collection, a chemical supplier, or the environment or tissue from which a sample was obtained"
             },
@@ -263,7 +263,7 @@
           {
             "name":"Composition",
             "icon":"fa-cogs",
-            "valueType":{
+            "controlType":{
               "name":"largetext",
               "placeholder":"Entities contained in the sample, including not just the cells of interest, but also the medium, as well as any extraneous materials such as tissue, debris, biofilm matrix, or soil"
             },
@@ -272,7 +272,7 @@
           {
             "name":"Preparation",
             "icon":"fa-temperature-low",
-            "valueType":{
+            "controlType":{
               "name":"largetext",
               "placeholder":"E.g., preservation after sampling, culturing condition (e.g., sample volume, medium, light condition/diel cycle, pH, temperature, antibiotics, oxic/anoxic), sample age, fixed or unfixed, whether the cells were dry or wet for Raman measurement"
             },
@@ -281,7 +281,7 @@
           {
             "name":"Mounting substrate",
             "icon":"fa-layer-group",
-            "valueType":{
+            "controlType":{
               "name":"text",
               "placeholder":"E.g., glass coverslip, aluminum slide, CaF2 slide, quartz slide"
             },
@@ -301,7 +301,7 @@
             "columnTypes":[
               {
                 "name":"File",
-                "valueType":{
+                "controlType":{
                   "name":"file",
                   "allowFolders":false
                 },
@@ -309,7 +309,7 @@
               },
               {
                 "name":"Type",
-                "valueType":{
+                "controlType":{
                   "name":"text",
                   "defaultValue":"Image file"
                 },
@@ -328,7 +328,7 @@
           {
             "name":"Raman system",
             "icon":"fa-microscope",
-            "valueType":{
+            "controlType":{
               "name":"text",
               "placeholder":"Manufacturer and model of the scope"
             },
@@ -337,7 +337,7 @@
           {
             "name":"Measurement type",
             "icon":"fa-ruler-combined",
-            "valueType":{
+            "controlType":{
               "name":"select",
               "values":[
                 "coherent anti-Stokes Raman scattering (CARS)",
@@ -366,35 +366,35 @@
             "columnTypes":[
               {
                 "name":"Description",
-                "valueType":{
+                "controlType":{
                   "name":"text"
                 },
                 "display":"desirable"
               },
               {
                 "name":"Manufacturer and model",
-                "valueType":{
+                "controlType":{
                   "name":"text"
                 },
                 "display":"desirable"
               },
               {
                 "name":"Wavelength (nm)",
-                "valueType":{
+                "controlType":{
                   "name":"text"
                 },
                 "display":"required"
               },
               {
                 "name":"Power (mW)",
-                "valueType":{
+                "controlType":{
                   "name":"text"
                 },
                 "display":"required"
               },
               {
                 "name":"Continuous wave or pulsed",
-                "valueType":{
+                "controlType":{
                   "name":"text",
                   "placeholder":"If pulsed, pulse duration and repetition rate"
                 },
@@ -402,7 +402,7 @@
               },
               {
                 "name":"Excitation intensity",
-                "valueType":{
+                "controlType":{
                   "name":"text",
                   "placeholder":"For nonlinear Raman spectroscopy (e.g., CARS/SRS)"
                 },
@@ -410,7 +410,7 @@
               },
               {
                 "name":"Polarization state",
-                "valueType":{
+                "controlType":{
                   "name":"text",
                   "placeholder":"For polarized Raman spectroscopy"
                 },
@@ -418,7 +418,7 @@
               },
               {
                 "name":"Laser spot shape",
-                "valueType":{
+                "controlType":{
                   "name":"select",
                   "values":[
                     "circular",
@@ -432,7 +432,7 @@
               },
               {
                 "name":"Laser illumination spot size",
-                "valueType":{
+                "controlType":{
                   "name":"text",
                   "placeholder":"E.g., diameter for a circular shape"
                 },
@@ -440,7 +440,7 @@
               },
               {
                 "name":"Neutral density filter (%)",
-                "valueType":{
+                "controlType":{
                   "name":"text",
                   "placeholder":"100% if not used"
                 },
@@ -448,7 +448,7 @@
               },
               {
                 "name":"Grating",
-                "valueType":{
+                "controlType":{
                   "name":"text",
                   "placeholder":"0 if not used"
                 },
@@ -457,14 +457,14 @@
               {
                 "name":"Acquisition time (sec)",
                 "display":"required",
-                "valueType":{
+                "controlType":{
                   "name":"text"
                 }
               },
               {
                 "name":"Accumulation number",
                 "display":"required",
-                "valueType":{
+                "controlType":{
                   "name":"text",
                   "placeholder":"For averaging"
                 }
@@ -472,14 +472,14 @@
               {
                 "name":"Spectral window (cm⁻¹)",
                 "display":"required",
-                "valueType":{
+                "controlType":{
                   "name":"text"
                 }
               },
               {
                 "name":"Resolution (cm⁻¹)",
                 "display":"required",
-                "valueType":{
+                "controlType":{
                   "name":"text"
                 }
               }
@@ -497,7 +497,7 @@
           {
             "name":"Software",
             "icon":"fa-briefcase",
-            "valueType":{
+            "controlType":{
               "name":"text",
               "placeholder":"If manufacturer’s software was used for data processing, the name and version of software"
             },
@@ -515,7 +515,7 @@
             "columnTypes":[
               {
                 "name":"File",
-                "valueType":{
+                "controlType":{
                   "name":"file",
                   "allowFolders":false
                 },
@@ -523,7 +523,7 @@
               },
               {
                 "name":"Type",
-                "valueType":{
+                "controlType":{
                   "name":"text",
                   "defaultValue":"Processed Raman data"
                 },
@@ -539,7 +539,7 @@
             "columnTypes":[
               {
                 "name":"Treatment",
-                "valueType":{
+                "controlType":{
                   "name":"text",
                   "placeholder":"Treatment description"
                 },
@@ -550,7 +550,7 @@
           {
             "name":"Software",
             "icon":"fa-comment",
-            "valueType":{
+            "controlType":{
               "name":"text",
               "placeholder":"If manufacturer’s software was used for data processing, the name and version of software."
             },
@@ -575,35 +575,35 @@
           "columnTypes":[
             {
               "name":"Type of spike filter",
-              "valueType":{
+              "controlType":{
                 "name":"text"
               },
               "display":"optional"
             },
             {
               "name":"Detector specifications",
-              "valueType":{
+              "controlType":{
                 "name":"text"
               },
               "display":"optional"
             },
             {
               "name":"Details of a microscope objective or a focusing lens",
-              "valueType":{
+              "controlType":{
                 "name":"text"
               },
               "display":"optional"
             },
             {
               "name":"Confocality",
-              "valueType":{
+              "controlType":{
                 "name":"text"
               },
               "display":"optional"
             },
             {
               "name":"Binning",
-              "valueType":{
+              "controlType":{
                 "name":"text"
               },
               "display":"optional"
