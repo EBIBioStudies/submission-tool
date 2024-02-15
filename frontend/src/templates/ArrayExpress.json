@@ -16,7 +16,7 @@
       {
         "name": "Title",
         "icon": "fa-heading",
-        "valueType": {
+        "controlType": {
           "name": "largetext"
         }
       },
@@ -25,7 +25,7 @@
         "title": "Release Date",
         "icon": "fa-calendar-alt",
         "display": "required",
-        "valueType": {
+        "controlType": {
           "name": "date",
           "allowPast": false
         }
@@ -33,21 +33,21 @@
       {
         "name": "Study type",
         "icon": "fa-tag",
-        "valueType": {
+        "controlType": {
           "name": "text"
         }
       },
       {
         "name": "Organism",
         "icon": "fa-tag",
-        "valueType": {
+        "controlType": {
           "name": "text"
         }
       },
       {
         "name": "Description",
         "icon": "fa-tag",
-        "valueType": {
+        "controlType": {
           "name": "largetext"
         }
       }
@@ -61,26 +61,26 @@
         "columnTypes": [
           {
             "name": "Name",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "required"
           },
           {
             "name": "Type",
-            "valueType": {
+            "controlType": {
               "name": "text"
             }
           },
           {
             "name": "Description",
-            "valueType": {
+            "controlType": {
               "name": "text"
             }
           },
           {
             "name": "Hardware",
-            "valueType": {
+            "controlType": {
               "name": "text"
             }
           }
@@ -99,33 +99,33 @@
             "autosuggest": false,
             "display": "desirable",
             "name": "Name",
-            "valueType": {
+            "controlType": {
               "name": "text"
             }
           },
           {
             "autosuggest": false,
             "name": "Email",
-            "valueType": {
+            "controlType": {
               "name": "text"
             }
           },
           {
             "name": "Organisation",
-            "valueType": {
+            "controlType": {
               "name": "org",
               "multiple": true
             }
           },
           {
             "name": "Role",
-            "valueType": {
+            "controlType": {
               "name": "text"
             }
           },
           {
             "name": "ORCID",
-            "valueType": {
+            "controlType": {
               "name": "orcid"
             }
           }
@@ -142,14 +142,14 @@
         "columnTypes": [
           {
             "name": "PMID",
-            "valueType": {
+            "controlType": {
               "name": "pubmedid"
             },
             "display": "desirable"
           },
           {
             "name": "Authors",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "required"

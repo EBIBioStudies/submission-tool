@@ -16,7 +16,7 @@
       {
         "name": "Title",
         "icon": "fa-heading",
-        "valueType": {
+        "controlType": {
           "name": "largetext",
           "minlength": 25
         },
@@ -30,7 +30,7 @@
       {
         "name": "Description",
         "icon": "fa-comment",
-        "valueType": {
+        "controlType": {
           "name": "largetext"
         },
         "display": "required",
@@ -43,7 +43,7 @@
         "title": "Release Date",
         "icon": "fa-calendar-alt",
         "display": "required",
-        "valueType": {
+        "controlType": {
           "name": "date",
           "allowPast": false
         },
@@ -56,7 +56,7 @@
         "icon": "fa-address-card",
         "description": "Add keywords<br><a href=\"/bioimage-archive/help-submission-form/#keywords\">Examples</a>",
         "display": "required",
-        "valueType": {
+        "controlType": {
           "name": "select",
           "multiple": true
         },
@@ -68,7 +68,7 @@
       {
         "name": "Acknowledgements",
         "icon": "fa-comment",
-        "valueType": {
+        "controlType": {
           "name": "largetext"
         },
         "display": "desirable",
@@ -87,7 +87,7 @@
         "columnTypes": [
           {
             "name": "Name",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "desirable",
@@ -97,7 +97,7 @@
           },
           {
             "name": "E-mail",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "desirable",
@@ -107,7 +107,7 @@
           },
           {
             "name": "Organisation",
-            "valueType": {
+            "controlType": {
               "name": "org",
               "multiple": true
             },
@@ -116,7 +116,7 @@
           },
           {
             "name": "Role",
-            "valueType": {
+            "controlType": {
               "name": "select",
               "values": [
                 "corresponding author",
@@ -137,7 +137,7 @@
           },
           {
             "name": "ORCID",
-            "valueType": {
+            "controlType": {
               "name": "orcid"
             },
             "display": "desirable",
@@ -159,7 +159,7 @@
           {
             "name": "Agency",
             "icon": "",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "desirable",
@@ -170,7 +170,7 @@
           {
             "name": "grant_id",
             "icon": "",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "desirable",
@@ -192,7 +192,7 @@
         "columnTypes": [
           {
             "name": "Pubmed ID",
-            "valueType": {
+            "controlType": {
               "name": "pubmedid"
             },
             "display": "desirable",

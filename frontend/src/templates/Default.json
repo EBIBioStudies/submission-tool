@@ -17,7 +17,7 @@
         "name": "Title",
         "icon": "fa-heading",
         "display": "required",
-        "valueType": {
+        "controlType": {
           "name": "largetext",
           "minlength": 25
         },
@@ -28,7 +28,7 @@
         "title": "Release Date",
         "icon": "fa-calendar-alt",
         "display": "required",
-        "valueType": {
+        "controlType": {
           "name": "date",
           "allowPast": false
         }
@@ -37,7 +37,7 @@
         "name": "Description",
         "icon": "fa-comment",
         "display": "required",
-        "valueType": {
+        "controlType": {
           "name": "largetext",
           "minlength": 50
         }
@@ -48,7 +48,7 @@
         "display": "required",
         "helpText": "Add organism",
         "helpLink": "help#new-item-dropdown",
-        "valueType": {
+        "controlType": {
           "name": "select",
           "multiple": true,
           "values": [
@@ -150,35 +150,35 @@
       "columnTypes": [
         {
           "name": "AttachTo",
-          "valueType": {
+          "controlType": {
             "name": "text"
           },
           "display": "readonly"
         },
         {
           "name": "Experimental design",
-          "valueType": {
+          "controlType": {
             "name": "text"
           },
           "display": "optional"
         },
         {
           "name": "Experimental factor",
-          "valueType": {
+          "controlType": {
             "name": "text"
           },
           "display": "optional"
         },
         {
           "name": "Organ",
-          "valueType": {
+          "controlType": {
             "name": "text"
           },
           "display": "optional"
         },
         {
           "name": "Cell type",
-          "valueType": {
+          "controlType": {
             "name": "text"
           },
           "display": "optional"
@@ -199,14 +199,14 @@
             "autosuggest": false,
             "display": "required",
             "name": "Name",
-            "valueType": {
+            "controlType": {
               "name": "text"
             }
           },
           {
             "autosuggest": false,
             "name": "E-mail",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "required"
@@ -215,7 +215,7 @@
             "name": "Organisation",
             "helpText": "Add org",
             "helpLink": "help#new-item-dropdown",
-            "valueType": {
+            "controlType": {
               "name": "org",
               "multiple": true
             },
@@ -223,14 +223,14 @@
           },
           {
             "name": "Role",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "optional"
           },
           {
             "name": "ORCID",
-            "valueType": {
+            "controlType": {
               "name": "orcid"
             },
             "display": "desirable"

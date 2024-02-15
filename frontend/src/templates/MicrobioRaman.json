@@ -13,7 +13,7 @@
       {
         "name":"Title",
         "icon":"fa-heading",
-        "valueType":{
+        "controlType":{
           "name":"largetext",
           "placeholder":"Project title"
         },
@@ -25,7 +25,7 @@
         "title":"Release Date",
         "icon":"fa-calendar-alt",
         "display":"required",
-        "valueType":{
+        "controlType":{
           "name":"date",
           "allowPast":false
         },
@@ -36,7 +36,7 @@
       {
         "name":"Description",
         "icon":"fa-comment",
-        "valueType":{
+        "controlType":{
           "name":"largetext",
           "placeholder":"Brief description of the project"
         }
@@ -44,7 +44,7 @@
       {
         "name":"Software",
         "icon":"fa-briefcase",
-        "valueType":{
+        "controlType":{
           "name":"text",
           "placeholder":"If a commercial Raman system was used for measurement, the name and version of software"
         },
@@ -62,7 +62,7 @@
         "columnTypes":[
           {
             "name":"Name",
-            "valueType":{
+            "controlType":{
               "name":"text"
             },
             "display":"required",
@@ -72,7 +72,7 @@
             "name":"Organisation",
             "helpText":"Add org",
             "helpLink":"help#new-item-dropdown",
-            "valueType":{
+            "controlType":{
               "name":"org",
               "multiple":true
             },
@@ -81,7 +81,7 @@
           },
           {
             "name":"E-mail",
-            "valueType":{
+            "controlType":{
               "name":"text"
             },
             "display":"required",
@@ -89,14 +89,14 @@
           },
           {
             "name":"ORCID",
-            "valueType":{
+            "controlType":{
               "name":"orcid"
             },
             "display":"desirable"
           },
           {
             "name":"Role",
-            "valueType":{
+            "controlType":{
               "name":"select",
               "values":[
                 "corresponding author",
@@ -114,21 +114,21 @@
           },
           {
             "name":"Address",
-            "valueType":{
+            "controlType":{
               "name":"text"
             },
             "display":"optional"
           },
           {
             "name":"Department",
-            "valueType":{
+            "controlType":{
               "name":"text"
             },
             "display":"optional"
           },
           {
             "name":"Funding",
-            "valueType":{
+            "controlType":{
               "name":"text"
             },
             "display":"optional"
@@ -144,28 +144,28 @@
         "columnTypes":[
           {
             "name":"PMID",
-            "valueType":{
+            "controlType":{
               "name":"pubmedid"
             },
             "display":"desirable"
           },
           {
             "name":"Authors",
-            "valueType":{
+            "controlType":{
               "name":"text"
             },
             "display":"required"
           },
           {
             "name":"Title",
-            "valueType":{
+            "controlType":{
               "name":"text"
             },
             "display":"required"
           },
           {
             "name":"Year",
-            "valueType":{
+            "controlType":{
               "name":"text"
             },
             "display":"required"
