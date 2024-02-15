@@ -202,7 +202,7 @@
           },
           {
             "name": "Title",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "desirable",
@@ -212,7 +212,7 @@
           },
           {
             "name": "Authors",
-            "valueType": {
+            "controlType": {
               "name": "text",
               "placeholder": "First Author, Second Author, Third Author"
             },
@@ -223,7 +223,7 @@
           },
           {
             "name": "DOI",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "desirable",
@@ -233,7 +233,7 @@
           },
           {
             "name": "Year",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "desirable",
@@ -254,7 +254,7 @@
         "columnTypes": [
           {
             "name": "Link",
-            "valueType": {
+            "controlType": {
               "name": "idlink"
             },
             "display": "desirable",
@@ -264,7 +264,7 @@
           },
           {
             "name": "Description",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "desirable",
@@ -290,7 +290,7 @@
         "fieldTypes": [
           {
             "name": "Annotation Overview",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "description": "Short descriptive summary indicating the type of annotation and how it was generated",
@@ -302,7 +302,7 @@
           },
           {
             "name": "Annotation Method",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "desirable",
@@ -319,7 +319,7 @@
           },
           {
             "name": "Annotation Confidence Level",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "desirable",
@@ -334,7 +334,7 @@
           },
           {
             "name": "Annotation Criteria",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "desirable",
@@ -347,7 +347,7 @@
           },
           {
             "name": "Annotation Coverage",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "desirable",

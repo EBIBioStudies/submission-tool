@@ -306,54 +306,54 @@
           },
           {
             "name": "Authors",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "required"
           },
           {
             "name": "Title",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "required"
           },
           {
             "name": "Year",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "required"
           },
           {
             "name": "Volume",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "desirable"
           },
           {
             "name": "Issue",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "desirable"
           },
           {
             "name": "Type",
-            "valueType": {
+            "controlType": {
               "name": "text"
             }
           },
           {
             "name": "Issn",
-            "valueType": {
+            "controlType": {
               "name": "text"
             }
           },
           {
             "name": "DOI",
-            "valueType": {
+            "controlType": {
               "name": "text"
             }
           }
@@ -371,7 +371,7 @@
           {
             "name": "Name",
             "icon": "fa-comment",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "required"
@@ -379,7 +379,7 @@
           {
             "name": "Description",
             "icon": "fa-comment",
-            "valueType": {
+            "controlType": {
               "name": "largetext"
             },
             "display": "required"
@@ -388,7 +388,7 @@
             "name": "Type",
             "icon": "fa-comment",
             "display": "desirable",
-            "valueType": {
+            "controlType": {
               "name": "select",
               "values": [
                 "primary screen",
@@ -400,7 +400,7 @@
           {
             "name": "Imaging Method",
             "icon": "fa-comment",
-            "valueType": {
+            "controlType": {
               "name": "select",
               "values": [
                 "bright-field microscopy",
@@ -433,7 +433,7 @@
           {
             "name": "Technology Type",
             "icon": "fa-comment",
-            "valueType": {
+            "controlType": {
               "name": "select",
               "values": [
                 "cell line screen",
@@ -449,7 +449,7 @@
           {
             "name": "File List",
             "icon": "fa-file",
-            "valueType": {
+            "controlType": {
               "name": "file",
               "allowFolders": false
             },
@@ -461,7 +461,7 @@
           {
             "name": "Comment",
             "icon": "fa-comment",
-            "valueType": {
+            "controlType": {
               "name": "largetext"
             },
             "display": "desirable"
@@ -476,7 +476,7 @@
             "columnTypes": [
               {
                 "name": "Parameter",
-                "valueType": {
+                "controlType": {
                   "name": "select",
                   "values": [
                     "Plates",
@@ -490,7 +490,7 @@
               },
               {
                 "name": "Value",
-                "valueType": {
+                "controlType": {
                   "name": "text"
                 },
                 "display": "required"
@@ -506,14 +506,14 @@
             "columnTypes": [
               {
                 "name": "File",
-                "valueType": {
+                "controlType": {
                   "name": "file"
                 },
                 "display": "required"
               },
               {
                 "name": "Type",
-                "valueType": {
+                "controlType": {
                   "name": "select",
                   "values": [
                     "Feature level data file",
@@ -526,7 +526,7 @@
               },
               {
                 "name": "Description",
-                "valueType": {
+                "controlType": {
                   "name": "text"
                 },
                 "display": "desirable"
@@ -549,7 +549,7 @@
                 "display": "required",
                 "name": "Protocol",
                 "uniqueValues": true,
-                "valueType": {
+                "controlType": {
                   "name": "select",
                   "values": []
                 }
