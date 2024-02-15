@@ -16,7 +16,7 @@ defineExpose({errors});
       <img height="70" :src="`${template?.sectionType?.banner?.src}`"/>
     </div>
     <h5 class="text-success">{{ accession }}</h5>
-    <h4>{{submission?.attributes?.find(a=>a.name.toLowerCase()==='title').value}}&nbsp;</h4>
+    <h4>{{submission?.attributes?.find(a=>a.name.toLowerCase()==='title')?.value}}&nbsp;</h4>
     <StudySection
       :section="submission.section"
       :sectionType="template?.sectionType"

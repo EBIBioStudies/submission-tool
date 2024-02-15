@@ -8,7 +8,6 @@ const thisSection = ref(props.section);
 const authors = computed(() => {
   return thisSection?.value?.subsections?.filter((s) => s?.type?.toLowerCase() === 'author') ?? []
 })
-
 </script>
 
 <template>
@@ -21,8 +20,8 @@ const authors = computed(() => {
     <div>
       <SectionTable
         :rows="authors"
-        :depth="2"
-        :sectionType=sectionType
+        :depth="0"
+        :sectionType="props.sectionType"
         sectionSubType="Contacts"
         :isTableAttribute="true"
         @rowsReordered=""
