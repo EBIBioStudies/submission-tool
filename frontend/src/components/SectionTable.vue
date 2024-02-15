@@ -1,54 +1,53 @@
 <script setup>
-import {computed, ref} from 'vue';
+import { computed, ref } from 'vue';
 import draggable from 'vuedraggable';
-import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
-import Attribute from "@/components/Attribute.vue";
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import Attribute from '@/components/Attribute.vue';
 
 const props = defineProps(['rows', 'depth', 'sectionType', 'sectionSubType', 'parent']);
 const emits = defineEmits([
   'rowsReordered',
   'columnUpdated',
   'columnsReordered',
-  'delete'
+  'delete',
 ]);
 const thisSection = ref(props.rows);
 const rowSectionType = props.rows && props.rows[0]?.type ? ('' + props.rows[0].type) : '';
-const tableType = ref(props.sectionSubType ?? rowSectionType)
+const tableType = ref(props.sectionSubType ?? rowSectionType);
 const theseRows = ref(Array.isArray(props.rows[0]) ? props.rows[0] : props.rows);
 const headerMap = new Map();
 
 if (tableType.value === 'Files') {
-  headerMap.set('File', [])
+  headerMap.set('File', []);
 } else if (tableType.value === 'Links') {
-  headerMap.set('Link', [])
+  headerMap.set('Link', []);
 }
 theseRows?.value?.forEach((row) => {
     row?.attributes?.forEach((attr) => {
       if (!headerMap.has(attr.name)) headerMap.set(attr.name, []);
       headerMap.get(attr.name).push(attr);
-    })
-  }
+    });
+  },
 );
 const keys = ['', ...headerMap.keys(), ''];
 const headers = ref(keys);
 const refresh = ref(0);
 
 const getFieldType = (attribute) => {
-  let name = attribute?.type?.toLowerCase() === 'file' ? 'File' : attribute?.name || attribute
+  let name = attribute?.type?.toLowerCase() === 'file' ? 'File' : attribute?.name || attribute;
   name = attribute.hasOwnProperty('url') ? 'Link' : name;
   // return the column type. Expects either an object or a column name (for use in draggable)
   let fieldType = props.sectionType?.columnTypes?.find((f) => f.name?.toLowerCase() === name?.toLowerCase());
   if (!fieldType && name) {
     fieldType = {
-      "name": name,
-      "valueType": {
-        "name": name?.toLowerCase()
+      'name': name,
+      'valueType': {
+        'name': name?.toLowerCase(),
       },
-      "display": "required"
-    }
+    };
   }
   return fieldType;
-}
+};
 
 
 // Add all column to the first row. We will use it to control column dragging
@@ -62,7 +61,7 @@ const getCell = (row, col) => {
     return row;
   }
   if (!attribute) {
-    attribute = {name: col, value: ''};
+    attribute = { name: col, value: '' };
     row.attributes.push(attribute);
   }
   return attribute;
@@ -83,9 +82,9 @@ const addColumn = (event) => {
   const columnName = 'Column ' + (headers.value.length - 1);
   headers.value.splice(-1, 0, columnName);
   theseRows.value.forEach((row) => {
-      if (!row.attributes) row.attributes = []
-      row.attributes.push({name: columnName, value: ''})
-    }
+      if (!row.attributes) row.attributes = [];
+      row.attributes.push({ name: columnName, value: '' });
+    },
   );
 };
 
@@ -94,7 +93,7 @@ const addRow = (event) => {
   if (tableType.value === 'Files') {
     row.path = null;
     row.attributes = [];
-    row.type = rowSectionType
+    row.type = rowSectionType;
   } else if (tableType.value === 'Links') {
     row.url = '';
     row.attributes = [];
@@ -106,7 +105,7 @@ const addRow = (event) => {
     if (i === 0 || i === headers.value.length - 1
       || ((tableType.value === 'Files' || tableType.value === 'Links') && i == 1))
       return;
-    row.attributes.push({name: header, value: ''});
+    row.attributes.push({ name: header, value: '' });
   });
   theseRows.value.push(row);
 };
@@ -117,7 +116,7 @@ const deleteRow = (index) => {
 
 const deleteColumn = (index) => {
   theseRows.value.forEach((row) => {
-    row.attributes.splice(row.attributes.findIndex(attr => attr.name === headers.value[index]), 1)
+    row.attributes.splice(row.attributes.findIndex(attr => attr.name === headers.value[index]), 1);
   });
   headers.value.splice(index, 1);
 };
@@ -127,92 +126,77 @@ const updateColumnName = (event, index) => {
   const oldValue = headers.value[index];
   const newValue = event.target.value;
   if (headers.value.find((n) => n === newValue)) return;
-  emits('columnUpdated', {old: oldValue, new: newValue, index: index});
+  emits('columnUpdated', { old: oldValue, new: newValue, index: index });
 };
 
-const isCollapsed = ref((props?.depth ?? 0) >= 2);
+const isCollapsed = ref((props?.depth ?? 0) >= 2 || props?.sectionSubType === 'Contacts');
 const toggle = () => (isCollapsed.value = !isCollapsed.value);
 
 const attributeRefs = ref([]);
-const headerComponent = ref([])
+const headerComponent = ref([]);
 
 const errors = computed(() => {
-  const _errors = []
+  const _errors = [];
   attributeRefs?.value.forEach((a) => {
     const err = a.errors;
-    if (err)  _errors.push ( {errorMessage: err,control: a,  element: document.getElementById(a.attributeId) })
+    if (err) _errors.push({ errorMessage: err, control: a, element: document.getElementById(a.attributeId) });
   });
   return _errors;
 });
 
-defineExpose({errors, thisSection});
+defineExpose({ errors, thisSection });
 
 </script>
 <template>
-  <div class="section-block ">
+  <div class="section-block">
     <!-- section table title -->
     <div>
-      <span :class="[depth > 0  ? 'branch' : 'branch spacer']"></span>
-      <span class="input-group-text text-start btn btn-lg ps-1 mt-2 section-title" @click="toggle()">
-        <font-awesome-icon class="section-control"
-                           :icon="'fa-caret-' + (isCollapsed ? 'right' : 'down')"/>
-        <span v-if="sectionType?.name || props.sectionSubType ==='Files' || props.sectionSubType==='Links'"
-              class="ms-2"
-              :data-bs-toggle="sectionType?.description ? 'tooltip' : false" data-bs-html="true"
-              :data-bs-title="sectionType?.description"><font-awesome-icon v-if="sectionType?.icon" class="icon"
-                                                                           :icon="sectionType?.icon"/>{{
-            tableType
-          }}</span>
+      <span :class="[depth > 0  ? 'branch' : 'branch spacer']"></span> <span
+      class="input-group-text text-start btn btn-lg ps-1 mt-2 section-title" @click="toggle()">
+        <font-awesome-icon :icon="'fa-caret-' + (isCollapsed ? 'right' : 'down')" class="section-control" />
+        <span v-if="sectionType?.name || props.sectionSubType ==='Files' || props.sectionSubType==='Links'" :data-bs-title="sectionType?.description"
+              :data-bs-toggle="sectionType?.description ? 'tooltip' : false" class="ms-2"
+              data-bs-html="true"><font-awesome-icon v-if="sectionType?.icon" :icon="sectionType?.icon"
+                                                                           class="icon" />{{ tableType }}</span>
         <span v-else>
-          <input class="ms-2" @click.stop="" type="text" placeholder="Enter table name" v-model="tableType"/>
-          <font-awesome-icon class="icon ps-2" role="button" size="sm" @click="$emit('delete')" @click.stop=""
-                             icon="fa-trash"></font-awesome-icon>
+          <input v-model="tableType" class="ms-2" placeholder="Enter table name" type="text" @click.stop="" />
+          <font-awesome-icon class="icon ps-2" icon="fa-trash" role="button" size="sm" @click="$emit('delete')"
+                             @click.stop=""></font-awesome-icon>
         </span>
       </span>
     </div>
-    <div class="ps-3" v-if="!isCollapsed" :key="refresh">
+    <div v-if="!isCollapsed" :key="refresh" class="ps-3">
       <table class="table table-responsive">
         <thead>
-        <draggable v-model="headers" tag="tr" :item-key="(key) => key" @end.stop="reorderColumns">
+        <draggable v-model="headers" :item-key="(key) => key" tag="tr" @end.stop="reorderColumns">
           <template #item="{ element: header, index: i }">
             <th :class="{ fixed: i === 0 || i === headers?.length - 1 || getFieldType(header)?.display==='required' }">
-              <span class="form-control-sm" v-if="getFieldType(header)?.display==='required'">{{ header }}</span>
+              <span v-if="getFieldType(header)?.display==='required'" class="form-control-sm">{{ header }}</span>
               <div v-else-if="i > 0 && i < headers.length - 1" class="input-group input-group-sm">
-                <input type="text" class="form-control" :value="header" @change.stop="(e) => updateColumnName(e, i)"
-                       ref="headerComponent">
-                <button class="btn btn-outline-secondary icon" type="button"
-                        v-if="getFieldType(header)?.display!=='required' ">
-                  <font-awesome-icon class="fa-sm" icon="fa-trash" @click="deleteColumn(i)"></font-awesome-icon>
+                <input ref="headerComponent" :value="header" class="form-control" type="text"
+                       @change.stop="(e) => updateColumnName(e, i)">
+                <button v-if="getFieldType(header)?.display!=='required'" class="btn btn-outline-secondary icon"
+                        type="button" @click.prevent="deleteColumn(i)">
+                  <font-awesome-icon class="fa-sm" icon="fa-trash"></font-awesome-icon>
                 </button>
               </div>
             </th>
           </template>
         </draggable>
         </thead>
-        <draggable
-          v-model="theseRows"
-          tag="tbody"
-          item-key="name"
-          @end="(e) => emits('rowsReordered', e)"
-        >
+        <draggable v-model="theseRows" item-key="name" tag="tbody" @end="(e) => emits('rowsReordered', e)">
           <template #item="{ element: row, index: index }">
             <tr>
               <td class="grip">
-                <font-awesome-icon icon="fa-solid fa-grip-vertical"/>
+                <font-awesome-icon icon="fa-solid fa-grip-vertical" />
               </td>
               <td v-for="(col, j) in [...headers].filter((v, i) => i > 0 && i < headers.length - 1 )" :key="j">
-                <Attribute
-                  :key="index"
-                  :attribute="getCell(row, col)"
-                  :field-type="getFieldType(getCell(row, col))"
-                  :parent="row.attributes"
-                  :isTableAttribute="true"
-                  @deleteAttribute="(v) => emits('deleteAttribute', index)"
-                  ref="attributeRefs"
-                />
+                <Attribute :key="index" ref="attributeRefs" :attribute="getCell(row, col)"
+                           :field-type="getFieldType(getCell(row, col))" :isTableAttribute="true"
+                           :parent="row.attributes" @deleteAttribute="(v) => emits('deleteAttribute', index)" />
               </td>
               <td class="grip">
-                <font-awesome-icon class="fa-sm" role="button" icon="fa-trash"
+                <font-awesome-icon class="fa-sm" icon="fa-trash" role="button"
                                    @click="deleteRow(index)"></font-awesome-icon>
               </td>
             </tr>
