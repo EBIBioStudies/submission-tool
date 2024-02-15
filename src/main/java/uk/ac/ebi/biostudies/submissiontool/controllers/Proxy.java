@@ -106,11 +106,11 @@ public class Proxy {
         } catch (HttpStatusCodeException e) {
             response.setStatus(e.getStatusCode().value());
             e.getResponseHeaders().forEach((header, values) -> {
+                if (!header.equalsIgnoreCase("Transfer-Encoding"))
                     response.setHeader(header, String.join(",", values));
             });
             out.print(e.getResponseBodyAsString());
-            System.err.println("Error: "+ url );
-            e.printStackTrace();
+            System.err.printf("Error proxying %s: %s", url,e.getResponseBodyAsString());
         }
         out.flush();
         out.close();

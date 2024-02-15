@@ -254,6 +254,32 @@ defineExpose({errors, thisSection});
             <!--              ref="filesComponent"-->
             <!--            />-->
 
+            <!-- Files -->
+            <SectionTable
+              v-if="section.files && section.files.length"
+              :rows="section.files"
+              :depth="props.depth+1"
+              :sectionType="subSectionTypeMap.get(section.files)"
+              sectionSubType="Files"
+              @rowsReordered="(e) => rowsReordered(e, section.files)"
+              @columnUpdated="(msg) => updateColumnName(section.files, msg)"
+              @columnsReordered="(msg) => sectionsRefreshKey+= 1"
+              @delete="deleteSubSection(section.files, 0)"
+              ref="sectionFilesRef"
+            />
+            <!-- Links -->
+            <SectionTable
+              v-if="section.links && section.files.length"
+              :rows="section.links"
+              :depth="props.depth+1"
+              :sectionType="subSectionTypeMap.get(section.links)"
+              sectionSubType="Links"
+              @rowsReordered="(e) => rowsReordered(e, section.links)"
+              @columnUpdated="(msg) => updateColumnName(section.links, msg)"
+              @columnsReordered="(msg) => sectionsRefreshKey+= 1"
+              @delete="deleteSubSection(section.links, 0)"
+              ref="sectionLinksRef"
+            />
             <!-- Subsections start -->
             <div v-for="(subsection, i) in section.subsections" :key="i" ref="sectionsComponent">
               <!-- section -->
@@ -289,32 +315,6 @@ defineExpose({errors, thisSection});
 
             </div>
             <!-- Subsections end -->
-            <!-- Files -->
-            <SectionTable
-              v-if="section.files"
-              :rows="section.files"
-              :depth="props.depth+1"
-              :sectionType="subSectionTypeMap.get(section.files)"
-              sectionSubType="Files"
-              @rowsReordered="(e) => rowsReordered(e, section.files)"
-              @columnUpdated="(msg) => updateColumnName(section.files, msg)"
-              @columnsReordered="(msg) => sectionsRefreshKey+= 1"
-              @delete="deleteSubSection(section.files, 0)"
-              ref="sectionFilesRef"
-            />
-            <!-- Links -->
-            <SectionTable
-              v-if="section.links"
-              :rows="section.links"
-              :depth="props.depth+1"
-              :sectionType="subSectionTypeMap.get(section.links)"
-              sectionSubType="Links"
-              @rowsReordered="(e) => rowsReordered(e, section.links)"
-              @columnUpdated="(msg) => updateColumnName(section.links, msg)"
-              @columnsReordered="(msg) => sectionsRefreshKey+= 1"
-              @delete="deleteSubSection(section.links, 0)"
-              ref="sectionLinksRef"
-            />
           </div>
         </div>
       </div>

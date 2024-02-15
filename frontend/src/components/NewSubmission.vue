@@ -20,10 +20,12 @@ const createNewSubmission = async ()=> {
   const draft = {
     type: 'submission',
     attributes: [
-      { name: 'Template', value: thisTemplate.name },
-      { name: 'AttachTo', value: thisTemplate.title },
+      { name: 'Template', value: thisTemplate.name }
     ],
   };
+  if (!thisTemplate.name.toLowerCase().startsWith("default")) {
+    draft.attributes.push({name: 'AttachTo', value: thisTemplate.title })
+  }
   const tmpl = thisTemplate.sectionType;
   draft.section = { type: tmpl.name };
   fillTemplate(draft.section, tmpl);
