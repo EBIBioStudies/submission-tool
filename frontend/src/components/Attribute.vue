@@ -18,7 +18,7 @@ const props = defineProps({
   'parent': Object,
   'isTableAttribute': Boolean
 });
-const emits = defineEmits(['createTag', 'deleteTag', 'deleteAttribute']);
+const emits = defineEmits(['createTag', 'deleteTag', 'deleteAttribute', 'deleteOrg']);
 const attributeId = 'attribute-' + getCurrentInstance().uid;
 const thisAttribute = ref(props.attribute);
 const thisMultiValuedAttribute = ref(
@@ -87,6 +87,16 @@ const onDeleteTag = (newTag) => {
     index: newTag?.index,
   };
   emits('deleteTag', obj);
+  return false; // ignore the event, it will be rendered by the parent
+};
+
+const onDeleteOrg = (newTag) => {
+  const obj = {
+    name: props.fieldType?.name,
+    value: newTag?.value,
+    index: newTag?.index,
+  };
+  emits('deleteOrg', obj);
   return false; // ignore the event, it will be rendered by the parent
 };
 
@@ -201,6 +211,7 @@ const showHelp = () => {
       v-model="thisMultiValuedAttribute"
       :class="{'is-invalid':errors && hasValidated}"
       :fieldType="fieldType"
+      @deleteOrg="onDeleteOrg"
     >
     </Organisation>
 

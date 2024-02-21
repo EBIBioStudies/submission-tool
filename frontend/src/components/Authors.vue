@@ -5,12 +5,14 @@ import SectionTable from "@/components/SectionTable.vue";
 const props = defineProps(['section', 'sectionType']);
 
 const thisSection = ref(props.section);
-const authors = computed(() => {
-  return thisSection?.value?.subsections?.filter((s) => s?.type?.toLowerCase() === 'author') ?? []
-})
-const organisations = computed(() => {
-  return thisSection?.value?.subsections?.filter((s) => s?.type?.toLowerCase() === 'organisation' || s?.type?.toLowerCase() === 'organization' ) ?? []
-})
+const startCollapsed = ref(true)
+const authors = ref(thisSection?.value?.subsections?.filter((s) => s?.type?.toLowerCase() === 'author') ?? []);
+const authorRefreshKey = ref(0);
+const OnDeleteOrg = (o)=> {
+  authors.value[o.authorIndex]?.attributes.splice(o.index, 1);
+  startCollapsed.value = false;
+  authorRefreshKey.value += 1;
+}
 </script>
 
 <template>
@@ -22,15 +24,17 @@ const organisations = computed(() => {
     </div>
     <div>
       <SectionTable
+        :key="authorRefreshKey"
         :rows="authors"
         :depth="0"
         :sectionType="props.sectionType"
+        :startCollapsed = "startCollapsed"
         sectionSubType="Contacts"
         :isTableAttribute="true"
         @rowsReordered=""
         @columnUpdated=""
         @columnsReordered=""
-        @delete=""
+        @deleteOrg="OnDeleteOrg"
       />
     </div>
   </div>

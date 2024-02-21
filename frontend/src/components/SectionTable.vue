@@ -4,13 +4,12 @@ import draggable from 'vuedraggable';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Attribute from '@/components/Attribute.vue';
 
-const props = defineProps(['rows', 'depth', 'sectionType', 'sectionSubType', 'parent']);
+const props = defineProps(['rows', 'depth', 'sectionType', 'sectionSubType', 'parent', 'startCollapsed']);
 const emits = defineEmits([
   'rowsReordered',
   'columnUpdated',
   'columnsReordered',
   'delete',
-  'createOrg',
   'deleteOrg'
 ]);
 const thisSection = ref(props.rows);
@@ -138,7 +137,7 @@ const updateColumnName = (event, index) => {
   emits('columnUpdated', { old: oldValue, new: newValue, index: index });
 };
 
-const isCollapsed = ref((props?.depth ?? 0) >= 2 || props?.sectionSubType === 'Contacts');
+const isCollapsed = ref((props?.depth ?? 0) >= 2 || props.startCollapsed);
 const toggle = () => (isCollapsed.value = !isCollapsed.value);
 
 const attributeRefs = ref([]);
@@ -207,7 +206,8 @@ defineExpose({ errors, thisSection });
               <td v-for="(col, j) in [...headers].filter((v, i) => i > 0 && i < headers.length - 1 )" :key="j">
                 <Attribute :key="index" ref="attributeRefs" :attribute="getCell(row, col)"
                            :field-type="getFieldType(getCell(row, col))" :isTableAttribute="true"
-                           :parent="row.attributes" @deleteAttribute="(v) => emits('deleteAttribute', index)" />
+                           :parent="row.attributes" @deleteAttribute="(v) => emits('deleteAttribute', index)"
+                           @deleteOrg="(v) => emits('deleteOrg', {...v,...{'authorIndex':index}})"/>
               </td>
               <td class="grip">
                 <font-awesome-icon v-if="!(index===0 && sectionType?.display==='required' )" class="fa-sm" icon="fa-trash" role="button"
