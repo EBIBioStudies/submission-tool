@@ -2,9 +2,8 @@
 import StudySection from './StudySection.vue';
 import {computed, ref} from "vue";
 
-defineProps(['submission', 'template', 'accession']);
+const props = defineProps(['submission', 'template', 'accession']);
 const studyComponent = ref(null)
-
 const errors = computed(() => studyComponent.value.errors)
 defineExpose({errors});
 </script>

@@ -10,6 +10,8 @@ const emits = defineEmits([
   'columnUpdated',
   'columnsReordered',
   'delete',
+  'createOrg',
+  'deleteOrg'
 ]);
 const thisSection = ref(props.rows);
 const rowSectionType = props.rows && props.rows[0]?.type ? ('' + props.rows[0].type) : '';
@@ -35,9 +37,15 @@ const refresh = ref(0);
 
 const getFieldType = (attribute) => {
   let name = attribute?.type?.toLowerCase() === 'file' ? 'File' : attribute?.name || attribute;
+  // override affiliation
+  if (name==='affiliation') {
+    let fieldType = props.sectionType?.columnTypes?.find((f) => f.name?.toLowerCase() === 'organisation');
+    if (fieldType) return {...fieldType, ...{name:'Organisation'}};
+  }
   name = attribute.hasOwnProperty('url') ? 'Link' : name;
   // return the column type. Expects either an object or a column name (for use in draggable)
   let fieldType = props.sectionType?.columnTypes?.find((f) => f.name?.toLowerCase() === name?.toLowerCase());
+  if (fieldType) return fieldType;
   if (!fieldType && name) {
     fieldType = {
       'name': name,
@@ -104,7 +112,7 @@ const addRow = (event) => {
   }
   headers.value.forEach((header, i) => {
     if (i === 0 || i === headers.value.length - 1
-      || ((tableType.value === 'Files' || tableType.value === 'Links') && i == 1))
+      || ((tableType.value === 'Files' || tableType.value === 'Links') && i === 1))
       return;
     row.attributes.push({ name: header, value: '' });
   });
@@ -174,7 +182,7 @@ defineExpose({ errors, thisSection });
             <th :class="{ fixed: i === 0 || i === headers?.length - 1 || getFieldType(header)?.display==='required' }">
               <div v-if="i > 0 && i < headers.length - 1" class="input-group input-group-sm align-items-center">
                 <template v-if="!getFieldType(header)?.createdOnRender">
-                  <span class="form-control-sm">{{ header }}</span>
+                  <span class="form-control-sm">{{ getFieldType(header).name }}</span>
                   <font-awesome-icon role="button" @click.prevent="deleteColumn(i)" class="icon fa-sm"
                                      icon="fa-trash"></font-awesome-icon>
                 </template>
@@ -202,7 +210,7 @@ defineExpose({ errors, thisSection });
                            :parent="row.attributes" @deleteAttribute="(v) => emits('deleteAttribute', index)" />
               </td>
               <td class="grip">
-                <font-awesome-icon class="fa-sm" icon="fa-trash" role="button"
+                <font-awesome-icon v-if="!(index===0 && sectionType?.display==='required' )" class="fa-sm" icon="fa-trash" role="button"
                                    @click="deleteRow(index)"></font-awesome-icon>
               </td>
             </tr>

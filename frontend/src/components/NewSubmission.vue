@@ -41,6 +41,8 @@ const createNewSubmission = async ()=> {
     }, {
       name : "Role",
       value : "submitter"
+    }, {
+      name : "affiliation"
     }]
   };
   if (AuthService.user?.value?.orcid) {

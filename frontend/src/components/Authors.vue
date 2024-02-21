@@ -8,6 +8,9 @@ const thisSection = ref(props.section);
 const authors = computed(() => {
   return thisSection?.value?.subsections?.filter((s) => s?.type?.toLowerCase() === 'author') ?? []
 })
+const organisations = computed(() => {
+  return thisSection?.value?.subsections?.filter((s) => s?.type?.toLowerCase() === 'organisation' || s?.type?.toLowerCase() === 'organization' ) ?? []
+})
 </script>
 
 <template>

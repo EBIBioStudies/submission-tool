@@ -8,6 +8,7 @@ import FileFolderSelectModal from "@/components/FileFolderSelectModal.vue";
 import Link from "@/components/Link.vue";
 import utils from "@/utils";
 import Reference from "@/components/Reference.vue";
+import Organisation from "@/components/Organisation.vue";
 
 const hasValidated = inject('hasValidated')
 
@@ -193,6 +194,15 @@ const showHelp = () => {
       @change="onChangeSelect"
     >
     </Multiselect>
+
+    <!-- organisation -- must be handled before tags -->
+    <Organisation
+      v-else-if="fieldType?.controlType?.name === 'org'"
+      v-model="thisMultiValuedAttribute"
+      :class="{'is-invalid':errors && hasValidated}"
+      :fieldType="fieldType"
+    >
+    </Organisation>
 
     <!-- tags  -->
     <Multiselect
