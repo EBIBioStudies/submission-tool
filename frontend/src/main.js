@@ -17,8 +17,14 @@ library.add(far);
 const app = createApp(App);
 app.use(router);
 app.component('font-awesome-icon', FontAwesomeIcon);
-axios.defaults.headers.common['x-session-token'] = AuthService.user?.value?.sessid;
 window.config = {backendUrl: location.host === 'localhost:5173' ? 'http://localhost:8080' : ''};
+axios.interceptors.request.use(config => {
+    if(config.url.startsWith(window.config.backendUrl)) { // pass token only to backend
+      config.headers['x-session-token'] = AuthService.user?.value?.sessid;
+    }
+    return config;
+  }
+);
 axios.get(`${window.config.backendUrl}/config`)
   .then(async (response) => {
     if (response.status === 200) {

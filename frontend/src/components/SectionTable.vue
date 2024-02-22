@@ -10,7 +10,8 @@ const emits = defineEmits([
   'columnUpdated',
   'columnsReordered',
   'delete',
-  'deleteOrg'
+  'deleteOrg',
+  'createOrg'
 ]);
 const thisSection = ref(props.rows);
 const rowSectionType = props.rows && props.rows[0]?.type ? ('' + props.rows[0].type) : '';
@@ -204,10 +205,16 @@ defineExpose({ errors, thisSection });
                 <font-awesome-icon icon="fa-solid fa-grip-vertical" />
               </td>
               <td v-for="(col, j) in [...headers].filter((v, i) => i > 0 && i < headers.length - 1 )" :key="j">
-                <Attribute :key="index" ref="attributeRefs" :attribute="getCell(row, col)"
-                           :field-type="getFieldType(getCell(row, col))" :isTableAttribute="true"
-                           :parent="row.attributes" @deleteAttribute="(v) => emits('deleteAttribute', index)"
-                           @deleteOrg="(v) => emits('deleteOrg', {...v,...{'authorIndex':index}})"/>
+                <Attribute :key="index"
+                           ref="attributeRefs"
+                           :attribute="getCell(row, col)"
+                           :field-type="getFieldType(getCell(row, col))"
+                           :isTableAttribute="true"
+                           :parent="row.attributes"
+                           @deleteAttribute="(v) => emits('deleteAttribute', index)"
+                           @deleteOrg="(v) => emits('deleteOrg', {...v,...{'authorIndex':index}})"
+                           @createOrg="(v) => emits('createOrg', {...v,...{'authorIndex':index}})"
+                />
               </td>
               <td class="grip">
                 <font-awesome-icon v-if="!(index===0 && sectionType?.display==='required' )" class="fa-sm" icon="fa-trash" role="button"

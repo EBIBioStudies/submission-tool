@@ -1,62 +1,62 @@
 <script setup>
 import Multiselect from '@vueform/multiselect';
 import { inject, ref } from 'vue';
+import axios from 'axios';
 
-const model = defineModel()
+const model = defineModel();
 const props = defineProps(['class', 'fieldType']);
 const submission = inject('submission');
-const emits = defineEmits(['deleteOrg'])
+const emits = defineEmits(['deleteOrg', 'createOrg']);
 
-const options = ref([]);
 // get organisation which matches the affiliation reference
-const getOrgName = (affiliation) => submission?.value.section.subsections.filter((s) =>  (s?.type?.toLowerCase() === 'organisation'
-      || s?.type?.toLowerCase() === 'organization')
-      && s?.accno===affiliation.value
-  )[0];
+const organisations = ref([]);
 
-const organisations = ref(model.value.map( affiliation => {
-  return {...affiliation, ...getOrgName(affiliation)}
-}));
-
-const createOrg = (k) => {
-  console.log(k);
-  return false;
+const updateOptions = async (query) => {
+  if (!query || query.length < 3) return [];
+  return axios({
+    url: `https://api.ror.org/organizations?query=${query}`,
+    headers: { 'content-type': 'application/json' },
+    method: 'GET',
+  }).then(response => response.data?.items?.map(i => {
+    return { label: i.name, value: i.id };
+  }));
 };
+
+organisations.value = model.value.map(affiliation => {
+  const org = submission?.value.section.subsections.filter( s => (s?.type?.toLowerCase() === 'organisation'
+    || s?.type?.toLowerCase() === 'organization') && s?.accno === affiliation.value)[0];
+  const label = org?.attributes.find(attr => attr.name === 'Name')?.value;
+  const rorIdAttribute = org?.attributes.find(attr => attr.name === 'RORID');
+  return {
+    accno: affiliation.value,
+    label: label,
+    value: rorIdAttribute?.length ? rorIdAttribute.value : label
+  };
+})
+
 </script>
 
 <template>
-  <Multiselect :allow-absent="true"
-               mode="tags"
-               :allow-empty="false"
-               :allowAbsent="true"
-               :class="props.class"
-               :createOption="true"
-               :searchable="true"
-               class="form-control
-               form-control-sm org"
-               noOptionsText="Type+↵ to add"
-               @create="o=>emits('create',o)"
-               @select="o=>emits('select',o)"
-               @deselect="o=>emits('deleteOrg',o)"
+  <Multiselect mode="tags"
+               no-options-text="Type+↵ to add"
                v-model="organisations"
-               object
-  ><template v-slot:tag="{ option, handleTagRemove, disabled }">
-    <div
-      class="multiselect-tag is-user"
-      :class="{
-          'is-disabled': disabled,
-        }"
-    >
-      {{ option?.attributes.filter( attr=> attr.name==='Name')[0].value }}
-      <span
-        v-if="!disabled"
-        class="multiselect-tag-remove"
-        @mousedown.prevent="handleTagRemove(option, $event)"
-      >
-          <span class="multiselect-tag-remove-icon"></span>
-        </span>
-    </div>
-  </template>
+               class="form-control form-control-sm org"
+               :allow-empty="false"
+               :class="props.class"
+               :create-option="true"
+               :searchable="true"
+               :allow-absent="true"
+               :options="async (q)=> await updateOptions(q)"
+               :object="true"
+               :delay="0"
+               :min-chars="3"
+               :filter-results="false"
+               :hide-selected="true"
+               @deselect="(v) => { emits('deleteOrg', v); return false;}"
+               @create="(v) => { emits('createOrg', v); return false;}"
+               @select="(v) => { emits('createOrg', v); return false;}"
+
+  >
   </Multiselect>
 
 </template>
