@@ -7,6 +7,7 @@ const props = defineProps(['section', 'sectionType']);
 const thisSection = ref(props.section);
 const startCollapsed = ref(false);
 const authors = computed(() => (thisSection?.value?.subsections?.filter((s) => s?.type?.toLowerCase() === 'author') ?? []));
+const authorTableRef = ref()
 const authorRefreshKey = ref(0);
 
 const OnDeleteOrg = (o) => {
@@ -80,6 +81,10 @@ const reorderAuthors = (event)=>
   authorRefreshKey.value +=1;
 }
 
+const errors = computed(() => authorTableRef?.value?.errors );
+
+defineExpose({errors});
+
 </script>
 
 <template>
@@ -91,6 +96,7 @@ const reorderAuthors = (event)=>
     </div>
     <div>
       <SectionTable
+        ref="authorTableRef"
         :key="authorRefreshKey"
         :rows="authors"
         :depth="0"

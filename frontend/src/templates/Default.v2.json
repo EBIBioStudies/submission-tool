@@ -244,7 +244,8 @@
           {
             "name": "ORCID",
             "controlType": {
-              "name": "orcid"
+              "name": "orcid",
+              "placeholder": "e.g. 1892-5647-2571-9436"
             },
             "display": "desirable"
           },

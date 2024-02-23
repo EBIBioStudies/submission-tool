@@ -109,6 +109,13 @@ const errors = computed(() => {
     if (props.fieldType?.display === 'required' && (!thisAttribute?.value?.url || thisAttribute?.value?.url === '')) {
       _errors.push(`Link required`);
     }
+  } else if (props.fieldType?.controlType?.name === 'orcid') {
+    const isValidOrcid =  utils.isOrcidValid(thisAttribute?.value?.value)
+    if ( (props.fieldType?.display === 'required' && !isValidOrcid) ||
+      (props.fieldType?.display !== 'required' && thisAttribute?.value?.value && thisAttribute?.value?.value!='')
+      ) {
+      _errors.push(`Invalid ORCID value`);
+    }
   } else if (props.fieldType?.display === 'required' && (!thisAttribute.value?.value || thisAttribute?.value?.value?.trim() === '')) {
     _errors.push(`${thisAttribute?.value?.name} required`);
   }
@@ -283,6 +290,18 @@ const showHelp = () => {
       :fieldType="fieldType"
     >
     </Reference>
+
+    <!-- orcid -->
+    <input
+      v-else-if="fieldType?.controlType?.name === 'orcid'"
+      type="text"
+      class="form-control"
+      :class="{'is-invalid':errors && hasValidated, 'form-control-sm':isTableAttribute}"
+      :placeholder="fieldType?.controlType?.placeholder"
+      v-model="thisAttribute.value"
+      :required="fieldType?.display==='required' || fieldType?.controlType?.minlength >0"
+    />
+
 
     <!-- default / text -->
     <input

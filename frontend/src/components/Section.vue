@@ -170,10 +170,10 @@ const canRender = (sec) => {
 const errors = computed(() => {
   let _errors = [...attributesComponent.value?.errors]
   // validate subsections
-  // subsectionsRef?.value.forEach(subsec => {
-  //   if (!canRender(subsec.thisSection)) return
-  //   _errors = [..._errors, ...subsec.errors]
-  // });
+  subsectionsRef?.value.forEach(subsec => {
+     if (!canRender(subsec.thisSection)) return
+     _errors = [..._errors, ...subsec.errors]
+  });
   if (sectionFilesRef) {
     _errors = [..._errors, ...sectionFilesRef?.value?.errors ?? []]
   }
