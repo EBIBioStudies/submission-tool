@@ -179,7 +179,7 @@ defineExpose({ errors, thisSection });
         <thead>
         <draggable v-model="headers" :item-key="(key) => key" tag="tr" @end.stop="reorderColumns">
           <template #item="{ element: header, index: i }">
-            <th :class="{ fixed: i === 0 || i === headers?.length - 1 || getFieldType(header)?.display==='required' }">
+            <th :class="{ fixed: i === 0 || i === headers?.length - 1  }">
               <div v-if="i > 0 && i < headers.length - 1" class="input-group input-group-sm align-items-center">
                 <template v-if="!getFieldType(header)?.createdOnRender">
                   <span class="form-control-sm">{{ getFieldType(header).name }}</span>

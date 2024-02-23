@@ -80,6 +80,9 @@ const reorderAuthors = (event)=>
 
   authorRefreshKey.value +=1;
 }
+const columnsReordered = () => {
+  authorRefreshKey.value +=1;
+}
 
 const errors = computed(() => authorTableRef?.value?.errors );
 
@@ -106,7 +109,7 @@ defineExpose({errors});
         :isTableAttribute="true"
         @rowsReordered="reorderAuthors"
         @columnUpdated=""
-        @columnsReordered=""
+        @columnsReordered="columnsReordered"
         @deleteOrg="OnDeleteOrg"
         @createOrg="OnCreateOrg"
       />
