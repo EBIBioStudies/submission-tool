@@ -63,6 +63,23 @@ const OnCreateOrg = (o)=> {
   return false;
 }
 
+const reorderAuthors = (event)=>
+{
+  const authorIndexMap = {}; // lookup for index in authors to index in subsections
+  let authIndex = 0;
+  thisSection?.value?.subsections?.forEach( (section, i )=> {
+    if (section?.type==='author') {
+      authorIndexMap[authIndex] = i;
+    }
+  })
+  thisSection?.value?.subsections?.splice( // insert in new index
+    authorIndexMap[event.newIndex], 0,
+    thisSection?.value?.subsections?.splice( // after removing from old index
+      authorIndexMap[event.oldIndex], 1)[0]);
+
+  authorRefreshKey.value +=1;
+}
+
 </script>
 
 <template>
@@ -81,7 +98,7 @@ const OnCreateOrg = (o)=> {
         :startCollapsed = "startCollapsed"
         sectionSubType="Contacts"
         :isTableAttribute="true"
-        @rowsReordered=""
+        @rowsReordered="reorderAuthors"
         @columnUpdated=""
         @columnsReordered=""
         @deleteOrg="OnDeleteOrg"

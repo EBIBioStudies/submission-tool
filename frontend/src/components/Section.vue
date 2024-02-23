@@ -145,7 +145,7 @@ const createTag = (msg) => {
 
 const rowsReordered = (event, rows) => {
   rows.splice(event.newIndex, 0, rows.splice(event.oldIndex, 1)[0]);
-  //sectionsRefreshKey.value += 1;
+  sectionsRefreshKey.value += 1;
 };
 
 const updateColumnName = (subsection, update) => {
