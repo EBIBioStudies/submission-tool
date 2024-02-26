@@ -19,7 +19,9 @@ const updateOptions = async (query) => {
     method: 'GET',
   }).then(response => response.data?.items?.map(i => {
     return { label: i.name, value: i.id };
-  }));
+  }).filter( entry => {
+    return organisations.value.filter( org=> org?.label===entry.label).length===0
+  }) );
 };
 organisations.value = model.value.map(affiliation => {
   const org = submission?.value.section.subsections.filter( s => (s?.type?.toLowerCase() === 'organisation'
@@ -31,7 +33,7 @@ organisations.value = model.value.map(affiliation => {
     label: label,
     value: rorIdAttribute?.length ? rorIdAttribute.value : label
   };
-})
+}).filter ( option=> option.label && option.label!=='')
 
 </script>
 

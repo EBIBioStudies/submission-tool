@@ -5,7 +5,7 @@ import SectionTable from "@/components/SectionTable.vue";
 const props = defineProps(['section', 'sectionType']);
 
 const thisSection = ref(props.section);
-const startCollapsed = ref(true);
+const startCollapsed = ref(false); //TODO: change to true
 const authors = computed(() => (thisSection?.value?.subsections?.filter((s) => s?.type?.toLowerCase() === 'author') ?? []));
 const authorTableRef = ref()
 const authorRefreshKey = ref(0);
@@ -13,10 +13,22 @@ const authorRefreshKey = ref(0);
 const OnDeleteOrg = (o) => {
   if (o?.accno==='') return;
   // unlink the affiliation from author
-  const affiliationIndex = authors.value[o.authorIndex].attributes.findIndex(attr => attr.name?.toLowerCase() === 'affiliation' && attr.value === o.accno);
-  authors.value[o.authorIndex]?.attributes.splice(affiliationIndex, 1);
+  let affiliationIndex = -1, totalAffiliations =0;
+  authors.value[o.authorIndex].attributes.forEach ((attr,i) => {
+    if (attr.name?.toLowerCase() !== 'affiliation') return;
+    if (attr.value === o.accno) affiliationIndex = i;
+    totalAffiliations++;
+  });
 
-  deleteUnusedAffiliations();
+  // always keep an empty affiliation
+  if (totalAffiliations===1) {
+    authors.value[o.authorIndex].attributes[affiliationIndex].value = '';
+    delete authors.value[o.authorIndex].attributes[affiliationIndex].reference;
+  } else {
+    authors.value[o.authorIndex].attributes.splice(affiliationIndex, 1);
+  }
+
+  deleteUnusedOrganisations();
   return refresh();
 };
 
@@ -90,16 +102,25 @@ const OnDeleteRow = (index)=>
   //delete author section
   thisSection?.value?.subsections?.splice(authorIndexMap[index], 1);
 
-  deleteUnusedAffiliations();
+  deleteUnusedOrganisations();
   return refresh();
 }
 
 const OnRowAdded = row => {
   thisSection?.value?.subsections?.push(row);
+  return refresh();
+}
+
+const OnColumnUpdated = row => {
+  thisSection?.value?.subsections?.forEach(section => {
+    if (section?.type!=='author') return;
+    section.attributes.find((att) => att.name === row.old).name = row.new;
+  })
+  return refresh();
 }
 
 
-const deleteUnusedAffiliations = () => {
+const deleteUnusedOrganisations = () => {
   const usedAffiliation = new Set();
   authors.value.forEach( author => {
     author.attributes.forEach(attr => {
@@ -146,7 +167,7 @@ defineExpose({errors});
         :isTableAttribute="true"
         :title="authors.map( author=> author?.attributes?.find(a => a?.name?.toLowerCase() === 'name')?.value).join(', ')"
         @rowsReordered="reorderAuthors"
-        @columnUpdated=""
+        @columnUpdated="OnColumnUpdated"
         @columnsReordered="refresh"
         @deleteOrg="OnDeleteOrg"
         @createOrg="OnCreateOrg"
