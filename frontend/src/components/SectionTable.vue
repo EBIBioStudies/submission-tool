@@ -4,18 +4,20 @@ import draggable from 'vuedraggable';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Attribute from '@/components/Attribute.vue';
 
-const props = defineProps(['rows', 'depth', 'sectionType', 'sectionSubType', 'parent', 'startCollapsed']);
+const props = defineProps(['rows', 'depth', 'sectionType', 'sectionSubType', 'parent', 'startCollapsed', 'title']);
 const emits = defineEmits([
+  'rowAdded',
   'rowsReordered',
   'columnUpdated',
   'columnsReordered',
   'delete',
+  'deleteRow',
   'deleteOrg',
   'createOrg'
 ]);
 const thisSection = ref(props.rows);
 const rowSectionType = props.rows && props.rows[0]?.type ? ('' + props.rows[0].type) : '';
-const tableType = ref(props.sectionSubType ?? rowSectionType);
+const tableType = ref(props.title || props.sectionSubType || rowSectionType);
 const theseRows = ref(Array.isArray(props.rows[0]) ? props.rows[0] : props.rows);
 const headerMap = new Map();
 
@@ -117,10 +119,12 @@ const addRow = (event) => {
     row.attributes.push({ name: header, value: '' });
   });
   theseRows.value.push(row);
+  emits('rowAdded', row); // Needed only for Authors component
 };
 
 const deleteRow = (index) => {
   theseRows.value.splice(index, 1);
+  emits('deleteRow', index); // Needed only for Authors component
 };
 
 const deleteColumn = (index) => {

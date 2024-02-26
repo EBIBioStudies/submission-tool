@@ -5,26 +5,19 @@ import SectionTable from "@/components/SectionTable.vue";
 const props = defineProps(['section', 'sectionType']);
 
 const thisSection = ref(props.section);
-const startCollapsed = ref(false);
+const startCollapsed = ref(true);
 const authors = computed(() => (thisSection?.value?.subsections?.filter((s) => s?.type?.toLowerCase() === 'author') ?? []));
 const authorTableRef = ref()
 const authorRefreshKey = ref(0);
 
 const OnDeleteOrg = (o) => {
+  if (o?.accno==='') return;
   // unlink the affiliation from author
-  const affiliationIndex = authors.value[o.authorIndex].attributes.findIndex(attr => attr.name === 'affiliation' && attr.value === o.accno);
+  const affiliationIndex = authors.value[o.authorIndex].attributes.findIndex(attr => attr.name?.toLowerCase() === 'affiliation' && attr.value === o.accno);
   authors.value[o.authorIndex]?.attributes.splice(affiliationIndex, 1);
-  // delete organisation if no other author is affiliated
-  if (!authors.value.some(author => author?.attributes.find(attr => attr.name === 'affiliation' && attr.value === o.accno))) {
-    const orgIndex = thisSection?.value?.subsections?.findIndex(s => // can't use allOrgs here because index has to be of the subsection
-      (s?.type?.toLowerCase() === 'organisation' || s?.type?.toLowerCase() === 'organization')
-      && s?.accno === o.accno);
-    thisSection?.value?.subsections?.splice(orgIndex, 1);
-  }
-  // refresh display
-  startCollapsed.value = false;
-  authorRefreshKey.value += 1;
-  return false;
+
+  deleteUnusedAffiliations();
+  return refresh();
 };
 
 const orgWithAcc = (accno) => thisSection?.value?.subsections?.find(s =>
@@ -52,16 +45,19 @@ const OnCreateOrg = (o)=> {
     thisSection?.value?.subsections?.push(newOrg)
     org = thisSection?.value?.subsections[thisSection?.value?.subsections?.length-1];
   }
+
+  // delete empty org
+  const emptyIndex = authors.value[o.authorIndex].attributes.findIndex( attr=> attr.name.toLowerCase()==='affiliation' && attr.value==='');
+  if (emptyIndex!==-1) authors.value[o.authorIndex].attributes.splice(emptyIndex,1);
+
   // assign it to the author
   authors.value[o.authorIndex].attributes.push({
       name: "affiliation",
       value: org.accno,
       reference: true
   })
-  // refresh display
-  startCollapsed.value = false;
-  authorRefreshKey.value += 1;
-  return false;
+
+  return refresh();
 }
 
 const reorderAuthors = (event)=>
@@ -70,7 +66,7 @@ const reorderAuthors = (event)=>
   let authIndex = 0;
   thisSection?.value?.subsections?.forEach( (section, i )=> {
     if (section?.type==='author') {
-      authorIndexMap[authIndex] = i;
+      authorIndexMap[authIndex++] = i;
     }
   })
   thisSection?.value?.subsections?.splice( // insert in new index
@@ -78,10 +74,56 @@ const reorderAuthors = (event)=>
     thisSection?.value?.subsections?.splice( // after removing from old index
       authorIndexMap[event.oldIndex], 1)[0]);
 
-  authorRefreshKey.value +=1;
+  return refresh();
 }
-const columnsReordered = () => {
+
+const OnDeleteRow = (index)=>
+{
+  const authorIndexMap = {}; // lookup for index in authors to index in subsections
+  let authIndex = 0;
+  thisSection?.value?.subsections?.forEach( (section, i )=> {
+    if (section?.type==='author') {
+      authorIndexMap[authIndex++] = i;
+    }
+  })
+
+  //delete author section
+  thisSection?.value?.subsections?.splice(authorIndexMap[index], 1);
+
+  deleteUnusedAffiliations();
+  return refresh();
+}
+
+const OnRowAdded = row => {
+  thisSection?.value?.subsections?.push(row);
+}
+
+
+const deleteUnusedAffiliations = () => {
+  const usedAffiliation = new Set();
+  authors.value.forEach( author => {
+    author.attributes.forEach(attr => {
+      if (attr.name?.toLowerCase() === 'affiliation' && attr.value!=='') {
+        usedAffiliation.add(attr.value)
+      }
+    })
+  })
+
+  const indicesToRemove = []
+  thisSection?.value?.subsections?.forEach((s,i) => {
+    if ( (s.type?.toLowerCase() === 'organisation' || s.type?.toLowerCase() === 'organization') && !usedAffiliation.has(s.accno)) {
+      indicesToRemove.push(i);
+    }
+  })
+  indicesToRemove.sort( (a,b)=> b-a);
+  indicesToRemove.forEach(orgIndex => thisSection?.value?.subsections?.splice(orgIndex, 1));
+
+}
+
+const refresh = () => {
+  startCollapsed.value = false;
   authorRefreshKey.value +=1;
+  return false;
 }
 
 const errors = computed(() => authorTableRef?.value?.errors );
@@ -93,11 +135,6 @@ defineExpose({errors});
 <template>
   <div>
     <div>
-      <template v-for="author in authors">
-        <div class="author">{{ author?.attributes?.find(a => a?.name?.toLowerCase() === 'name')?.value }}</div>
-      </template>
-    </div>
-    <div>
       <SectionTable
         ref="authorTableRef"
         :key="authorRefreshKey"
@@ -107,11 +144,14 @@ defineExpose({errors});
         :startCollapsed = "startCollapsed"
         sectionSubType="Contacts"
         :isTableAttribute="true"
+        :title="authors.map( author=> author?.attributes?.find(a => a?.name?.toLowerCase() === 'name')?.value).join(', ')"
         @rowsReordered="reorderAuthors"
         @columnUpdated=""
-        @columnsReordered="columnsReordered"
+        @columnsReordered="refresh"
         @deleteOrg="OnDeleteOrg"
         @createOrg="OnCreateOrg"
+        @deleteRow="OnDeleteRow"
+        @rowAdded="OnRowAdded"
       />
     </div>
   </div>

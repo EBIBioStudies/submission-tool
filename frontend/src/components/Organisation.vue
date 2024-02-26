@@ -21,7 +21,6 @@ const updateOptions = async (query) => {
     return { label: i.name, value: i.id };
   }));
 };
-
 organisations.value = model.value.map(affiliation => {
   const org = submission?.value.section.subsections.filter( s => (s?.type?.toLowerCase() === 'organisation'
     || s?.type?.toLowerCase() === 'organization') && s?.accno === affiliation.value)[0];
@@ -52,6 +51,7 @@ organisations.value = model.value.map(affiliation => {
                :min-chars="3"
                :filter-results="false"
                :hide-selected="true"
+               :can-clear="false"
                @deselect="(v) => { emits('deleteOrg', v); return false;}"
                @create="(v) => { emits('createOrg', v); return false;}"
                @select="(v) => { emits('createOrg', v); return false;}"

@@ -22,13 +22,10 @@ const emits = defineEmits(['createTag', 'deleteTag', 'deleteAttribute', 'deleteO
 const attributeId = 'attribute-' + getCurrentInstance().uid;
 const thisAttribute = ref(props.attribute);
 const thisMultiValuedAttribute = ref(
-  props.parent
-    ?.map((a, i) => {
-      // save the original index -- needed when deleting
+  props.parent?.map((a, i) => { // save the original index -- needed when deleting
       return {index: i, ...a};
-    })
-    ?.filter((a) => a.name === thisAttribute.value.name && thisAttribute.value.value !== ''),
-);
+    })?.filter( a  =>  a.name === thisAttribute.value.name && a?.value !== '')
+)
 
 function isString(val) {
   return typeof val === 'string' || val instanceof String;
