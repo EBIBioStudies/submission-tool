@@ -44,7 +44,7 @@ const getFieldType = (attribute) => {
     let fieldType = props.sectionType?.columnTypes?.find((f) => f.name?.toLowerCase() === 'organisation');
     if (fieldType) return {...fieldType, ...{name:'Organisation'}};
   }
-  name = attribute.hasOwnProperty('url') ? 'Link' : name;
+  name = attribute.hasOwnProperty('url') || attribute.name==='url'  ? 'Link' : name;
   // return the column type. Expects either an object or a column name (for use in draggable)
   let fieldType = props.sectionType?.columnTypes?.find((f) => f.name?.toLowerCase() === name?.toLowerCase());
   if (fieldType) return fieldType;

@@ -269,7 +269,7 @@ defineExpose({errors, thisSection});
             />
             <!-- Links -->
             <SectionTable
-              v-if="section.links && section.files.length"
+              v-if="section.links && section.links.length"
               :rows="section.links"
               :depth="props.depth+1"
               :sectionType="subSectionTypeMap.get(section.links)"

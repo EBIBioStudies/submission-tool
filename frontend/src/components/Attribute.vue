@@ -273,8 +273,8 @@ const showHelp = () => {
 
     <!-- link -->
     <Link
-      v-else-if="thisAttribute.hasOwnProperty('url')"
-      :link="thisAttribute"
+    v-else-if="fieldType?.controlType?.name === 'idlink'"
+    :link="thisAttribute"
       :class="{'is-invalid':errors && hasValidated}"
       :placeholder="fieldType?.controlType?.placeholder"
     />
