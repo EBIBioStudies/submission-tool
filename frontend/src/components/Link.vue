@@ -29,9 +29,7 @@ const filterList = () =>
 };
 
 const removeSuggestions = ()=>{
-  setTimeout(() => {
     showSuggestions.value = false;
-  }, 500);
 }
 
 const selectItem = (item) =>{
@@ -89,7 +87,7 @@ defineExpose({errors});
                   v-for="(item, index) in filteredListItems"
                   :key="index"
                   class="dropdown-item"
-                  @click="selectItem(item)"
+                  @mousedown="selectItem(item)"
           >{{ item }}</a>
       </div>
 
