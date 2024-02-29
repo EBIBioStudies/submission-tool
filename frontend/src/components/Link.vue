@@ -64,8 +64,8 @@ defineExpose({errors});
 </script>
 
 <template>
-  <div class="dropdown">
-    <div class="input-group">
+  <div class="w-100 ">
+    <div class="input-group input-group-sm dropdown">
       <input
         type="text"
         class="form-control text-primary  dropdown-input"
@@ -101,6 +101,7 @@ defineExpose({errors});
     position: absolute; /* Position the dropdown menu absolutely within its positioned parent */
     top: 100%; /* Align the top of the dropdown menu with the bottom of the parent container */
     left: 0;
+    width: calc(100% - 45px);
     z-index: 1000; /* Ensure the dropdown is stacked above other content */
     max-height: 200px;
     overflow-y: auto;

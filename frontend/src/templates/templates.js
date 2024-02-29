@@ -54,7 +54,10 @@ export const fillTemplate = (section, tmpl) => {
     if (subsection.type?.toLowerCase() === 'file') {
       if (!section.files) section.files = [];
       section.files.push(subsection);
-    } else {
+    } else if (subsection.type?.toLowerCase() === 'link') {
+      if (!section.links) section.links = [];
+      section.links.push(subsection);
+    }else {
       if (!section.subsections) section.subsections = [];
       section.subsections.push(subsection);
     }
