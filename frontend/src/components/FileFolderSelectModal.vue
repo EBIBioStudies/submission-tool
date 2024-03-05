@@ -3,10 +3,16 @@
 import {getCurrentInstance, onMounted, ref} from "vue";
 import FileTree from "./FileTree.vue";
 import {Modal} from "bootstrap";
+import axios from 'axios';
 
-const props = defineProps(['file', 'class'])
+const props = defineProps(['file', 'class', 'allowFolder'])
 const emits = defineEmits(['select'])
 const thisFile = ref(props.file);
+const allowFolder = ref(props.allowFolder);
+const axiosAbortController = new AbortController();
+const currentUpload = ref({ name: '', progress: 0 });
+const showProgressbar= ref(false);
+
 let modal = null;
 const thisComponent = getCurrentInstance();
 const filetree = ref(null);
@@ -17,6 +23,42 @@ onMounted(() => {
       backdrop: 'static'
     })
 })
+
+const uploadFile = async (file) => {
+  const formData = new FormData();
+  formData.append('files', file);
+  showProgressbar.value=true;
+  try {
+    await axios.post(`${window.config.backendUrl}/api/files/user/`, formData, {
+      signal: axiosAbortController.signal,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress: function(progressEvent) {
+        const progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+        currentUpload.value.progress = progress;
+
+        if (progress === 100) {
+          // Wait a bit for the backend to process the file after it's fully uploaded
+          setTimeout(() => {
+            if (modal) {
+              modal.hide(); // Hide the modal when upload is complete
+            }
+          }, 500); // Adjust the timeout as necessary
+        }
+      },
+    });
+    thisComponent.refs.filetree.show(); // Assuming refreshTree is a method in FileTree
+    thisFile.value.path = file.name; // Update the input box with the file name
+  } catch (error) {
+    console.error('File upload error:', error);
+  }finally {
+    showProgressbar.value=false;
+    currentUpload.value.progress = 0;
+  }
+};
+
+
 const select = (node) => {
   modal.hide();
   thisFile.value.path = (node.path + '/' + node.name).substring(5);
@@ -45,18 +87,38 @@ const loadTree = () => {
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="modal-title fs-5">Select File: {{ thisFile?.path }}</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <h4 class="modal-title">Select or upload file</h4>
+          <button type="button"  data-bs-dismiss="modal" class="btn-close">
+          </button>
         </div>
         <div class="modal-body">
-          <div class="overflow-auto" style="max-height: 400px">
-            <FileTree path="/user" ref="filetree"
-                      @select="(node) => select(node)"/>
+          <h5>Select file{{allowFolder ? ' / folder' : ''}}</h5>
+          <div class="card bg-light mb-3">
+            <div class="card-body overflow-auto" style="max-height: 400px;">
+              <FileTree path="/user" ref="filetree"
+                                  @select="(node) => select(node)"/>
+            </div>
+          </div>
+          <h5>Upload File</h5>
+          <div class="input-group">
+            <div class="custom-file">
+              <input id="inputGroupFile" type="file" class="custom-file-input" @change="uploadFile($event.target.files[0])">
+              <label for="inputGroupFile" class="custom-file-label"> Select file to upload </label>
+            </div>
+          </div>
+          <div v-if="showProgressbar">
+            <div class="text-center pb-2">{{ currentUpload.progress === 100 ? 'Saving' : 'Uploading' }}
+              {{ currentUpload.name }} ...
+            </div>
+            <div class="progress" aria-label="Example with label" role="progressbar" aria-valuemin="0" aria-valuemax="100" :aria-valuenow="currentUpload.progress">
+              <div class="progress-bar" :class="{'progress-bar-striped progress-bar-animated': currentUpload.progress === 100}" :style="{width: currentUpload.progress + '%'}"></div>
+            </div>
+            <div class="text-center">{{ currentUpload.progress }}%</div>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" :id="'fileFolderSelectModal'+thisComponent.uid" class="btn btn-outline-secondary"
-                  data-bs-dismiss="modal">Cancel
+                  data-bs-dismiss="modal" @click.stop="axiosAbortController.abort()">Cancel
           </button>
         </div>
       </div>
@@ -66,5 +128,53 @@ const loadTree = () => {
 </template>
 
 <style scoped>
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
+.input-group > .custom-file {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  position: relative;
+}
+
+.custom-file-input {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0; /* Keep input invisible but make the label clickable across the entire element */
+  cursor: pointer; /* Indicate the label is clickable */
+}
+
+.custom-file-label {
+  width: 100%;
+  background-color: #fff;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  line-height: 1.5;
+  color: #495057;
+  text-align: left;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.custom-file-label:after {
+  content: "Browse";
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.375rem 0.75rem;
+  line-height: 1.5;
+  color: #495057;
+  background-color: #e9ecef;
+  border-left: 1px solid #ced4da;
+  border-top-right-radius: 0.25rem;
+  border-bottom-right-radius: 0.25rem;
+}
 </style>
