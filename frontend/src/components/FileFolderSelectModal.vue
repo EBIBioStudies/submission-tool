@@ -4,14 +4,23 @@ import {getCurrentInstance, onMounted, ref} from "vue";
 import FileTree from "./FileTree.vue";
 import {Modal} from "bootstrap";
 import axios from 'axios';
+import {useRoute} from "vue-router";
 
-const props = defineProps(['file', 'class', 'allowFolder'])
+const props = defineProps(['file', 'class', 'allowFolder', 'isFileList'])
 const emits = defineEmits(['select'])
 const thisFile = ref(props.file);
+const isFileList = ref(props.isFileList);
 const allowFolder = ref(props.allowFolder);
 const axiosAbortController = new AbortController();
 const currentUpload = ref({ name: '', progress: 0 });
 const showProgressbar= ref(false);
+const MAX_UPLOAD_SIZE = 1024; //1GB
+const errorMessage = ref('');
+const route = useRoute();
+
+
+
+defineExpose({errorMessage});
 
 let modal = null;
 const thisComponent = getCurrentInstance();
@@ -25,6 +34,13 @@ onMounted(() => {
 })
 
 const uploadFile = async (file) => {
+  if (file.size > MAX_UPLOAD_SIZE * 1024 * 1024) { // Check if file size is greater than 1GB
+    const proceed = await utils.confirm(
+      `Upload warning`,
+      `For uploading larger than ${MAX_UPLOAD_SIZE} MB, using FTP/Aspera is recommended. Do you still want to continue?`,
+      `Yes`, false, true, 'No, cancel');
+    if (!proceed) return;
+  }
   const formData = new FormData();
   formData.append('files', file);
   showProgressbar.value=true;
@@ -50,6 +66,9 @@ const uploadFile = async (file) => {
     });
     thisComponent.refs.filetree.show(); // Assuming refreshTree is a method in FileTree
     thisFile.value.path = file.name; // Update the input box with the file name
+    if(isFileList.value){
+      await validateFileListFile(file.name);
+    }
   } catch (error) {
     console.error('File upload error:', error);
   }finally {
@@ -58,12 +77,29 @@ const uploadFile = async (file) => {
   }
 };
 
+const validateFileListFile = async (fileName) => {
+  const formData = new FormData();
+  const pathArray = route.path.split('/');
+  const acc = pathArray[pathArray.length - 1];
+  formData.append('accNo', acc);
+  formData.append('fileListName', fileName);
 
-const select = (node) => {
+  try {
+    await axios.post(`${window.config.backendUrl}/api/submissions/fileLists/validate`, formData);
+  }catch (error){
+    errorMessage.value = error?.log?.message
+  }
+};
+
+
+const select = async (node) => {
   modal.hide();
   thisFile.value.path = (node.path + '/' + node.name).substring(5);
   thisFile.value.size = node.size;
   emits('select', thisFile.value);
+  if(isFileList.value){
+    await validateFileListFile(thisFile.value.path);
+  }
 }
 const loadTree = () => {
   thisComponent.refs.filetree.show();
@@ -74,12 +110,13 @@ const loadTree = () => {
   <div class="input-group input-group-sm" :class="props.class">
     <input type="text" class="form-control bg-body-secondary" v-model="thisFile.path" readonly data-bs-toggle="modal"
            :data-bs-target="'#fileFolderSelectModal'+thisComponent.uid"
-           @click="loadTree()">
+           @click="loadTree()" :class="{'is-invalid': errorMessage}">
     <button class="btn btn-secondary" type="button" data-bs-toggle="modal"
             @click="loadTree()"
             :data-bs-target="'#fileFolderSelectModal'+thisComponent.uid">
       Select File
     </button>
+    <div v-if="errorMessage" class="invalid-feedback">{{errorMessage}}</div>
   </div>
   <div class="modal fade" :id="'fileFolderSelectModal'+thisComponent.uid" tabindex="-1"
        aria-labelledby="fileFolderSelectModal"

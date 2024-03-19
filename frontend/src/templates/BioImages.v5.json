@@ -836,7 +836,7 @@
             "name": "File List",
             "icon": "fa-file",
             "controlType": {
-              "name": "file",
+              "name": "filelist",
               "allowFolders": false
             },
             "display": "required",

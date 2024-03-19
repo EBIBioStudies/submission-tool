@@ -49,7 +49,8 @@ public class Proxy {
             "/api/auth/password/reset",
             "/api/auth/register",
             "/api/auth/password/change",
-            "/api/collections"
+            "/api/collections",
+            "/api/submissions/fileLists/validate"
     }, method = {RequestMethod.GET, RequestMethod.DELETE, RequestMethod.POST, RequestMethod.PUT})
     public void getResponse(@RequestParam(required = false) MultipartFile files,
                             @RequestBody(required = false) String requestBody,

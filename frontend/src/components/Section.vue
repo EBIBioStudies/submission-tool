@@ -31,6 +31,11 @@ const attributesRefreshKey = ref(0);
 const sectionsRefreshKey = ref(0);
 
 const subSectionTypeMap = new Map();
+props?.sectionType?.tableTypes?.forEach(
+  (tbType) => {
+    subSectionTypeMap.set(tbType.name, tbType)
+  }
+);
 props.section?.subsections?.forEach((s) => {
   const subsection = Array.isArray(s) ? s[0] : s;
   const typeName = subsection?.type?.toLowerCase() === 'author' ? 'contact' : subsection?.type?.toLowerCase();
@@ -259,7 +264,7 @@ defineExpose({errors, thisSection});
               v-if="section.files && section.files.length"
               :rows="section.files"
               :depth="props.depth+1"
-              :sectionType="subSectionTypeMap.get(section.files)"
+              :sectionType="subSectionTypeMap.get('File')"
               sectionSubType="Files"
               @rowsReordered="(e) => rowsReordered(e, section.files)"
               @columnUpdated="(msg) => updateColumnName(section.files, msg)"
@@ -272,7 +277,7 @@ defineExpose({errors, thisSection});
               v-if="section.links && section.links.length"
               :rows="section.links"
               :depth="props.depth+1"
-              :sectionType="subSectionTypeMap.get(section.links)"
+              :sectionType="subSectionTypeMap.get('Link')"
               sectionSubType="Links"
               @rowsReordered="(e) => rowsReordered(e, section.links)"
               @columnUpdated="(msg) => updateColumnName(section.links, msg)"

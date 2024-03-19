@@ -103,7 +103,9 @@ const errors = computed(() => {
       _errors.push(`File required`);
     }
   } else if (thisAttribute?.value?.hasOwnProperty('url')) {
-    if (props.fieldType?.display === 'required' && (!thisAttribute?.value?.url || thisAttribute?.value?.url === '')) {
+    const IDENTIFIER_REGEXP = /^([\w\s].+):([\w\W]+)$/;
+    const URL_REGEXP = /^(http|https|ftp):\/\/.+$/;
+    if (props.fieldType?.display === 'required' && (!thisAttribute?.value?.url || thisAttribute?.value?.url === '' || (!IDENTIFIER_REGEXP.test(thisAttribute.value?.url) && !URL_REGEXP.test(thisAttribute.value?.url)))) {
       _errors.push(`Link required`);
     }
   } else if (props.fieldType?.controlType?.name === 'orcid') {
@@ -271,9 +273,16 @@ const showHelp = () => {
       :class="{'is-invalid':errors && hasValidated}"
     />
 
+    <FileFolderSelectModal
+      v-else-if="fieldType?.controlType?.name === 'filelist'"
+      :file="thisAttribute"
+      :is-file-list=true
+      :class="{'is-invalid':errors && hasValidated}"
+    />
+
     <!-- link -->
     <Link
-    v-else-if="fieldType?.controlType?.name === 'link'"
+    v-else-if="fieldType?.controlType?.name === 'idlink'"
     :link="thisAttribute"
       :class="{'is-invalid':errors && hasValidated}"
       :placeholder="fieldType?.controlType?.placeholder"
