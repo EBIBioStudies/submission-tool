@@ -38,7 +38,7 @@ const headers = ref(keys);
 const refresh = ref(0);
 
 const getFieldType = (attribute) => {
-  let name = attribute?.type?.toLowerCase() === 'file' ? 'File' : attribute?.name || attribute;
+  let name = attribute?.type?.toLowerCase() === 'file' || attribute.hasOwnProperty('path') ? 'File' : attribute?.name || attribute;
   // override affiliation
   if (name==='affiliation') {
     let fieldType = props.sectionType?.columnTypes?.find((f) => f.name?.toLowerCase() === 'organisation');

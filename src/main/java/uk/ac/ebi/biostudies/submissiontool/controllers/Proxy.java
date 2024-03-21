@@ -1,6 +1,5 @@
 package uk.ac.ebi.biostudies.submissiontool.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -37,6 +36,7 @@ public class Proxy {
         this.restTemplate = restTemplate;
         this.environments = environments;
     }
+
     @CrossOrigin(origins = "*")
     @RequestMapping(value = {
             "/api/files/**",
@@ -53,6 +53,7 @@ public class Proxy {
             "/api/submissions/fileLists/validate"
     }, method = {RequestMethod.GET, RequestMethod.DELETE, RequestMethod.POST, RequestMethod.PUT})
     public void getResponse(@RequestParam(required = false) MultipartFile files,
+                            @RequestParam(required = false) LinkedMultiValueMap map,
                             @RequestBody(required = false) String requestBody,
                             HttpServletRequest request,
                             HttpServletResponse response) throws Exception {
@@ -81,7 +82,7 @@ public class Proxy {
         Collections.list(request.getHeaderNames()).forEach(header -> headers.set(header, String.join(",", request.getHeader(header) )));
 
         MultiValueMap<String, Object> bodyMap = new LinkedMultiValueMap<>();
-        if (files!=null) {
+        if (files != null && !files.isEmpty()) {
             bodyMap.add("files", new ByteArrayResource(files.getBytes()) {
                 @Override
                 public String getFilename() {
@@ -89,9 +90,12 @@ public class Proxy {
                 }
             });
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        }  else if (!map.isEmpty()) {
+            bodyMap.addAll(map);
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         }
 
-        HttpEntity<Object> httpEntity = new HttpEntity<>( files!=null ? bodyMap : getUpdatedRequestBody(url, requestBody) , headers);
+        HttpEntity<Object> httpEntity = new HttpEntity<>(!bodyMap.isEmpty() ? bodyMap : getUpdatedRequestBody(url, requestBody), headers);
         ResponseEntity<Resource> resp;
         ServletOutputStream out = response.getOutputStream();
         try {
