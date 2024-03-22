@@ -87,7 +87,7 @@ const validateFileListFile = async (fileName) => {
   try {
     await axios.post(`${window.config.backendUrl}/api/submissions/fileLists/validate`, formData);
   }catch (error){
-    errorMessage.value = error?.log?.message
+    errorMessage.value = 'File list is not valid. ' + error?.response?.data?.log?.message
   }
 };
 
@@ -107,16 +107,18 @@ const loadTree = () => {
 </script>
 
 <template>
-  <div class="input-group input-group-sm" :class="props.class">
-    <input type="text" class="form-control bg-body-secondary" v-model="thisFile.path" readonly data-bs-toggle="modal"
-           :data-bs-target="'#fileFolderSelectModal'+thisComponent.uid"
-           @click="loadTree()" :class="{'is-invalid': errorMessage}">
-    <button class="btn btn-secondary" type="button" data-bs-toggle="modal"
-            @click="loadTree()"
-            :data-bs-target="'#fileFolderSelectModal'+thisComponent.uid">
-      Select File
-    </button>
-    <div v-if="errorMessage" class="invalid-feedback">{{errorMessage}}</div>
+  <div class="form-control" >
+    <div class="input-group input-group-sm" :class="props.class">
+      <input type="text" class="form-control bg-body-secondary" v-model="thisFile.path" readonly data-bs-toggle="modal"
+             :data-bs-target="'#fileFolderSelectModal'+thisComponent.uid"
+             @click="loadTree()" :class="{'is-invalid': errorMessage}">
+      <button class="btn btn-secondary" type="button" data-bs-toggle="modal"
+              @click="loadTree()"
+              :data-bs-target="'#fileFolderSelectModal'+thisComponent.uid">
+        Select File
+      </button>
+      <div v-if="errorMessage" class="invalid-feedback">{{errorMessage}}</div>
+    </div>
   </div>
   <div class="modal fade" :id="'fileFolderSelectModal'+thisComponent.uid" tabindex="-1"
        aria-labelledby="fileFolderSelectModal"
