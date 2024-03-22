@@ -78,6 +78,7 @@ const uploadFile = async (file) => {
 };
 
 const validateFileListFile = async (fileName) => {
+  errorMessage.value = '';
   const formData = new FormData();
   const pathArray = route.path.split('/');
   const acc = pathArray[pathArray.length - 1];
@@ -87,7 +88,7 @@ const validateFileListFile = async (fileName) => {
   try {
     await axios.post(`${window.config.backendUrl}/api/submissions/fileLists/validate`, formData);
   }catch (error){
-    errorMessage.value = 'File list is not valid. ' + error?.response?.data?.log?.message
+    errorMessage.value = 'File list is not valid. ' + (error?.response?.data?.log?.message || '').substring(0, 200)
   }
 };
 

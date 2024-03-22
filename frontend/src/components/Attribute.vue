@@ -314,7 +314,7 @@ const showHelp = () => {
       v-else
       type="text"
       class="form-control"
-      :class="{'is-invalid':errors && hasValidated, 'form-control-sm':isTableAttribute}"
+      :class="{'is-invalid':errors && hasValidated}"
       :placeholder="fieldType?.controlType?.placeholder"
       v-model="thisAttribute.value"
       :required="fieldType?.display==='required' || fieldType?.controlType?.minlength >0"
