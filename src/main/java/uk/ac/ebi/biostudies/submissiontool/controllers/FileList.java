@@ -2,51 +2,52 @@ package uk.ac.ebi.biostudies.submissiontool.controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.ServletOutputStream;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.client.RestTemplate;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Arrays;
 
-import static uk.ac.ebi.biostudies.submissiontool.controllers.Proxy.SESSION_HEADER;
 
 @Controller
 public class FileList {
 
     @Autowired
     private Environment environments;
+    public static final String SESSION_HEADER = "x-session-token";
 
     @CrossOrigin(origins = "*")
-    @GetMapping(value = "/filelist/{*path}")
-    public void getFileList(@PathVariable String path, HttpServletRequest request,
-                            HttpServletResponse response) throws IOException {
-        String token = request.getHeader(SESSION_HEADER);
-        ServletOutputStream out = response.getOutputStream();
-        PrintWriter writer = new PrintWriter(out);
+    @GetMapping(path = "/filelist/{*folder}")
+    @ResponseStatus(HttpStatus.OK)
+    public Mono<Void> getFileList(@PathVariable String folder,
+                                  ServerHttpRequest request,
+                                  ServerHttpResponse  response) throws IOException {
+
+        String token = request.getHeaders().getFirst(SESSION_HEADER);
         try {
-            response.setHeader("Content-Type", "text/tab-separated-values");
-            response.setHeader("Content-Disposition", "attachment; filename=\"" + path.substring(path.lastIndexOf("/")+1) +".tsv\"");
+            //response.getHeaders().set ("Content-Type", "text/tab-separated-values");
+            //response.getHeaders().set("Content-Disposition", "attachment; filename=\"" + folder.substring(folder.lastIndexOf("/")+1) +".tsv\"");
+            PrintWriter writer = new PrintWriter(response.bufferFactory().allocateBuffer(1024).asOutputStream());
             writer.println("Files");
-            getFiles(path, token, writer);
+
+            //getFiles(folder, token, writer);
+            writer.flush();
         } catch (Exception e) {
-            writer.println("Error generating filelist");
+            //writer.println("Error generating filelist");
             e.printStackTrace();
         }
-        response.setStatus(200);
-        response.flushBuffer();
+
+        return Mono.empty();
     }
 
     private void getFiles(String path, String token,

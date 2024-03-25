@@ -1,11 +1,25 @@
 spring:
-  servlet:
-    multipart:
-      max-file-size: 10GB
-      max-request-size: 10GB
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+      routes:
+        - id: prefixpath_route
+          uri: {BACKEND_URL}
+          predicates:
+            - Path=/api/files/**,/api/submissions/drafts/**,/api/submissions,/api/auth/login,/api/auth/logout,/api/auth/activate/**,/api/auth/retryact,/api/auth/password/reset,/api/auth/register,/api/auth/password/change,/api/collections
+          filters:
+            - StripPrefix=1
 
 backend:
   url: {BACKEND_URL}
   instance-key: {INSTANCE_KEY}
   recaptcha-key: {RECAPTCHA_KEY}
-
+frontend:
+  url: {FRONTEND_URL}
