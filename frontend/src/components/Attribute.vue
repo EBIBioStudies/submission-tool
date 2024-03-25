@@ -8,6 +8,7 @@ import FileFolderSelectModal from "@/components/FileFolderSelectModal.vue";
 import Link from "@/components/Link.vue";
 import utils from "@/utils";
 import Reference from "@/components/Reference.vue";
+import Organisation from "@/components/Organisation.vue";
 
 const hasValidated = inject('hasValidated')
 
@@ -17,17 +18,14 @@ const props = defineProps({
   'parent': Object,
   'isTableAttribute': Boolean
 });
-const emits = defineEmits(['createTag', 'deleteTag', 'deleteAttribute']);
+const emits = defineEmits(['createTag', 'deleteTag', 'deleteAttribute', 'deleteOrg', 'createOrg']);
 const attributeId = 'attribute-' + getCurrentInstance().uid;
 const thisAttribute = ref(props.attribute);
 const thisMultiValuedAttribute = ref(
-  props.parent
-    ?.map((a, i) => {
-      // save the original index -- needed when deleting
+  props.parent?.map((a, i) => { // save the original index -- needed when deleting
       return {index: i, ...a};
-    })
-    ?.filter((a) => a.name === thisAttribute.value.name && thisAttribute.value.value !== ''),
-);
+    })?.filter( a  =>  a.name === thisAttribute.value.name && a?.value !== '')
+)
 
 function isString(val) {
   return typeof val === 'string' || val instanceof String;
@@ -105,8 +103,17 @@ const errors = computed(() => {
       _errors.push(`File required`);
     }
   } else if (thisAttribute?.value?.hasOwnProperty('url')) {
-    if (props.fieldType?.display === 'required' && (!thisAttribute?.value?.url || thisAttribute?.value?.url === '')) {
+    const IDENTIFIER_REGEXP = /^([\w\s].+):([\w\W]+)$/;
+    const URL_REGEXP = /^(http|https|ftp):\/\/.+$/;
+    if (props.fieldType?.display === 'required' && (!thisAttribute?.value?.url || thisAttribute?.value?.url === '' || (!IDENTIFIER_REGEXP.test(thisAttribute.value?.url) && !URL_REGEXP.test(thisAttribute.value?.url)))) {
       _errors.push(`Link required`);
+    }
+  } else if (props.fieldType?.controlType?.name === 'orcid') {
+    const isValidOrcid =  utils.isOrcidValid(thisAttribute?.value?.value)
+    if ( (props.fieldType?.display === 'required' && !isValidOrcid) ||
+      (props.fieldType?.display !== 'required' && thisAttribute?.value?.value && thisAttribute?.value?.value!='')
+      ) {
+      _errors.push(`Invalid ORCID value`);
     }
   } else if (props.fieldType?.display === 'required' && (!thisAttribute.value?.value || thisAttribute?.value?.value?.trim() === '')) {
     _errors.push(`${thisAttribute?.value?.name} required`);
@@ -194,6 +201,17 @@ const showHelp = () => {
     >
     </Multiselect>
 
+    <!-- organisation -- must be handled before tags -->
+    <Organisation
+      v-else-if="fieldType?.controlType?.name === 'org'"
+      v-model="thisMultiValuedAttribute"
+      :class="{'is-invalid':errors && hasValidated}"
+      :fieldType="fieldType"
+      @deleteOrg="(v) => emits('deleteOrg', v)"
+      @createOrg="(v) => emits('createOrg', v)"
+    >
+    </Organisation>
+
     <!-- tags  -->
     <Multiselect
       v-else-if="
@@ -250,15 +268,22 @@ const showHelp = () => {
 
     <!--file-->
     <FileFolderSelectModal
-      v-else-if="fieldType?.valueType?.name === 'file'"
+      v-else-if="fieldType?.controlType?.name === 'file'"
       :file="thisAttribute"
+      :class="{'is-invalid':errors && hasValidated}"
+    />
+
+    <FileFolderSelectModal
+      v-else-if="fieldType?.controlType?.name === 'filelist'"
+      :file="thisAttribute"
+      :is-file-list=true
       :class="{'is-invalid':errors && hasValidated}"
     />
 
     <!-- link -->
     <Link
-      v-else-if="thisAttribute.hasOwnProperty('url')"
-      :link="thisAttribute"
+    v-else-if="fieldType?.controlType?.name === 'idlink'"
+    :link="thisAttribute"
       :class="{'is-invalid':errors && hasValidated}"
       :placeholder="fieldType?.controlType?.placeholder"
     />
@@ -272,12 +297,24 @@ const showHelp = () => {
     >
     </Reference>
 
+    <!-- orcid -->
+    <input
+      v-else-if="fieldType?.controlType?.name === 'orcid'"
+      type="text"
+      class="form-control"
+      :class="{'is-invalid':errors && hasValidated, 'form-control-sm':isTableAttribute}"
+      :placeholder="fieldType?.controlType?.placeholder"
+      v-model="thisAttribute.value"
+      :required="fieldType?.display==='required' || fieldType?.controlType?.minlength >0"
+    />
+
+
     <!-- default / text -->
     <input
       v-else
       type="text"
       class="form-control"
-      :class="{'is-invalid':errors && hasValidated, 'form-control-sm':isTableAttribute}"
+      :class="{'is-invalid':errors && hasValidated}"
       :placeholder="fieldType?.controlType?.placeholder"
       v-model="thisAttribute.value"
       :required="fieldType?.display==='required' || fieldType?.controlType?.minlength >0"
@@ -321,6 +358,7 @@ label.attribute {
 
 .multiselect-wrapper, .multiselect  {
   min-height: calc( 1.2rem + calc(var(--bs-border-width) * 2)) !important;
+  min-width: 84pt !important;
 }
 
 .multiselect.form-control.form-control-sm  {

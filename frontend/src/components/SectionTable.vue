@@ -4,16 +4,20 @@ import draggable from 'vuedraggable';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Attribute from '@/components/Attribute.vue';
 
-const props = defineProps(['rows', 'depth', 'sectionType', 'sectionSubType', 'parent']);
+const props = defineProps(['rows', 'depth', 'sectionType', 'sectionSubType', 'parent', 'startCollapsed', 'title']);
 const emits = defineEmits([
+  'rowAdded',
   'rowsReordered',
   'columnUpdated',
   'columnsReordered',
   'delete',
+  'deleteRow',
+  'deleteOrg',
+  'createOrg'
 ]);
 const thisSection = ref(props.rows);
 const rowSectionType = props.rows && props.rows[0]?.type ? ('' + props.rows[0].type) : '';
-const tableType = ref(props.sectionSubType ?? rowSectionType);
+const tableType = ref(props.title || props.sectionSubType || rowSectionType);
 const theseRows = ref(Array.isArray(props.rows[0]) ? props.rows[0] : props.rows);
 const headerMap = new Map();
 
@@ -34,14 +38,21 @@ const headers = ref(keys);
 const refresh = ref(0);
 
 const getFieldType = (attribute) => {
-  let name = attribute?.type?.toLowerCase() === 'file' ? 'File' : attribute?.name || attribute;
-  name = attribute.hasOwnProperty('url') ? 'Link' : name;
+  let name = attribute?.type?.toLowerCase() === 'file' || attribute.hasOwnProperty('path') ? 'File' : attribute?.name || attribute;
+  // override affiliation
+  if (name==='affiliation') {
+    let fieldType = props.sectionType?.columnTypes?.find((f) => f.name?.toLowerCase() === 'organisation');
+    if (fieldType) return {...fieldType, ...{name:'Organisation'}};
+  }
+  name = attribute.hasOwnProperty('url') || attribute.name==='url'  ? 'Link' : name;
   // return the column type. Expects either an object or a column name (for use in draggable)
   let fieldType = props.sectionType?.columnTypes?.find((f) => f.name?.toLowerCase() === name?.toLowerCase());
+  if (fieldType) return fieldType;
   if (!fieldType && name) {
     fieldType = {
       'name': name,
-      'valueType': {
+      'createdOnRender' : true,
+      'controlType': {
         'name': name?.toLowerCase(),
       },
     };
@@ -103,15 +114,17 @@ const addRow = (event) => {
   }
   headers.value.forEach((header, i) => {
     if (i === 0 || i === headers.value.length - 1
-      || ((tableType.value === 'Files' || tableType.value === 'Links') && i == 1))
+      || ((tableType.value === 'Files' || tableType.value === 'Links') && i === 1))
       return;
     row.attributes.push({ name: header, value: '' });
   });
   theseRows.value.push(row);
+  emits('rowAdded', row); // Needed only for Authors component
 };
 
 const deleteRow = (index) => {
   theseRows.value.splice(index, 1);
+  emits('deleteRow', index); // Needed only for Authors component
 };
 
 const deleteColumn = (index) => {
@@ -129,7 +142,7 @@ const updateColumnName = (event, index) => {
   emits('columnUpdated', { old: oldValue, new: newValue, index: index });
 };
 
-const isCollapsed = ref((props?.depth ?? 0) >= 2 || props?.sectionSubType === 'Contacts');
+const isCollapsed = ref((props?.depth ?? 0) >= 2 || props.startCollapsed);
 const toggle = () => (isCollapsed.value = !isCollapsed.value);
 
 const attributeRefs = ref([]);
@@ -170,15 +183,20 @@ defineExpose({ errors, thisSection });
         <thead>
         <draggable v-model="headers" :item-key="(key) => key" tag="tr" @end.stop="reorderColumns">
           <template #item="{ element: header, index: i }">
-            <th :class="{ fixed: i === 0 || i === headers?.length - 1 || getFieldType(header)?.display==='required' }">
-              <span v-if="getFieldType(header)?.display==='required'" class="form-control-sm">{{ header }}</span>
-              <div v-else-if="i > 0 && i < headers.length - 1" class="input-group input-group-sm">
-                <input ref="headerComponent" :value="header" class="form-control" type="text"
+            <th :class="{ fixed: i === 0 || i === headers?.length - 1  }">
+              <div v-if="i > 0 && i < headers.length - 1" class="input-group input-group-sm align-items-center">
+                <template v-if="!getFieldType(header)?.createdOnRender">
+                  <span class="form-control-sm">{{ getFieldType(header).name }}</span>
+                  <font-awesome-icon v-if="getFieldType(header)?.display!=='required'" role="button" @click.prevent="deleteColumn(i)" class="icon fa-sm"
+                                     icon="fa-trash"></font-awesome-icon>
+                </template>
+                <template v-else>
+                  <input ref="headerComponent" :value="header" class="form-control" type="text"
                        @change.stop="(e) => updateColumnName(e, i)">
-                <button v-if="getFieldType(header)?.display!=='required'" class="btn btn-outline-secondary icon"
-                        type="button" @click.prevent="deleteColumn(i)">
-                  <font-awesome-icon class="fa-sm" icon="fa-trash"></font-awesome-icon>
-                </button>
+                  <button v-if="getFieldType(header)?.display!=='required'"  class="btn btn-outline-secondary icon" type="button" @click.prevent="deleteColumn(i)">
+                    <font-awesome-icon class="fa-sm" icon="fa-trash"></font-awesome-icon>
+                  </button>
+                </template>
               </div>
             </th>
           </template>
@@ -191,12 +209,19 @@ defineExpose({ errors, thisSection });
                 <font-awesome-icon icon="fa-solid fa-grip-vertical" />
               </td>
               <td v-for="(col, j) in [...headers].filter((v, i) => i > 0 && i < headers.length - 1 )" :key="j">
-                <Attribute :key="index" ref="attributeRefs" :attribute="getCell(row, col)"
-                           :field-type="getFieldType(getCell(row, col))" :isTableAttribute="true"
-                           :parent="row.attributes" @deleteAttribute="(v) => emits('deleteAttribute', index)" />
+                <Attribute :key="index"
+                           ref="attributeRefs"
+                           :attribute="getCell(row, col)"
+                           :field-type="getFieldType(getCell(row, col))"
+                           :isTableAttribute="true"
+                           :parent="row.attributes"
+                           @deleteAttribute="(v) => emits('deleteAttribute', index)"
+                           @deleteOrg="(v) => emits('deleteOrg', {...v,...{'authorIndex':index}})"
+                           @createOrg="(v) => emits('createOrg', {...v,...{'authorIndex':index}})"
+                />
               </td>
               <td class="grip">
-                <font-awesome-icon class="fa-sm" icon="fa-trash" role="button"
+                <font-awesome-icon v-if="!(index===0 && sectionType?.display==='required' )" class="fa-sm" icon="fa-trash" role="button"
                                    @click="deleteRow(index)"></font-awesome-icon>
               </td>
             </tr>

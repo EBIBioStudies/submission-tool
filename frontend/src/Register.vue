@@ -38,7 +38,7 @@
               <label for="orcid">ORCID</label>
               <span class="text-muted float-end"><i>Optional</i></span>
               <input type="text" id="orcid" placeholder="1111-2222-3333-4444" v-model="form.orcid" pattern="\d{4}-\d{4}-\d{4}-\d{3}[0-9X]" class="form-control" :class="{'is-invalid': !validOrcid}">
-              <div v-if="!validOrcid" class="invalid-feedback">Please enter a valid orcid(4*4 digit format)</div>
+              <div v-if="!validOrcid" class="invalid-feedback">Please enter a valid orcid in a 4*4 format, e.g., 0000-0001-2345-6789</div>
             </div>
             <div class="form-check">
               <input type="checkbox" id="terms" v-model="form.terms" required class="form-check-input">
@@ -61,6 +61,7 @@
 import { ref, computed } from "vue";
 import {VueRecaptcha} from 'vue-recaptcha';
 import axios from "axios";
+import utils from '@/utils';
 
 
 export default {
@@ -98,8 +99,7 @@ export default {
       if (form.value.orcid === '') {
         return true;
       }
-      const regex = /^\d{4}-\d{4}-\d{4}-\d{3}[0-9X]$/;
-      return  regex.test(form.value.orcid);
+      return  utils.isOrcidValid(form.value.orcid);
     });
     const validTerms = computed(() => {
       return form.value.terms

@@ -6,7 +6,7 @@ const props = defineProps(['attributes', 'fieldTypes']);
 const emits = defineEmits(['deleteAttribute', 'createTag', 'deleteTag']);
 const attributeList = ref(props.attributes);
 const duplicateAttributes = attributeList.value?.filter(
-  (value, index, array) =>    array.find((v, i) => v.name === value.name) !== value && value.name!=''
+  (value, index, array) =>    array.find((v, i) => v.name === value.name) !== value && value.name !== ''
 );
 const  attributeRefs = ref([]);
 

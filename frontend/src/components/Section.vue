@@ -31,6 +31,11 @@ const attributesRefreshKey = ref(0);
 const sectionsRefreshKey = ref(0);
 
 const subSectionTypeMap = new Map();
+props?.sectionType?.tableTypes?.forEach(
+  (tbType) => {
+    subSectionTypeMap.set(tbType.name, tbType)
+  }
+);
 props.section?.subsections?.forEach((s) => {
   const subsection = Array.isArray(s) ? s[0] : s;
   const typeName = subsection?.type?.toLowerCase() === 'author' ? 'contact' : subsection?.type?.toLowerCase();
@@ -145,7 +150,7 @@ const createTag = (msg) => {
 
 const rowsReordered = (event, rows) => {
   rows.splice(event.newIndex, 0, rows.splice(event.oldIndex, 1)[0]);
-  //sectionsRefreshKey.value += 1;
+  sectionsRefreshKey.value += 1;
 };
 
 const updateColumnName = (subsection, update) => {
@@ -170,10 +175,10 @@ const canRender = (sec) => {
 const errors = computed(() => {
   let _errors = [...attributesComponent.value?.errors]
   // validate subsections
-  // subsectionsRef?.value.forEach(subsec => {
-  //   if (!canRender(subsec.thisSection)) return
-  //   _errors = [..._errors, ...subsec.errors]
-  // });
+  subsectionsRef?.value.forEach(subsec => {
+     if (!canRender(subsec.thisSection)) return
+     _errors = [..._errors, ...subsec.errors]
+  });
   if (sectionFilesRef) {
     _errors = [..._errors, ...sectionFilesRef?.value?.errors ?? []]
   }
@@ -254,6 +259,32 @@ defineExpose({errors, thisSection});
             <!--              ref="filesComponent"-->
             <!--            />-->
 
+            <!-- Files -->
+            <SectionTable
+              v-if="section.files && section.files.length"
+              :rows="section.files"
+              :depth="props.depth+1"
+              :sectionType="subSectionTypeMap.get('File')"
+              sectionSubType="Files"
+              @rowsReordered="(e) => rowsReordered(e, section.files)"
+              @columnUpdated="(msg) => updateColumnName(section.files, msg)"
+              @columnsReordered="(msg) => sectionsRefreshKey+= 1"
+              @delete="deleteSubSection(section.files, 0)"
+              ref="sectionFilesRef"
+            />
+            <!-- Links -->
+            <SectionTable
+              v-if="section.links && section.links.length"
+              :rows="section.links"
+              :depth="props.depth+1"
+              :sectionType="subSectionTypeMap.get('Link')"
+              sectionSubType="Links"
+              @rowsReordered="(e) => rowsReordered(e, section.links)"
+              @columnUpdated="(msg) => updateColumnName(section.links, msg)"
+              @columnsReordered="(msg) => sectionsRefreshKey+= 1"
+              @delete="deleteSubSection(section.links, 0)"
+              ref="sectionLinksRef"
+            />
             <!-- Subsections start -->
             <div v-for="(subsection, i) in section.subsections" :key="i" ref="sectionsComponent">
               <!-- section -->
@@ -289,32 +320,6 @@ defineExpose({errors, thisSection});
 
             </div>
             <!-- Subsections end -->
-            <!-- Files -->
-            <SectionTable
-              v-if="section.files"
-              :rows="section.files"
-              :depth="props.depth+1"
-              :sectionType="subSectionTypeMap.get(section.files)"
-              sectionSubType="Files"
-              @rowsReordered="(e) => rowsReordered(e, section.files)"
-              @columnUpdated="(msg) => updateColumnName(section.files, msg)"
-              @columnsReordered="(msg) => sectionsRefreshKey+= 1"
-              @delete="deleteSubSection(section.files, 0)"
-              ref="sectionFilesRef"
-            />
-            <!-- Links -->
-            <SectionTable
-              v-if="section.links"
-              :rows="section.links"
-              :depth="props.depth+1"
-              :sectionType="subSectionTypeMap.get(section.links)"
-              sectionSubType="Links"
-              @rowsReordered="(e) => rowsReordered(e, section.links)"
-              @columnUpdated="(msg) => updateColumnName(section.links, msg)"
-              @columnsReordered="(msg) => sectionsRefreshKey+= 1"
-              @delete="deleteSubSection(section.links, 0)"
-              ref="sectionLinksRef"
-            />
           </div>
         </div>
       </div>

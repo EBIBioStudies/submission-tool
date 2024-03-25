@@ -16,7 +16,7 @@
       {
         "name": "Title",
         "icon": "fa-heading",
-        "valueType": {
+        "controlType": {
           "name": "largetext"
         }
       },
@@ -25,7 +25,7 @@
         "title": "Release Date",
         "icon": "fa-calendar-alt",
         "display": "required",
-        "valueType": {
+        "controlType": {
           "name": "date",
           "allowPast": false
         }
@@ -33,21 +33,21 @@
       {
         "name": "Study type",
         "icon": "fa-tag",
-        "valueType": {
+        "controlType": {
           "name": "text"
         }
       },
       {
         "name": "Organism",
         "icon": "fa-tag",
-        "valueType": {
+        "controlType": {
           "name": "text"
         }
       },
       {
         "name": "Description",
         "icon": "fa-tag",
-        "valueType": {
+        "controlType": {
           "name": "largetext"
         }
       }
@@ -61,26 +61,26 @@
         "columnTypes": [
           {
             "name": "Name",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "required"
           },
           {
             "name": "Type",
-            "valueType": {
+            "controlType": {
               "name": "text"
             }
           },
           {
             "name": "Description",
-            "valueType": {
+            "controlType": {
               "name": "text"
             }
           },
           {
             "name": "Hardware",
-            "valueType": {
+            "controlType": {
               "name": "text"
             }
           }
@@ -99,33 +99,33 @@
             "autosuggest": false,
             "display": "desirable",
             "name": "Name",
-            "valueType": {
+            "controlType": {
               "name": "text"
             }
           },
           {
             "autosuggest": false,
             "name": "Email",
-            "valueType": {
+            "controlType": {
               "name": "text"
             }
           },
           {
             "name": "Organisation",
-            "valueType": {
+            "controlType": {
               "name": "org",
               "multiple": true
             }
           },
           {
             "name": "Role",
-            "valueType": {
+            "controlType": {
               "name": "text"
             }
           },
           {
             "name": "ORCID",
-            "valueType": {
+            "controlType": {
               "name": "orcid"
             }
           }
@@ -142,61 +142,61 @@
         "columnTypes": [
           {
             "name": "PMID",
-            "valueType": {
+            "controlType": {
               "name": "pubmedid"
             },
             "display": "desirable"
           },
           {
             "name": "Authors",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "required"
           },
           {
             "name": "Title",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "required"
           },
           {
             "name": "Year",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "required"
           },
           {
             "name": "Volume",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "desirable"
           },
           {
             "name": "Issue",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "desirable"
           },
           {
             "name": "Type",
-            "valueType": {
+            "controlType": {
               "name": "text"
             }
           },
           {
             "name": "Issn",
-            "valueType": {
+            "controlType": {
               "name": "text"
             }
           },
           {
             "name": "DOI",
-            "valueType": {
+            "controlType": {
               "name": "text"
             }
           }
@@ -211,14 +211,14 @@
         "columnTypes": [
           {
             "name": "Link",
-            "valueType": {
+            "controlType": {
               "name": "idlink"
             },
             "display": "required"
           },
           {
             "name": "Description",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "desirable"
@@ -234,21 +234,21 @@
         "columnTypes": [
           {
             "name": "File",
-            "valueType": {
+            "controlType": {
               "name": "file"
             },
             "display": "required"
           },
           {
             "name": "Description",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "required"
           },
           {
             "name": "Type",
-            "valueType": {
+            "controlType": {
               "name": "text"
             },
             "display": "desirable"
@@ -271,21 +271,21 @@
           {
             "name": "Sample count",
             "icon": "fa-comment",
-            "valueType": {
+            "controlType": {
               "name": "text"
             }
           },
           {
             "name": "Experimental Factors",
             "icon": "fa-comment",
-            "valueType": {
+            "controlType": {
               "name": "text"
             }
           },
           {
             "name": "Source Characteristics",
             "icon": "fa-comment",
-            "valueType": {
+            "controlType": {
               "name": "text"
             }
           }
@@ -310,21 +310,21 @@
           {
             "name": "Assay count",
             "icon": "fa-comment",
-            "valueType": {
+            "controlType": {
               "name": "text"
             }
           },
           {
             "name": "Technology",
             "icon": "fa-comment",
-            "valueType": {
+            "controlType": {
               "name": "text"
             }
           },
           {
             "name": "Assay by Molecule",
             "icon": "fa-comment",
-            "valueType": {
+            "controlType": {
               "name": "text"
             }
           }
@@ -343,7 +343,7 @@
                 "columnTypes": [
                   {
                     "name": "File",
-                    "valueType": {
+                    "controlType": {
                       "name": "file"
                     },
                     "display": "required"
@@ -365,7 +365,7 @@
                 "columnTypes": [
                   {
                     "name": "File",
-                    "valueType": {
+                    "controlType": {
                       "name": "file"
                     },
                     "display": "required"
@@ -387,7 +387,7 @@
                 "columnTypes": [
                   {
                     "name": "File",
-                    "valueType": {
+                    "controlType": {
                       "name": "file"
                     },
                     "display": "required"
@@ -409,7 +409,7 @@
                 "columnTypes": [
                   {
                     "name": "File",
-                    "valueType": {
+                    "controlType": {
                       "name": "file"
                     },
                     "display": "required"
@@ -431,7 +431,7 @@
                 "columnTypes": [
                   {
                     "name": "File",
-                    "valueType": {
+                    "controlType": {
                       "name": "file"
                     },
                     "display": "required"
@@ -447,14 +447,14 @@
                 "columnTypes": [
                   {
                     "name": "Link",
-                    "valueType": {
+                    "controlType": {
                       "name": "idlink"
                     },
                     "display": "required"
                   },
                   {
                     "name": "Description",
-                    "valueType": {
+                    "controlType": {
                       "name": "text"
                     },
                     "display": "desirable"

@@ -78,4 +78,19 @@ const prompt = (title, message, okayLabel = 'Close', isLarge = false, showCancel
     })
   })
 }
-export default {confirm, prompt}
+
+const isOrcidValid = (orcid) => {
+  const orcidFormatRegex = /\d{4}-\d{4}-\d{4}-\d{3}[\dX]/gi;
+  const matches = orcid.match(orcidFormatRegex);
+  if (matches === null) return false;
+  const digits = orcid.replace(/-/g, '');
+  const baseDigits = digits.slice(0, 15).split('');
+  const checkDigit = digits.charAt(15);
+  const total = baseDigits.reduce((parcialTotal, digit) => (parcialTotal + parseInt(digit, 10)) * 2, 0);
+  const remainder = total % 11;
+  const result = (12 - remainder) % 11;
+  const expectedCheckDigit = result === 10 ? 'X' : result.toString();
+  return checkDigit === expectedCheckDigit;
+}
+
+export default {confirm, prompt, isOrcidValid}
