@@ -27,6 +27,24 @@ spring:
               - Path=/api/collections
             filters:
               - StripPrefix=1
+          - id: ror-api
+            uri: https://api.ror.org:443
+            predicates:
+              - Path=/ror/**
+            filters:
+              - StripPrefix=1
+#        globalcors:
+#          corsConfigurations:
+#            '[/**]':
+#              allowedOrigins:
+#                - "http://localhost:5173"
+#                - "http://localhost:8080"
+#              allowedMethods:
+#                - GET
+#                - POST
+#              allowedHeaders:
+#                - "*"
+#              allowCredentials: true
 backend:
   url: {BACKEND_URL}
   instance-key: {INSTANCE_KEY}
