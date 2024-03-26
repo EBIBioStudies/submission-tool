@@ -5,6 +5,7 @@
   "productName": "submissiontool",
   "author": "Awais Athar <awais@ebi.ac.uk>",
   "private": true,
+  "type": "module",
   "scripts": {
     "lint": "eslint --ext .js,.vue ./",
     "format": "prettier --write \"**/*.{js,vue,scss,html,md,json}\" --ignore-path .gitignore",

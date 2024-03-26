@@ -1,22 +1,32 @@
 spring:
   cloud:
     gateway:
-      default-filters:
-        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
-      globalcors:
-        cors-configurations:
-          '[/**]':
-            allowedOrigins: "*"
-            allowedMethods: "*"
-            allowedHeaders: "*"
-      routes:
-        - id: prefixpath_route
-          uri: {BACKEND_URL}
-          predicates:
-            - Path=/api/files/**,/api/submissions/drafts/**,/api/submissions,/api/auth/login,/api/auth/logout,/api/auth/activate/**,/api/auth/retryact,/api/auth/password/reset,/api/auth/register,/api/auth/password/change,/api/collections
-          filters:
-            - StripPrefix=1
-
+      mvc:
+        routes:
+          - id: auth
+            uri: {BACKEND_URL}
+            predicates:
+              - Path=/api/auth/*
+            filters:
+              - StripPrefix=1
+          - id: submission
+            uri: {BACKEND_URL}
+            predicates:
+              - Path=/api/submissions/**
+            filters:
+              - StripPrefix=1
+          - id: files
+            uri: {BACKEND_URL}
+            predicates:
+              - Path=/api/files/**
+            filters:
+              - StripPrefix=1
+          - id: collections
+            uri: {BACKEND_URL}
+            predicates:
+              - Path=/api/collections
+            filters:
+              - StripPrefix=1
 backend:
   url: {BACKEND_URL}
   instance-key: {INSTANCE_KEY}
