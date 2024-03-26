@@ -8,15 +8,15 @@ const emits = defineEmits(['change'])
 const thisLink = ref(props.link)
 const showSuggestions = ref(false);
 const filteredListItems = ref(null);
-
-const errors = computed(() => {
-    const _errors = []
-  if(!isIdLink && !isUrl) {
+const errors = computed(()=>getErrors());
+const getErrors = () => {
+  const _errors = []
+  if(!isIdLink.value && !isUrl.value) {
     _errors.push('Please enter a valid url or link')
   }
     return _errors.length ? _errors.join('. ').trim() : null;
   }
-);
+
 
 const filterList = () =>
 {

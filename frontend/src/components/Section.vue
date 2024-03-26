@@ -182,6 +182,9 @@ const errors = computed(() => {
   if (sectionFilesRef) {
     _errors = [..._errors, ...sectionFilesRef?.value?.errors ?? []]
   }
+  if (sectionLinksRef) {
+    _errors = [..._errors, ...sectionLinksRef?.value?.errors ?? []]
+  }
   return _errors
 });
 

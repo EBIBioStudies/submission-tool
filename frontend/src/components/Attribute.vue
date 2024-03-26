@@ -21,6 +21,7 @@ const props = defineProps({
 const emits = defineEmits(['createTag', 'deleteTag', 'deleteAttribute', 'deleteOrg', 'createOrg']);
 const attributeId = 'attribute-' + getCurrentInstance().uid;
 const thisAttribute = ref(props.attribute);
+const attributeControl = ref(null);
 const thisMultiValuedAttribute = ref(
   props.parent?.map((a, i) => { // save the original index -- needed when deleting
       return {index: i, ...a};
@@ -102,12 +103,12 @@ const errors = computed(() => {
     if (props.fieldType?.display === 'required' && (!thisAttribute?.value?.path || thisAttribute?.value?.path === '')) {
       _errors.push(`File required`);
     }
-  } else if (thisAttribute?.value?.hasOwnProperty('url')) {
-    const IDENTIFIER_REGEXP = /^([\w\s].+):([\w\W]+)$/;
-    const URL_REGEXP = /^(http|https|ftp):\/\/.+$/;
-    if (props.fieldType?.display === 'required' && (!thisAttribute?.value?.url || thisAttribute?.value?.url === '' || (!IDENTIFIER_REGEXP.test(thisAttribute.value?.url) && !URL_REGEXP.test(thisAttribute.value?.url)))) {
-      _errors.push(`Link required`);
-    }
+  // } else if (thisAttribute?.value?.hasOwnProperty('url')) {
+  //   const IDENTIFIER_REGEXP = /^([\w\s].+):([\w\W]+)$/;
+  //   const URL_REGEXP = /^(http|https|ftp):\/\/.+$/;
+  //   if (props.fieldType?.display === 'required' && (!thisAttribute?.value?.url || thisAttribute?.value?.url === '' || (!IDENTIFIER_REGEXP.test(thisAttribute.value?.url) && !URL_REGEXP.test(thisAttribute.value?.url)))) {
+  //     _errors.push(`Link required`);
+  //   }
   } else if (props.fieldType?.controlType?.name === 'orcid') {
     const isValidOrcid =  utils.isOrcidValid(thisAttribute?.value?.value)
     if ( (props.fieldType?.display === 'required' && !isValidOrcid) ||
@@ -120,6 +121,9 @@ const errors = computed(() => {
   }
   if (props.fieldType?.controlType?.minlength > (thisAttribute.value?.value?.trim().length ?? 0)) {
     _errors.push(`Please enter at least ${props.fieldType?.controlType?.minlength} characters. `)
+  }
+  if (attributeControl?.value) {
+    _errors.push(attributeControl?.value?.errors)
   }
   return _errors.length ? _errors.join('. ').trim() : null;
 })
@@ -283,6 +287,7 @@ const showHelp = () => {
     <!-- link -->
     <Link
     v-else-if="fieldType?.controlType?.name === 'idlink'"
+    ref="attributeControl"
     :link="thisAttribute"
       :class="{'is-invalid':errors && hasValidated}"
       :placeholder="fieldType?.controlType?.placeholder"
