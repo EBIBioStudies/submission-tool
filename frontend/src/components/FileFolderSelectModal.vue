@@ -1,6 +1,6 @@
 <script setup>
 
-import {getCurrentInstance, onMounted, ref} from "vue";
+import {computed, getCurrentInstance, onMounted, ref} from "vue";
 import FileTree from "./FileTree.vue";
 import {Modal} from "bootstrap";
 import axios from 'axios';
@@ -70,7 +70,7 @@ const uploadFile = async (file) => {
       await validateFileListFile(file.name);
     }
   } catch (error) {
-    console.error('File upload error:', error);
+      console.error('File upload error:', error);
   }finally {
     showProgressbar.value=false;
     currentUpload.value.progress = 0;
@@ -89,6 +89,7 @@ const validateFileListFile = async (fileName) => {
     await axios.post(`/api/submissions/fileLists/validate`, formData);
   }catch (error){
     errorMessage.value = 'File list is not valid. ' + (error?.response?.data?.log?.message || '').substring(0, 200)
+    thisFile.value.path = ''
   }
 };
 
@@ -102,6 +103,10 @@ const select = async (node) => {
     await validateFileListFile(thisFile.value.path);
   }
 }
+
+thisFile.value.value = computed(() => {
+  return thisFile.value.path
+})
 const loadTree = () => {
   thisComponent.refs.filetree.show();
 }

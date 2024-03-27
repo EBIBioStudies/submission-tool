@@ -117,7 +117,8 @@ const errors = computed(() => {
       _errors.push(`Invalid ORCID value`);
     }
   } else if (props.fieldType?.display === 'required' && (!thisAttribute.value?.value || thisAttribute?.value?.value?.trim() === '')) {
-    _errors.push(`${thisAttribute?.value?.name} required`);
+     if(!(thisMultiValuedAttribute?.value?.length>0))
+       _errors.push(`${thisAttribute?.value?.name} required`);
   }
   if (props.fieldType?.controlType?.minlength > (thisAttribute.value?.value?.trim().length ?? 0)) {
     _errors.push(`Please enter at least ${props.fieldType?.controlType?.minlength} characters. `)
