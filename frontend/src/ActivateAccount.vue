@@ -36,7 +36,7 @@
   // Function to activate account
   const activateAccount = async () => {
     try {
-      const response = await axios.post(`${window.config.backendUrl}/api/auth/activate/${activationCode.value}`);
+      const response = await axios.post(`/api/auth/activate/${activationCode.value}`);
       success.value=true;
       message.value = 'The activation was successful';
     } catch (error) {

@@ -14,7 +14,7 @@ const organisations = ref([]);
 const updateOptions = async (query) => {
   if (!query || query.length < 3) return [];
   return axios({
-    url: `${window.config.backendUrl}/ror/v1/organizations?query=${query}`,
+    url: `https://api.ror.org/v1/organizations?query=${query}`,
     headers: { 'content-type': 'application/json' },
     method: 'GET',
   }).then(response => response.data?.items?.map(i => {

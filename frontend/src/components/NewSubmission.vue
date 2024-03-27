@@ -50,7 +50,7 @@ const createNewSubmission = async ()=> {
   }
   draft.section.subsections.push(author);
   const response = await axios.post (
-    `${window.config.backendUrl}/api/submissions/drafts`,
+    `/api/submissions/drafts`,
     draft
   );
   await router.push(`/edit/${response.data.key}`)
@@ -60,7 +60,7 @@ const createNewSubmission = async ()=> {
 onMounted(async () => {
   if (!AuthService.isAuthenticated()) return;
   try {
-    await axios.get(`${window.config.backendUrl}/api/collections`).then(response=>{
+    await axios.get(`/api/collections`).then(response=>{
       const allowedCollections = response.data;
       allowedTemplates.value = activeTemplates.filter( (tmpl)=> {
         const collection = tmpl.name.split(".")[0].toLowerCase() || 'default';

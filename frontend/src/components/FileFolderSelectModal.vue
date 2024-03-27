@@ -45,7 +45,7 @@ const uploadFile = async (file) => {
   formData.append('files', file);
   showProgressbar.value=true;
   try {
-    await axios.post(`${window.config.backendUrl}/api/files/user/`, formData, {
+    await axios.post(`/api/files/user/`, formData, {
       signal: axiosAbortController.signal,
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -86,7 +86,7 @@ const validateFileListFile = async (fileName) => {
   formData.append('fileListName', fileName);
 
   try {
-    await axios.post(`${window.config.backendUrl}/api/submissions/fileLists/validate`, formData);
+    await axios.post(`/api/submissions/fileLists/validate`, formData);
   }catch (error){
     errorMessage.value = 'File list is not valid. ' + (error?.response?.data?.log?.message || '').substring(0, 200)
   }

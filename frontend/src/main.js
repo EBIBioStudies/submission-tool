@@ -17,15 +17,14 @@ library.add(far);
 const app = createApp(App);
 app.use(router);
 app.component('font-awesome-icon', FontAwesomeIcon);
-window.config = {backendUrl: location.host === 'localhost:5173' ? 'http://localhost:8080' : ''};
 axios.interceptors.request.use(config => {
-    if(config.url.startsWith(window.config.backendUrl)) { // pass token only to backend
+    if(config.url.startsWith('/')) { // pass token only to backend
       config.headers['x-session-token'] = AuthService.user?.value?.sessid;
     }
-    return config;
+    return config; //TODO: fix url if app is not deployed on root context path
   }
 );
-axios.get(`${window.config.backendUrl}/config`)
+axios.get(`/config`)
   .then(async (response) => {
     if (response.status === 200) {
       window.config = {...window.config, ...response.data}

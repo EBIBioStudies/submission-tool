@@ -106,7 +106,7 @@ const resetPass = async () => {
   isLoading.value=true;
   form.value.activationKey = route.params.activationCode;
   try {
-    const response = await axios.post(`${window.config.backendUrl}/api/auth/password/change`, form.value);
+    const response = await axios.post(`/api/auth/password/change`, form.value);
     success.value=true;
     redirectToExternalURL();
   } catch (error) {

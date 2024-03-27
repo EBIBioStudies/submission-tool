@@ -147,7 +147,7 @@ const flipSort = (key) => {
 watchEffect(async () => {
   if (!AuthService.isAuthenticated()) return;
   const path = props.paths && props.paths !== '' ? props.paths.map(path => encodeURIComponent(path)).join('/') : 'user/';
-  const response = await axios.get(`${window.config.backendUrl}/api/files/${path}`)
+  const response = await axios.get(`/api/files/${path}`)
     .then(response => files.value = response.data);
 });
 
@@ -161,7 +161,7 @@ const navigate = async (path, name) => {
 };
 
 const downloadFile = (file) => {
-  const downloadPath = `${window.config.backendUrl}/api/files/${file.path}?fileName=${file.name}`;
+  const downloadPath = `/api/files/${file.path}?fileName=${file.name}`;
   axios({ url: downloadPath, responseType: 'blob' }).then((response) => {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(response.data);
@@ -171,7 +171,7 @@ const downloadFile = (file) => {
 };
 
 const downloadFileList = (file) => {
-  const downloadPath = `${window.config.backendUrl}/filelist/${file.path}/${file.name}`;
+  const downloadPath = `/filelist/${file.path}/${file.name}`;
   axios({ url: downloadPath, responseType: 'blob' }).then((response) => {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(response.data);
@@ -182,14 +182,14 @@ const downloadFileList = (file) => {
 
 const deleteFile = async (file) => {
   if (!await utils.confirm('Delete File', `Do you want to delete ${file.name}?`, 'Delete')) return;
-  const downloadPath = `${window.config.backendUrl}/api/files/${file.path}?fileName=${file.name}`;
+  const downloadPath = `/api/files/${file.path}?fileName=${file.name}`;
   axios.delete(downloadPath).then(async () => await navigate(file.path, ''));
 };
 
 const uploadFile = (file) => {
   const formData = new FormData();
   formData.append('files', file);
-  return axios.post(`${window.config.backendUrl}/api/files/${currentPath.value.join('/')}`,
+  return axios.post(`/api/files/${currentPath.value.join('/')}`,
     formData,
     {
       signal: axiosAbortController.signal,

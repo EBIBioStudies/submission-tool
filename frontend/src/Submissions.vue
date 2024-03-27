@@ -88,7 +88,7 @@ const canDelete = (submission)=> {
 watchEffect(async () => {
   if (!AuthService.isAuthenticated()) return
   isLoading.value = true;
-  await axios(`${window.config.backendUrl}/api/submissions?offset=${offset.value}&limit=${pageLength.value+1}&keywords=${keywords.value}`)
+  await axios(`/api/submissions?offset=${offset.value}&limit=${pageLength.value+1}&keywords=${keywords.value}`)
     .then(response =>  {
       submissions.value = response.data.slice(0,pageLength.value);
       showNext.value = response.data.length === pageLength.value+1;

@@ -72,7 +72,7 @@ const submitData = async () => {
       'recaptcha2-response': recaptchaToken.value
     };
     try {
-      const response = await axios.post(`${window.config.backendUrl}/api/auth/retryact`, parameters);
+      const response = await axios.post(`/api/auth/retryact`, parameters);
       success.value = true;
     } catch (error) {
       errorMessage.value = error?.response?.data?.log?.message || 'Unknown Error';

@@ -38,7 +38,7 @@ const collections = ref([]);
 
 watchEffect(async () => {
   if (!AuthService.isAuthenticated()) return;
-  await axios(`${window.config.backendUrl}/api/collections`)
+  await axios(`/api/collections`)
     .then(response => {
         collections.value = response.data;
         isLoading.value = false;

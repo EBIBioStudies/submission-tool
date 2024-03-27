@@ -78,7 +78,7 @@ const updateOffset = (delta) => {
 watchEffect(async () => {
   if (!AuthService.isAuthenticated()) return;
   isLoading.value = true;
-  await axios(`${window.config.backendUrl}/api/submissions/drafts?offset=${offset.value}&limit=15`)
+  await axios(`/api/submissions/drafts?offset=${offset.value}&limit=15`)
     .then(response => {
       if (response.data.length)   {
         drafts.value = response.data;
@@ -107,7 +107,7 @@ const deleteDraft = async (accno) => {
     "Delete")) return;
   isLoading.value = true;
   const response = await axios.delete(
-    `${window.config.backendUrl}/api/submissions/drafts/${accno}`,
+    `/api/submissions/drafts/${accno}`,
   );
   if (response.status === 200) {
     location.reload();

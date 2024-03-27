@@ -107,7 +107,7 @@ const submitDraft = async () => {
     offCanvasErrors.show();
   } else {
     offCanvasErrors.hide();
-    const response = await axios.post(`${window.config.backendUrl}/api/submissions/drafts/${props.accession}/submit`);
+    const response = await axios.post(`/api/submissions/drafts/${props.accession}/submit`);
     console.log(response)
   }
 }
@@ -117,7 +117,7 @@ const revertDraft = async () => {
     "⚠️You are about to discard all changes made to this submission since it was last released. This operation cannot be undone.",
     "Revert")) return;
   const response = await axios.delete(
-    `${window.config.backendUrl}/api/submissions/drafts/${props.accession}`,
+    `/api/submissions/drafts/${props.accession}`,
   );
   if (response.status === 200) {
     location.href = location.href;
@@ -133,7 +133,7 @@ watchEffect(async () => {
   if (props.accession) {
     // load from existing data
     const response = await axios.get(
-      `${window.config.backendUrl}/api/submissions/drafts/${props.accession}/content`,
+      `/api/submissions/drafts/${props.accession}/content`,
     );
     const submissionJson = await response.data;
 
@@ -210,7 +210,7 @@ watch(updatedSubmission, async (sub) => {
   pendingSave = setTimeout(() => {
     isSaving.value = true
     axios({
-      url: `${window.config.backendUrl}/api/submissions/drafts/${props.accession}`,
+      url: `/api/submissions/drafts/${props.accession}`,
       headers: {'content-type': 'application/json'},
       method: 'PUT',
       data: JSON.stringify(draft)

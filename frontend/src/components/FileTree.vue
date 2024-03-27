@@ -47,7 +47,7 @@ const tree = ref([]);
 const show = async () => {
   try {
     if (!AuthService.isAuthenticated()) return;
-    const response = await axios.get(`${window.config.backendUrl}/api/files/${props.path}`);
+    const response = await axios.get(`/api/files/${props.path}`);
     tree.value = response.data;
   } catch (error) {
     console.error('Error fetching tree data:', error);

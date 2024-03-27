@@ -74,7 +74,7 @@ const submitData = async () => {
       'recaptcha2-response': recaptchaToken.value
     };
     try {
-      const response = await axios.post(`${window.config.backendUrl}/api/auth/password/reset`, parameters);
+      const response = await axios.post(`/api/auth/password/reset`, parameters);
       success.value = true;
     } catch (error) {
       hasError.value = true;

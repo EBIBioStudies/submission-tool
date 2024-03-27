@@ -121,7 +121,7 @@ export default {
       form.value['instanceKey'] = import.meta.env.VITE_INSTANCE_KEY;
       if (formValid.value) {
         try{
-          await axios.post(`${window.config.backendUrl}/api/auth/register`, form.value);
+          await axios.post(`/api/auth/register`, form.value);
           success.value = true;
         }catch (error){
           hasError.value = true;
