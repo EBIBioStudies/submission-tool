@@ -112,9 +112,12 @@ const addRow = (event) => {
     row.type = rowSectionType;
     row.attributes = [];
   }
+  const visitedHeaders = new Set()
   headers.value.forEach((header, i) => {
-    if (i === 0 || i === headers.value.length - 1
-      || ((tableType.value === 'Files' || tableType.value === 'Links') && i === 1))
+    if(!visitedHeaders.has(header))
+      visitedHeaders.add(header)
+    if (i === 0 || i === headers.value.length - 1)
+      //|| ((tableType.value === 'Files' || tableType.value === 'Links') && i === 1))
       return;
     row.attributes.push({ name: header, value: '' });
   });
@@ -212,6 +215,7 @@ defineExpose({ errors, thisSection });
                 <Attribute :key="index"
                            ref="attributeRefs"
                            :attribute="getCell(row, col)"
+                           :row="row"
                            :field-type="getFieldType(getCell(row, col))"
                            :isTableAttribute="true"
                            :parent="row.attributes"

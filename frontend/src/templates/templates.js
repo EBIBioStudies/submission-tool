@@ -34,6 +34,12 @@ export const fillTemplate = (section, tmpl) => {
   section.type = tmpl.name;
   section.accno = `${tmpl.name}-${id}`.replace(' ', '-').toLowerCase();
   id += 1;
+  if(section.type === 'Link'){
+    section.url = ''
+  }
+  if(section.type === 'File'){
+    section.path = ''
+  }
   // fill attributes
   section.attributes = [];
   [...(tmpl?.fieldTypes ?? []), ...(tmpl?.columnTypes ?? [])].forEach((field) => {

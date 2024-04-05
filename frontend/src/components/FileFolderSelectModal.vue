@@ -6,7 +6,7 @@ import {Modal} from "bootstrap";
 import axios from 'axios';
 import {useRoute} from "vue-router";
 
-const props = defineProps(['file', 'class', 'allowFolder', 'isFileList'])
+const props = defineProps(['file', 'class', 'allowFolder', 'isFileList', 'row'])
 const emits = defineEmits(['select'])
 const thisFile = ref(props.file);
 const isFileList = ref(props.isFileList);
@@ -17,6 +17,7 @@ const showProgressbar= ref(false);
 const MAX_UPLOAD_SIZE = 1024; //1GB
 const errorMessage = ref('');
 const route = useRoute();
+const curRow = ref(props.row)
 
 
 
@@ -65,7 +66,7 @@ const uploadFile = async (file) => {
       },
     });
     thisComponent.refs.filetree.show(); // Assuming refreshTree is a method in FileTree
-    thisFile.value.path = file.name; // Update the input box with the file name
+    thisFile.value.value = file.name; // Update the input box with the file name
     if(isFileList.value){
       await validateFileListFile(file.name);
     }
@@ -89,24 +90,25 @@ const validateFileListFile = async (fileName) => {
     await axios.post(`/api/submissions/fileLists/validate`, formData);
   }catch (error){
     errorMessage.value = 'File list is not valid. ' + (error?.response?.data?.log?.message || '').substring(0, 200)
-    thisFile.value.path = ''
+    thisFile.value.value = ''
   }
 };
 
 
 const select = async (node) => {
   modal.hide();
-  thisFile.value.path = (node.path + '/' + node.name).substring(5);
-  thisFile.value.size = node.size;
+  thisFile.value.value = (node.path + '/' + node.name).substring(5);
+  if(!isFileList.value && curRow?.value)
+    curRow.value.path = thisFile.value.value;
   emits('select', thisFile.value);
   if(isFileList.value){
-    await validateFileListFile(thisFile.value.path);
+    await validateFileListFile(thisFile.value.value);
   }
 }
 
-thisFile.value.value = computed(() => {
-  return thisFile.value.path
-})
+// thisFile.value.value = computed(() => {
+//   return thisFile.value.path
+// })
 const loadTree = () => {
   thisComponent.refs.filetree.show();
 }
@@ -115,7 +117,7 @@ const loadTree = () => {
 <template>
   <div class="form-control" >
     <div class="input-group input-group-sm" :class="props.class">
-      <input type="text" class="form-control bg-body-secondary" v-model="thisFile.path" readonly data-bs-toggle="modal"
+      <input type="text" class="form-control bg-body-secondary" v-model="thisFile.value" readonly data-bs-toggle="modal"
              :data-bs-target="'#fileFolderSelectModal'+thisComponent.uid"
              @click="loadTree()" :class="{'is-invalid': errorMessage}">
       <button class="btn btn-secondary" type="button" data-bs-toggle="modal"

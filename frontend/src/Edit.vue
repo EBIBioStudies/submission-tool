@@ -6,6 +6,20 @@
   </teleport>
   <div class="container">
     <div class="row">
+      <div class="col"></div>
+        <div class="col-6 gy-6">
+          <div class="">
+            <div v-if="success" class="alert-success">
+              <h4 class="card-title">Document submitted successfully</h4>
+            </div>
+            <div v-else class="invalid-feedback">
+              {{serverErrorMessage}}
+            </div>
+          </div>
+        </div>
+      <div class="col"/>
+    </div>
+    <div class="row">
       <div class="col text-end pb-4">
         <font-awesome-icon v-if="isSaving" :icon="['far','floppy-disk']" beat-fade class="pe-2"/>
         <button class="btn btn-primary" type="button" @click="submitDraft()">Submit</button>
@@ -90,6 +104,8 @@ const submission = ref({});
 const template = ref({});
 const isSaving = ref(true);
 const hasValidated = ref(false);
+const success = ref(false)
+const serverErrorMessage = ref('')
 provide('hasValidated', hasValidated)
 provide('submission', submission)
 
@@ -107,8 +123,20 @@ const submitDraft = async () => {
     offCanvasErrors.show();
   } else {
     offCanvasErrors.hide();
-    const response = await axios.post(`/api/submissions/drafts/${props.accession}/submit`);
-    console.log(response)
+    try{
+      const response = await axios.post(`/api/submissions/drafts/${props.accession}/submit`);
+      if (response.status === 200) {
+        success.value = true;
+      }
+      else{
+        success.value=false;
+      }
+      console.log(response)
+    }catch (error){
+      success.value = false;
+      serverErrorMessage.value = error?.response?.data?.log?.message || 'Unknown Error';
+
+    }
   }
 }
 

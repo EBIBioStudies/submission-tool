@@ -3,10 +3,11 @@ import {computed, ref} from "vue";
 import {SearchLinks, prefixToLinkMap} from "@/templates/links";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 
-const props = defineProps(['fieldType','link', 'class', 'placeholder'])
+const props = defineProps(['fieldType','link', 'class', 'placeholder', 'row'])
 const emits = defineEmits(['change'])
 const thisLink = ref(props.link)
 const showSuggestions = ref(false);
+const row = ref(props.row)
 const filteredListItems = ref(null);
 const errors = computed(()=>getErrors());
 const getErrors = () => {
@@ -21,7 +22,7 @@ const getErrors = () => {
 const filterList = () =>
 {
   // Filter myList based on the user's input
-  let url = thisLink.value?.url || ''
+  let url = thisLink.value?.value || ''
   filteredListItems.value =  SearchLinks(url).filter(item =>
     item.toLowerCase().includes(url.toLowerCase())
   );
@@ -34,14 +35,19 @@ const removeSuggestions = ()=>{
 
 const selectItem = (item) =>{
   // Set the user input to the selected item and hide suggestions
-  thisLink.value.url = item+':';
+  thisLink.value.value = item+':';
   showSuggestions.value = false;
 }
 
+const valueChanged = (event)=>{
+  if(row?.value)
+    row.value.url = event.target.value;
+}
+
 const linkUrl = computed(()=>{
-  if(isIdLink && thisLink.value?.url)
+  if(isIdLink && thisLink.value?.value)
   {
-    let parts = thisLink.value?.url.split(":");
+    let parts = thisLink.value?.value.split(":");
     let url = prefixToLinkMap[parts[0]];
     if(url && url.length>0 && parts[1])
       return url.replace('{0}', parts[1])
@@ -51,12 +57,12 @@ const linkUrl = computed(()=>{
 
 const isIdLink = computed(()=>{
   const IDENTIFIER_REGEXP = /^([\w\s].+):([\w\W]+)$/;
-  return IDENTIFIER_REGEXP.test(thisLink.value?.url);
+  return IDENTIFIER_REGEXP.test(thisLink.value?.value);
 });
 
 const isUrl = computed(()=>{
   const URL_REGEXP = /^(http|https|ftp):\/\/.+$/;
-  return URL_REGEXP.test(thisLink.value?.url);
+  return URL_REGEXP.test(thisLink.value?.value);
 })
 
 defineExpose({errors});
@@ -71,7 +77,8 @@ defineExpose({errors});
         class="form-control text-primary  dropdown-input"
         :class="props?.class"
         :placeholder="props?.placeholder"
-        v-model="thisLink.url"
+        v-model="thisLink.value"
+        @change="valueChanged"
         @input="filterList"
         @focusin="filterList"
         @focusout="removeSuggestions"

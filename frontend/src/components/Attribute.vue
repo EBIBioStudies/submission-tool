@@ -16,11 +16,13 @@ const props = defineProps({
   'attribute': Object,
   'fieldType': Object,
   'parent': Object,
+  'row': Object,
   'isTableAttribute': Boolean
 });
 const emits = defineEmits(['createTag', 'deleteTag', 'deleteAttribute', 'deleteOrg', 'createOrg']);
 const attributeId = 'attribute-' + getCurrentInstance().uid;
 const thisAttribute = ref(props.attribute);
+const curRow = ref(props.row);
 const attributeControl = ref(null);
 const thisMultiValuedAttribute = ref(
   props.parent?.map((a, i) => { // save the original index -- needed when deleting
@@ -274,6 +276,7 @@ const showHelp = () => {
     <!--file-->
     <FileFolderSelectModal
       v-else-if="fieldType?.controlType?.name === 'file'"
+      :row="curRow"
       :file="thisAttribute"
       :class="{'is-invalid':errors && hasValidated}"
     />
@@ -289,6 +292,7 @@ const showHelp = () => {
     <Link
     v-else-if="fieldType?.controlType?.name === 'idlink'"
     ref="attributeControl"
+    :row="curRow"
     :link="thisAttribute"
       :class="{'is-invalid':errors && hasValidated}"
       :placeholder="fieldType?.controlType?.placeholder"
