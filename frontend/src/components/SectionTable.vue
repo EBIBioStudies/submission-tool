@@ -104,20 +104,14 @@ const addRow = (event) => {
   if (tableType.value === 'Files') {
     row.path = null;
     row.attributes = [];
-    row.type = rowSectionType;
   } else if (tableType.value === 'Links') {
     row.url = '';
     row.attributes = [];
   } else {
-    row.type = rowSectionType;
     row.attributes = [];
   }
-  const visitedHeaders = new Set()
   headers.value.forEach((header, i) => {
-    if(!visitedHeaders.has(header))
-      visitedHeaders.add(header)
-    if (i === 0 || i === headers.value.length - 1)
-      //|| ((tableType.value === 'Files' || tableType.value === 'Links') && i === 1))
+    if ((i === 0 || i === headers.value.length - 1) || ((tableType.value === 'Files' || tableType.value === 'Links') && i === 1))
       return;
     row.attributes.push({ name: header, value: '' });
   });

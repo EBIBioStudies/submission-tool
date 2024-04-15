@@ -118,9 +118,14 @@ const errors = computed(() => {
       ) {
       _errors.push(`Invalid ORCID value`);
     }
-  } else if (props.fieldType?.display === 'required' && (!thisAttribute.value?.value || thisAttribute?.value?.value?.trim() === '')) {
+  } else if (props.fieldType?.display === 'required' && props.fieldType?.name!=='File' && props.fieldType?.name!=='Link' && (!thisAttribute.value?.value || thisAttribute?.value?.value?.trim() === '')) {
      if(!(thisMultiValuedAttribute?.value?.length>0))
        _errors.push(`${thisAttribute?.value?.name} required`);
+  } else if(props.fieldType?.display === 'required' && props.fieldType?.name==='File' && !thisAttribute?.value?.path){
+    _errors.push('File path required');
+  } else if(props.fieldType?.display === 'required' && props.fieldType?.name==='Link' && !thisAttribute?.value?.url){
+    _errors.push('Link url required');
+
   }
   if (props.fieldType?.controlType?.minlength > (thisAttribute.value?.value?.trim().length ?? 0)) {
     _errors.push(`Please enter at least ${props.fieldType?.controlType?.minlength} characters. `)

@@ -42,7 +42,9 @@ export const fillTemplate = (section, tmpl) => {
   }
   // fill attributes
   section.attributes = [];
-  [...(tmpl?.fieldTypes ?? []), ...(tmpl?.columnTypes ?? [])].forEach((field) => {
+  for (const field of [...(tmpl?.fieldTypes ?? []), ...(tmpl?.columnTypes ?? [])]) {
+    if(field.name === 'Link' || field.name==='File')
+      continue;
     const attr = { name: field.name };
     if (field?.controlType?.defaultValue) {
       attr.value = field?.controlType?.defaultValue;
@@ -51,7 +53,7 @@ export const fillTemplate = (section, tmpl) => {
       }
     } else if (field?.controlType?.name === 'select') attr.value = ''; else if (field?.controlType?.name === 'reference') attr.reference = true;
     section.attributes.push(attr);
-  });
+  };
 
   // fill sections
   [...(tmpl?.tableTypes ?? []), ...(tmpl?.sectionTypes ?? [])].forEach((sectionTemplate) => {
