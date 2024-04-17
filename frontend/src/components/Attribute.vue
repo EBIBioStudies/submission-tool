@@ -9,6 +9,7 @@ import Link from "@/components/Link.vue";
 import utils from "@/utils";
 import Reference from "@/components/Reference.vue";
 import Organisation from "@/components/Organisation.vue";
+import Publication from "@/components/Publication.vue";
 
 const hasValidated = inject('hasValidated')
 
@@ -321,6 +322,15 @@ const showHelp = () => {
       :placeholder="fieldType?.controlType?.placeholder"
       v-model="thisAttribute.value"
       :required="fieldType?.display==='required' || fieldType?.controlType?.minlength >0"
+    />
+
+    <Publication
+      v-else-if="fieldType?.controlType?.name === 'pubmedid'"
+      ref="attributeControl"
+      :row="props.parent"
+      :pmid="thisAttribute"
+      :class="{'is-invalid':errors && hasValidated}"
+      :placeholder="fieldType?.controlType?.placeholder"
     />
 
 
