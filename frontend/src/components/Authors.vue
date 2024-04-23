@@ -9,7 +9,7 @@ const startCollapsed = ref(false); //TODO: change to true
 const authors = computed(() => (thisSection?.value?.subsections?.filter((s) => s?.type?.toLowerCase() === 'author') ?? []));
 const authorTableRef = ref()
 const authorRefreshKey = ref(0);
-
+console.log(authors)
 const OnDeleteOrg = (o) => {
   if (o?.accno==='') return;
   // unlink the affiliation from author
@@ -107,9 +107,7 @@ const OnDeleteRow = (index)=>
 }
 
 const OnRowAdded = row => {
-  let author = {};
-  author.type = 'Author'
-  author.attributes = row;
+  row.type='Author'
   thisSection?.value?.subsections?.push(row);
   return refresh();
 }
@@ -168,7 +166,7 @@ defineExpose({errors});
         :startCollapsed = "startCollapsed"
         sectionSubType="Contacts"
         :isTableAttribute="true"
-        :title="authors.map( author=> author?.attributes?.find(a => a?.name?.toLowerCase() === 'name')?.value).join(', ')"
+        title="Authors"
         @rowsReordered="reorderAuthors"
         @columnUpdated="OnColumnUpdated"
         @columnsReordered="refresh"
