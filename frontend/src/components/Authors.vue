@@ -77,7 +77,7 @@ const reorderAuthors = (event)=>
   const authorIndexMap = {}; // lookup for index in authors to index in subsections
   let authIndex = 0;
   thisSection?.value?.subsections?.forEach( (section, i )=> {
-    if (section?.type==='author') {
+    if (section?.type?.toLowerCase()==='author') {
       authorIndexMap[authIndex++] = i;
     }
   })
@@ -94,7 +94,7 @@ const OnDeleteRow = (index)=>
   const authorIndexMap = {}; // lookup for index in authors to index in subsections
   let authIndex = 0;
   thisSection?.value?.subsections?.forEach( (section, i )=> {
-    if (section?.type==='author') {
+    if (section?.type?.toLowerCase()==='author') {
       authorIndexMap[authIndex++] = i;
     }
   })
@@ -107,14 +107,13 @@ const OnDeleteRow = (index)=>
 }
 
 const OnRowAdded = row => {
-  row.type='Author'
   thisSection?.value?.subsections?.push(row);
   return refresh();
 }
 
 const OnColumnUpdated = row => {
   thisSection?.value?.subsections?.forEach(section => {
-    if (section?.type!=='author') return;
+    if (section?.type?.toLowerCase()!=='author') return;
     section.attributes.find((att) => att.name === row.old).name = row.new;
   })
   return refresh();

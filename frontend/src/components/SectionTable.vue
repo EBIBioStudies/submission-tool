@@ -101,6 +101,7 @@ const addColumn = (event) => {
 
 const addRow = (event) => {
   const row = {};
+  row.type=rowSectionType;
   if (tableType.value === 'File') {
     row.path = null;
     row.attributes = [];
