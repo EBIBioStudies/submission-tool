@@ -107,6 +107,9 @@ const OnDeleteRow = (index)=>
 }
 
 const OnRowAdded = row => {
+  let author = {};
+  author.type = 'Author'
+  author.attributes = row;
   thisSection?.value?.subsections?.push(row);
   return refresh();
 }

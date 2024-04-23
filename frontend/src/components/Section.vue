@@ -81,7 +81,7 @@ const addSubsection = async (aSection, i, type) => {
 
 const addTable = async (aSection, i, type) => {
   aSection.subsections = aSection.subsections || [];
-  const obj = {}
+  let obj = {}
   if (type != null)
     fillTemplate(obj, type)
   else {
@@ -89,8 +89,8 @@ const addTable = async (aSection, i, type) => {
     obj.type = 'Table';
     obj.attributes = [{name: 'Column 1', value: ''}];
   }
-
-  aSection.subsections.splice(i, 0, [obj]);
+  obj = type?.name !== 'Publication' ? [obj] : obj;
+  aSection.subsections.splice(i, 0, obj);
   sectionsRefreshKey.value += 1
 
   // wait till the UI is updated and the focus the first attribute name
@@ -268,7 +268,7 @@ defineExpose({errors, thisSection});
               :rows="section.files"
               :depth="props.depth+1"
               :sectionType="subSectionTypeMap.get('File')"
-              sectionSubType="Files"
+              sectionSubType="File"
               @rowsReordered="(e) => rowsReordered(e, section.files)"
               @columnUpdated="(msg) => updateColumnName(section.files, msg)"
               @columnsReordered="(msg) => sectionsRefreshKey+= 1"
@@ -281,7 +281,7 @@ defineExpose({errors, thisSection});
               :rows="section.links"
               :depth="props.depth+1"
               :sectionType="subSectionTypeMap.get('Link')"
-              sectionSubType="Links"
+              sectionSubType="Link"
               @rowsReordered="(e) => rowsReordered(e, section.links)"
               @columnUpdated="(msg) => updateColumnName(section.links, msg)"
               @columnsReordered="(msg) => sectionsRefreshKey+= 1"

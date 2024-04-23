@@ -1,8 +1,8 @@
 <template>
   <div class="form-control">
     <div class="input-group input-group-sm">
-    <input v-model="pmidQuery.value" class="form-control" placeholder="Enter PMID for searching" @click="openPopupAndSearch"/>
-      <button _ngcontent-qeb-c162="" type="button" attr.aria-label="Search PubMed ID" class="btn btn-outline-secondary" disabled="">
+    <input v-model="pmidQuery.value" class="form-control" placeholder="Enter PMID for searching" @click="openPopupAndSearch" @input="openPopupAndSearch"/>
+      <button type="button" attr.aria-label="Search PubMed ID" class="btn btn-outline-secondary" @click="openPopupAndSearch">
         <font-awesome-icon :icon="faSearch" class="fa-fw fa-lg" />
       </button>
     </div>
@@ -32,9 +32,7 @@ const loading = ref(false);
 // const searchResults = ref([]);
 
 function openPopupAndSearch() {
-  if (pmidQuery.value.value) {
     showPopup.value = true;
-  }
 }
 
 function handleSelect(selectedItem) {
@@ -53,6 +51,12 @@ function handleSelect(selectedItem) {
         item.value = selectedItem.journalVolume;
       else if(item.name === 'Issue')
         item.value = selectedItem.issue;
+      else if(item.name === 'Type')
+        item.value = selectedItem.pubType;
+      else if(item.name === 'Issn')
+        item.value = selectedItem.journalIssn;
+      else if(item.name === 'DOI')
+        item.value = selectedItem.doi;
     })
   }
   row.value

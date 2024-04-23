@@ -21,9 +21,9 @@ const tableType = ref(props.title || props.sectionSubType || rowSectionType);
 const theseRows = ref(Array.isArray(props.rows[0]) ? props.rows[0] : props.rows);
 const headerMap = new Map();
 
-if (tableType.value === 'Files') {
+if (tableType.value === 'File') {
   headerMap.set('File', []);
-} else if (tableType.value === 'Links') {
+} else if (tableType.value === 'Link') {
   headerMap.set('Link', []);
 }
 theseRows?.value?.forEach((row) => {
@@ -67,8 +67,8 @@ const getCell = (row, col) => {
     (att) => att?.name?.toLowerCase() === col?.toLowerCase(),
   );
   if (!attribute && (
-    (tableType.value === 'Files' && col === 'File')
-    || (tableType.value === 'Links' && col === 'Link'))) {
+    (tableType.value === 'File' && col === 'File')
+    || (tableType.value === 'Link' && col === 'Link'))) {
     return row;
   }
   if (!attribute) {
@@ -101,17 +101,17 @@ const addColumn = (event) => {
 
 const addRow = (event) => {
   const row = {};
-  if (tableType.value === 'Files') {
+  if (tableType.value === 'File') {
     row.path = null;
     row.attributes = [];
-  } else if (tableType.value === 'Links') {
+  } else if (tableType.value === 'Link') {
     row.url = '';
     row.attributes = [];
   } else {
     row.attributes = [];
   }
   headers.value.forEach((header, i) => {
-    if ((i === 0 || i === headers.value.length - 1) || ((tableType.value === 'Files' || tableType.value === 'Links') && i === 1))
+    if ((i === 0 || i === headers.value.length - 1) || ((tableType.value === 'File' || tableType.value === 'Link') && i === 1))
       return;
     row.attributes.push({ name: header, value: '' });
   });
@@ -164,7 +164,7 @@ defineExpose({ errors, thisSection });
       <span :class="[depth > 0  ? 'branch' : 'branch spacer']"></span> <span
       class="input-group-text text-start btn btn-lg ps-1 mt-2 section-title" @click="toggle()">
         <font-awesome-icon :icon="'fa-caret-' + (isCollapsed ? 'right' : 'down')" class="section-control" />
-        <span v-if="sectionType?.name || props.sectionSubType ==='Files' || props.sectionSubType==='Links'" :data-bs-title="sectionType?.description"
+        <span v-if="sectionType?.name || props.sectionSubType ==='File' || props.sectionSubType==='Link'" :data-bs-title="sectionType?.description"
               :data-bs-toggle="sectionType?.description ? 'tooltip' : false" class="ms-2"
               data-bs-html="true"><font-awesome-icon v-if="sectionType?.icon" :icon="sectionType?.icon"
                                                                            class="icon" />{{ tableType }}</span>
