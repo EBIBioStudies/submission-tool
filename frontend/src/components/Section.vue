@@ -1,5 +1,5 @@
 <script setup>
-import {computed, getCurrentInstance, nextTick, ref} from 'vue';
+import { computed, getCurrentInstance, nextTick, ref, inject, provide } from 'vue';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import Attributes from '@/components/Attributes.vue';
 import SectionTable from '@/components/SectionTable.vue';
@@ -23,8 +23,9 @@ const sectionLinksRef = ref(null)
 
 const thisSection = ref(props.section);
 const deleteTag = (msg) => deleteAttribute(msg.index);
-
-
+if (props?.sectionType?.display) {
+  provide('parentDisplayType', props?.sectionType?.display)
+}
 // hack: variable to trigger re-rendering of attributes when needed
 // TODO: figure out how to avoid this
 const attributesRefreshKey = ref(0);

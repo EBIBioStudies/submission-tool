@@ -1,12 +1,12 @@
 <script setup>
 import Section from './Section.vue';
-import {computed, ref} from "vue";
+import { computed, provide, ref } from 'vue';
 import Authors from "@/components/Authors.vue";
 
-defineProps(['section', 'sectionType']);
+const props = defineProps(['section', 'sectionType']);
 const sectionComponent = ref(null)
 const authorComponent = ref(null)
-
+provide('parentDisplayType', props?.sectionType?.display)
 const errors = computed(() => [...authorComponent.value.errors, ...sectionComponent.value.errors])
 defineExpose({errors});
 </script>

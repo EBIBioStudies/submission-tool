@@ -30,6 +30,8 @@ const thisMultiValuedAttribute = ref(
       return {index: i, ...a};
     })?.filter( a  =>  a.name === thisAttribute.value.name && a?.value !== '')
 )
+const parentDisplayType = inject('parentDisplayType')
+const display = props?.fieldType?.display || parentDisplayType
 
 function isString(val) {
   return typeof val === 'string' || val instanceof String;
@@ -103,28 +105,28 @@ const errors = computed(() => {
   const _errors = []
   //validate text fields
   if (thisAttribute?.value?.type === 'file') {
-    if (props.fieldType?.display === 'required' && (!thisAttribute?.value?.path || thisAttribute?.value?.path === '')) {
+    if (display === 'required' && (!thisAttribute?.value?.path || thisAttribute?.value?.path === '')) {
       _errors.push(`File required`);
     }
   // } else if (thisAttribute?.value?.hasOwnProperty('url')) {
   //   const IDENTIFIER_REGEXP = /^([\w\s].+):([\w\W]+)$/;
   //   const URL_REGEXP = /^(http|https|ftp):\/\/.+$/;
-  //   if (props.fieldType?.display === 'required' && (!thisAttribute?.value?.url || thisAttribute?.value?.url === '' || (!IDENTIFIER_REGEXP.test(thisAttribute.value?.url) && !URL_REGEXP.test(thisAttribute.value?.url)))) {
+  //   if (display === 'required' && (!thisAttribute?.value?.url || thisAttribute?.value?.url === '' || (!IDENTIFIER_REGEXP.test(thisAttribute.value?.url) && !URL_REGEXP.test(thisAttribute.value?.url)))) {
   //     _errors.push(`Link required`);
   //   }
   } else if (props.fieldType?.controlType?.name === 'orcid') {
     const isValidOrcid =  utils.isOrcidValid(thisAttribute?.value?.value)
-    if ( (props.fieldType?.display === 'required' && !isValidOrcid) ||
-      (props.fieldType?.display !== 'required' && thisAttribute?.value?.value && thisAttribute?.value?.value!='')
+    if ( (display === 'required' && !isValidOrcid) ||
+      (display !== 'required' && thisAttribute?.value?.value && thisAttribute?.value?.value!='')
       ) {
       _errors.push(`Invalid ORCID value`);
     }
-  } else if (props.fieldType?.display === 'required' && props.fieldType?.name!=='File' && props.fieldType?.name!=='Link' && (!thisAttribute.value?.value || thisAttribute?.value?.value?.trim() === '')) {
+  } else if (display === 'required' && props.fieldType?.name!=='File' && props.fieldType?.name!=='Link' && (!thisAttribute.value?.value || thisAttribute?.value?.value?.trim() === '')) {
      if(!(thisMultiValuedAttribute?.value?.length>0))
        _errors.push(`${thisAttribute?.value?.name} required`);
-  } else if(props.fieldType?.display === 'required' && props.fieldType?.name==='File' && !thisAttribute?.value?.path){
+  } else if(display === 'required' && props.fieldType?.name==='File' && !thisAttribute?.value?.path){
     _errors.push('File path required');
-  } else if(props.fieldType?.display === 'required' && props.fieldType?.name==='Link' && !thisAttribute?.value?.url){
+  } else if(display === 'required' && props.fieldType?.name==='Link' && !thisAttribute?.value?.url){
     _errors.push('Link url required');
 
   }
@@ -340,15 +342,17 @@ const showHelp = () => {
       type="text"
       class="form-control"
       :class="{'is-invalid':errors && hasValidated}"
+      :disabled="display==='readonly'"
       :placeholder="fieldType?.controlType?.placeholder"
       v-model="thisAttribute.value"
       :required="fieldType?.display==='required' || fieldType?.controlType?.minlength >0"
     />
 
+
     <!-- delete icon -->
     <div
       class="input-group-text btn-group-vertical"
-      v-if="fieldType?.display !== 'required' &&  !props.isTableAttribute"
+      v-if="display !== 'required' && display!=='readonly' &&  !props.isTableAttribute"
     >
       <font-awesome-icon
         class="icon fa-sm"

@@ -9,7 +9,6 @@ const startCollapsed = ref(false); //TODO: change to true
 const authors = computed(() => (thisSection?.value?.subsections?.filter((s) => s?.type?.toLowerCase() === 'author') ?? []));
 const authorTableRef = ref()
 const authorRefreshKey = ref(0);
-console.log(authors)
 const OnDeleteOrg = (o) => {
   if (o?.accno==='') return;
   // unlink the affiliation from author
