@@ -20,12 +20,10 @@ const subsectionsRef = ref([])
 const sectionTablesRef = ref([])
 const sectionFilesRef = ref(null)
 const sectionLinksRef = ref(null)
+const parentDisplayType = inject('parentDisplayType')
 
 const thisSection = ref(props.section);
 const deleteTag = (msg) => deleteAttribute(msg.index);
-if (props?.sectionType?.display) {
-  provide('parentDisplayType', props?.sectionType?.display)
-}
 // hack: variable to trigger re-rendering of attributes when needed
 // TODO: figure out how to avoid this
 const attributesRefreshKey = ref(0);
@@ -55,6 +53,8 @@ const isCollapsed = ref((props?.depth ?? 0) >= 2);
 // children are not allowed to change properties of a parent
 // all section/attributes updates thus need to be at this level
 const addSubsection = async (aSection, i, type) => {
+  if(parentDisplayType.value === 'readonly')
+    return;
   aSection.subsections = aSection.subsections || [];
   const obj = {}
   if (type != null)
@@ -81,6 +81,8 @@ const addSubsection = async (aSection, i, type) => {
 };
 
 const addTable = async (aSection, i, type) => {
+  if(parentDisplayType.value === 'readonly')
+    return;
   aSection.subsections = aSection.subsections || [];
   let obj = {}
   if (type != null)
@@ -107,12 +109,16 @@ const addTable = async (aSection, i, type) => {
 };
 
 const deleteSubSection = async (someSubSections, index) => {
+  if(parentDisplayType.value === 'readonly')
+    return;
   if (!await utils.confirm("Delete Section", `Do you want to delete the section ${someSubSections[index].type}?`, "Delete")) return
   thisSection.value.subsections = someSubSections.filter((v, i) => i !== index);
   sectionsRefreshKey.value += 1;
 };
 
 const addAttribute = async (aSection) => {
+  if(parentDisplayType.value === 'readonly')
+    return;
   aSection.attributes = aSection.attributes || [];
   aSection.attributes.push({name: '', value: ''});
   attributesRefreshKey.value += 1;
@@ -123,11 +129,15 @@ const addAttribute = async (aSection) => {
 };
 
 const deleteAttribute = async (index) => {
+  if(parentDisplayType.value === 'readonly')
+    return;
   thisSection.value.attributes.splice(index, 1);
   attributesRefreshKey.value += 1;
 };
 
 const createTag = (msg) => {
+  if(parentDisplayType.value === 'readonly')
+    return;
   thisSection.value.attributes = thisSection.value.attributes || [];
   // insert next to the last attribute with the same name
   // just to keep the structure cleaner
@@ -150,11 +160,15 @@ const createTag = (msg) => {
 };
 
 const rowsReordered = (event, rows) => {
+  if(parentDisplayType.value === 'readonly')
+    return;
   rows.splice(event.newIndex, 0, rows.splice(event.oldIndex, 1)[0]);
   sectionsRefreshKey.value += 1;
 };
 
 const updateColumnName = (subsection, update) => {
+  if(parentDisplayType.value === 'readonly')
+    return;
   subsection.forEach(
     (row) =>
       (row.attributes.find((att) => att.name === update.old).name = update.new),

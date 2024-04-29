@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, ref, watch} from "vue";
+import {computed, inject, onMounted, ref, watch} from "vue";
 import {SearchLinks, prefixToLinkMap} from "@/templates/links";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 
@@ -9,6 +9,8 @@ const thisLink = ref('')
 const showSuggestions = ref(false);
 const row = ref(props.row)
 const filteredListItems = ref(null);
+const parentDisplayType = inject('parentDisplayType')
+
 const errors = computed(()=>getErrors());
 const getErrors = () => {
   const _errors = []
@@ -100,6 +102,7 @@ defineExpose({errors});
     <div class="input-group input-group-sm dropdown">
       <input
         type="text"
+        :disabled="parentDisplayType==='readonly'"
         class="form-control text-primary  dropdown-input"
         :class="props?.class"
         :placeholder="props?.placeholder"

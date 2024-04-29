@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import {computed, inject, ref} from 'vue';
 import draggable from 'vuedraggable';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Attribute from '@/components/Attribute.vue';
@@ -20,6 +20,8 @@ const rowSectionType = props.rows && props.rows[0]?.type ? ('' + props.rows[0].t
 const tableType = ref(props.title || props.sectionSubType || rowSectionType);
 const theseRows = ref(Array.isArray(props.rows[0]) ? props.rows[0] : props.rows);
 const headerMap = new Map();
+const parentDisplayType = inject('parentDisplayType')
+
 
 if (tableType.value === 'File') {
   headerMap.set('File', []);
@@ -90,6 +92,8 @@ const reorderColumns = (event) => {
 };
 
 const addColumn = (event) => {
+  if(parentDisplayType.value === 'readonly')
+    return;
   const columnName = 'Column ' + (headers.value.length - 1);
   headers.value.splice(-1, 0, columnName);
   theseRows.value.forEach((row) => {
@@ -100,6 +104,8 @@ const addColumn = (event) => {
 };
 
 const addRow = (event) => {
+  if(parentDisplayType.value === 'readonly')
+    return;
   const row = {};
   row.type=rowSectionType;
   if (tableType.value === 'File') {
@@ -121,11 +127,15 @@ const addRow = (event) => {
 };
 
 const deleteRow = (index) => {
+  if(parentDisplayType.value === 'readonly')
+    return;
   theseRows.value.splice(index, 1);
   emits('deleteRow', index); // Needed only for Authors component
 };
 
 const deleteColumn = (index) => {
+  if(parentDisplayType.value === 'readonly')
+    return;
   theseRows.value.forEach((row) => {
     row.attributes.splice(row.attributes.findIndex(attr => attr.name === headers.value[index]), 1);
   });
@@ -133,6 +143,8 @@ const deleteColumn = (index) => {
 };
 
 const updateColumnName = (event, index) => {
+  if(parentDisplayType.value === 'readonly')
+    return;
   if (index === headers.value.length - 1) return;
   const oldValue = headers.value[index];
   const newValue = event.target.value;

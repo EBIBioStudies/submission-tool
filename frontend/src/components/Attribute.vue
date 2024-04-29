@@ -31,8 +31,9 @@ const thisMultiValuedAttribute = ref(
     })?.filter( a  =>  a.name === thisAttribute.value.name && a?.value !== '')
 )
 const parentDisplayType = inject('parentDisplayType')
-const display = props?.fieldType?.display || parentDisplayType
-
+const display = computed(() => {
+  return props?.fieldType.value?.display || parentDisplayType.value;
+});
 function isString(val) {
   return typeof val === 'string' || val instanceof String;
 }
@@ -195,6 +196,7 @@ const showHelp = () => {
       :placeholder="fieldType?.controlType?.placeholder"
       v-model="thisAttribute.value"
       :class="{'is-invalid':errors && hasValidated}"
+      :disabled="display==='readonly'"
       :required="fieldType?.display==='required' || fieldType?.controlType?.minlength >0"
     ></textarea>
 
@@ -247,6 +249,7 @@ const showHelp = () => {
       @deselect="onDeleteTag"
       @select="onCreateTag"
       :class="{'is-invalid':errors && hasValidated , 'form-control-sm':isTableAttribute}"
+      :disabled="display==='readonly'"
       object
     >
       <template v-slot:tag="{ option, handleTagRemove, disabled }">
@@ -277,6 +280,7 @@ const showHelp = () => {
       valueType="format"
       placeholder="Select date"
       format="YYYY-MM-DD"
+      :disabled="parentDisplayType==='readonly'"
       :disabledDate="withinThreeYears"
       :class="{'is-invalid':errors && hasValidated}"
     />
@@ -312,6 +316,7 @@ const showHelp = () => {
       v-model="thisAttribute.value"
       :class="{'is-invalid':errors && hasValidated}"
       :fieldType="fieldType"
+      :disabled="display==='readonly'"
     >
     </Reference>
 
@@ -324,6 +329,7 @@ const showHelp = () => {
       :placeholder="fieldType?.controlType?.placeholder"
       v-model="thisAttribute.value"
       :required="fieldType?.display==='required' || fieldType?.controlType?.minlength >0"
+      :disabled="display==='readonly'"
     />
 
     <Publication
@@ -331,6 +337,7 @@ const showHelp = () => {
       ref="attributeControl"
       :row="props.parent"
       :pmid="thisAttribute"
+      :disabled="display==='readonly'"
       :class="{'is-invalid':errors && hasValidated}"
       :placeholder="fieldType?.controlType?.placeholder"
     />
