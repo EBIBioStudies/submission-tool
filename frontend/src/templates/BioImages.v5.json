@@ -2,6 +2,7 @@
   "name": "BioImages.v5",
   "title": "BioImages",
   "description": "BioImage Archive Study",
+  "DOI" : true,
   "sectionType": {
     "display": "required",
     "displayAnnotations": false,

@@ -26,6 +26,9 @@ const createNewSubmission = async ()=> {
   if (!thisTemplate.name.toLowerCase().startsWith("default")) {
     draft.attributes.push({name: 'AttachTo', value: thisTemplate.title })
   }
+  if (thisTemplate.DOI) {
+    draft.attributes.push({name: 'DOI', value: "true" })
+  }
   const tmpl = thisTemplate.sectionType;
   draft.section = { type: tmpl.name };
   fillTemplate(draft.section, tmpl);

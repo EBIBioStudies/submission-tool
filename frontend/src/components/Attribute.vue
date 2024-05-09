@@ -32,7 +32,7 @@ const thisMultiValuedAttribute = ref(
 )
 const parentDisplayType = inject('parentDisplayType')
 const display = computed(() => {
-  return props?.fieldType?.value?.display || parentDisplayType.value;
+  return props?.fieldType?.value?.display || parentDisplayType?.value || 'optional';
 });
 
 function isString(val) {
@@ -119,7 +119,7 @@ const errors = computed(() => {
   } else if (props.fieldType?.controlType?.name === 'orcid') {
     const isValidOrcid =  utils.isOrcidValid(thisAttribute?.value?.value)
     if ( (display === 'required' && !isValidOrcid) ||
-      (display !== 'required' && thisAttribute?.value?.value && thisAttribute?.value?.value!='')
+      (display !== 'required' && thisAttribute?.value?.value && thisAttribute?.value?.value!=='')
       ) {
       _errors.push(`Invalid ORCID value`);
     }
@@ -132,7 +132,7 @@ const errors = computed(() => {
     _errors.push('Link url required');
 
   }
-  if (props.fieldType?.controlType?.minlength > (thisAttribute.value?.value?.trim().length ?? 0)) {
+  if (props.fieldType?.controlType?.minlength > (`${thisAttribute?.value?.value}`.trim()?.length ?? 0)) {
     _errors.push(`Please enter at least ${props.fieldType?.controlType?.minlength} characters. `)
   }
   if (attributeControl?.value) {

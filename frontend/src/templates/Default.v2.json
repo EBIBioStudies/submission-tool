@@ -2,6 +2,7 @@
   "name": "Default.v2",
   "title": "Default",
   "description": "General submission",
+  "DOI" : true,
   "sectionType": {
     "name": "Study",
     "tableGroups": [
@@ -141,16 +142,6 @@
           ],
           "enableValueAdd": false
         }
-      },
-      {
-        "display": "readonly",
-        "name": "DOI",
-        "icon": "fa-fingerprint",
-        "controlType": {
-          "name": "doi",
-          "defaultValue": "true"
-        },
-        "description": "A Crossref DOI will be assigned after submission automatically."
       }
     ],
     "annotationsType": {
