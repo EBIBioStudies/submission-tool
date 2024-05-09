@@ -26,6 +26,14 @@ body {
   border-left: 2px solid var(--bs-border-color);
 }
 
+.end-child-section {
+  position: relative;
+  left: -2pt;
+  top: -10pt;
+  color: #dee2e6;
+  font-size: 14pt;
+}
+
 .section-control {
   color: #8f8f8f;
 }
@@ -71,4 +79,8 @@ a:not([class*="btn"]) {
 
 a:not([class*="btn"]):hover {
   text-decoration: underline;
+}
+
+.attribute-name {
+  scroll-margin: 14pt;
 }

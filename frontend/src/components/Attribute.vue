@@ -31,7 +31,9 @@ const thisMultiValuedAttribute = ref(
     })?.filter( a  =>  a.name === thisAttribute.value.name && a?.value !== '')
 )
 const parentDisplayType = inject('parentDisplayType')
-const display = props?.fieldType?.display || parentDisplayType
+const display = computed(() => {
+  return props?.fieldType?.value?.display || parentDisplayType.value;
+});
 
 function isString(val) {
   return typeof val === 'string' || val instanceof String;

@@ -112,9 +112,11 @@ const deleteSubSection = async (someSubSections, index) => {
   sectionsRefreshKey.value += 1;
 };
 
-const addAttribute = async (aSection) => {
-  aSection.attributes = aSection.attributes || [];
-  aSection.attributes.push({name: '', value: ''});
+const addAttribute = async () => {
+  if(parentDisplayType.value === 'readonly')
+    return;
+  thisSection.value.attributes = thisSection.value.attributes || [];
+  thisSection.value.attributes.push({name: '', value: ''});
   attributesRefreshKey.value += 1;
   await nextTick();
   const added = [...componentInstance.refs.attributesComponent.$.ctx.$el.querySelectorAll('.attribute-name')].pop();
@@ -241,14 +243,15 @@ defineExpose({errors, thisSection});
             @deleteAttribute="deleteAttribute"
             @createTag="createTag"
             @deleteTag="deleteTag"
+            @newAttribute="addAttribute"
           />
 
-          <SubsectionMenu
+          <!--SubsectionMenu
             :sectionType="sectionType"
             @newAttribute="addAttribute(section)"
             @newSection="(type)=> addSubsection(section,0, type)"
             @newTable="(type)=> addTable(section,0, type)"
-          ></SubsectionMenu>
+          ></SubsectionMenu-->
 
 
           <div class="p-0" :key="sectionsRefreshKey">
@@ -315,14 +318,12 @@ defineExpose({errors, thisSection});
                 @delete="deleteSubSection(section.subsections, i)"
                 ref="sectionTablesRef"
               />
-              <SubsectionMenu v-if="canRender(subsection)"
-                              :sectionType="sectionType"
-                              @newAttribute="addAttribute(section)"
-                              @newSection="(type)=> addSubsection(section,i+1, type)"
-                              @newTable="(type)=> addTable(section,i+1, type)"
-              ></SubsectionMenu>
-
             </div>
+            <SubsectionMenu v-if="depth===0"
+                            :sectionType="sectionType"
+                            @newSection="(type)=> addSubsection(section,i+1, type)"
+                            @newTable="(type)=> addTable(section,i+1, type)"
+            ></SubsectionMenu>
             <!-- Subsections end -->
           </div>
         </div>

@@ -2,7 +2,7 @@
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 
 const props = defineProps(['sectionType'])
-const emits = defineEmits(['newAttribute', 'newTable', 'newSection'])
+const emits = defineEmits(['newTable', 'newSection'])
 
 </script>
 
@@ -16,18 +16,18 @@ const emits = defineEmits(['newAttribute', 'newTable', 'newSection'])
     </svg>
 
     <ul class="dropdown-menu">
-      <li><a class="dropdown-item btn" @click="$emit('newAttribute')">
-        <font-awesome-icon class="icon fa-fw" :icon="['fas','plus']"></font-awesome-icon>
-        Text Attribute</a>
-      </li>
+<!--      <li><a class="dropdown-item btn" @click="$emit('newAttribute')">-->
+<!--        <font-awesome-icon class="icon fa-fw" :icon="['fas','plus']"></font-awesome-icon>-->
+<!--        Text Attribute</a>-->
+<!--      </li>-->
 <!--      <li v-for="(type,i) in props?.sectionType?.fieldTypes">-->
 <!--        <a class="dropdown-item btn" @click="$emit('newAttribute', type)">-->
 <!--          <font-awesome-icon class="icon" :icon="type.icon ?? 'fa-plus'"></font-awesome-icon>-->
 <!--          {{ type.name }}</a>-->
 <!--      </li>-->
-      <li>
-        <hr class="dropdown-divider">
-      </li>
+<!--      <li>-->
+<!--        <hr class="dropdown-divider">-->
+<!--      </li>-->
       <li><a class="dropdown-item btn" @click="$emit('newTable', null)">
         <font-awesome-icon class="icon fa-fw" icon="fa-table"></font-awesome-icon>
         Table</a>
