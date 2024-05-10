@@ -1,8 +1,8 @@
 <template>
   <div class="form-control">
     <div class="input-group input-group-sm">
-    <input v-model="pmidQuery.value" class="form-control" placeholder="Enter PMID for searching" @click="openPopupAndSearch" @input="openPopupAndSearch"/>
-      <button type="button" attr.aria-label="Search PubMed ID" class="btn btn-outline-secondary" @click="openPopupAndSearch">
+    <input :disabled="parentDisplayType==='readonly'" v-model="pmidQuery.value" class="form-control" placeholder="Enter PMID for searching" @click="openPopupAndSearch" @input="openPopupAndSearch"/>
+      <button :disabled="parentDisplayType==='readonly'" type="button" attr.aria-label="Search PubMed ID" class="btn btn-outline-secondary" @click="openPopupAndSearch">
         <font-awesome-icon :icon="faSearch" class="fa-fw fa-lg" />
       </button>
     </div>
@@ -18,7 +18,7 @@
 <!--:results="searchResults"-->
 
 <script setup>
-import { ref } from 'vue';
+import {inject, ref} from 'vue';
 import PmidPopUp from './PmidPopUp.vue';
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import {faSearch} from "@fortawesome/free-solid-svg-icons";
@@ -30,6 +30,7 @@ const row = ref(props.row);
 const showPopup = ref(false);
 const loading = ref(false);
 // const searchResults = ref([]);
+const parentDisplayType = inject('parentDisplayType')
 
 function openPopupAndSearch() {
     showPopup.value = true;

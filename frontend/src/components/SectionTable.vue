@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import {computed, inject, ref} from 'vue';
 import draggable from 'vuedraggable';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Attribute from '@/components/Attribute.vue';
@@ -20,6 +20,8 @@ const rowSectionType = props.rows && props.rows[0]?.type ? ('' + props.rows[0].t
 const tableType = ref(props.title || props.sectionSubType || rowSectionType);
 const theseRows = ref(Array.isArray(props.rows[0]) ? props.rows[0] : props.rows);
 const headerMap = new Map();
+const parentDisplayType = inject('parentDisplayType')
+
 
 if (tableType.value === 'File') {
   headerMap.set('File', []);
@@ -90,6 +92,8 @@ const reorderColumns = (event) => {
 };
 
 const addColumn = (event) => {
+  if(parentDisplayType.value === 'readonly')
+    return;
   const columnName = 'Column ' + (headers.value.length - 1);
   headers.value.splice(-1, 0, columnName);
   theseRows.value.forEach((row) => {
@@ -100,6 +104,8 @@ const addColumn = (event) => {
 };
 
 const addRow = (event) => {
+  if(parentDisplayType.value === 'readonly')
+    return;
   const row = {};
   row.type=rowSectionType;
   if (tableType.value === 'File') {
@@ -121,11 +127,15 @@ const addRow = (event) => {
 };
 
 const deleteRow = (index) => {
+  if(parentDisplayType.value === 'readonly')
+    return;
   theseRows.value.splice(index, 1);
   emits('deleteRow', index); // Needed only for Authors component
 };
 
 const deleteColumn = (index) => {
+  if(parentDisplayType.value === 'readonly')
+    return;
   theseRows.value.forEach((row) => {
     row.attributes.splice(row.attributes.findIndex(attr => attr.name === headers.value[index]), 1);
   });
@@ -133,6 +143,8 @@ const deleteColumn = (index) => {
 };
 
 const updateColumnName = (event, index) => {
+  if(parentDisplayType.value === 'readonly')
+    return;
   if (index === headers.value.length - 1) return;
   const oldValue = headers.value[index];
   const newValue = event.target.value;
@@ -171,7 +183,7 @@ defineExpose({ errors, thisSection });
                                                                            class="icon" />{{ tableType }}</span>
         <span v-else>
           <input v-model="tableType" class="ms-2" placeholder="Enter table name" type="text" @click.stop="" />
-          <font-awesome-icon class="icon ps-2" icon="fa-trash" role="button" size="sm" @click="$emit('delete')"
+          <font-awesome-icon v-if="parentDisplayType!=='readonly'" class="icon ps-2" icon="fa-trash" role="button" size="sm" @click="$emit('delete')"
                              @click.stop=""></font-awesome-icon>
         </span>
       </span>
@@ -185,13 +197,13 @@ defineExpose({ errors, thisSection });
               <div v-if="i > 0 && i < headers.length - 1" class="input-group input-group-sm align-items-center">
                 <template v-if="!getFieldType(header)?.createdOnRender">
                   <span class="form-control-sm">{{ getFieldType(header).name }}</span>
-                  <font-awesome-icon v-if="getFieldType(header)?.display!=='required'" role="button" @click.prevent="deleteColumn(i)" class="icon fa-sm"
+                  <font-awesome-icon v-if="getFieldType(header)?.display!=='required' && parentDisplayType!=='readonly'" role="button" @click.prevent="deleteColumn(i)" class="icon fa-sm"
                                      icon="fa-trash"></font-awesome-icon>
                 </template>
                 <template v-else>
-                  <input ref="headerComponent" :value="header" class="form-control" type="text"
+                  <input ref="headerComponent" :value="header" class="form-control" :disabled="parentDisplayType==='readonly'" type="text"
                        @change.stop="(e) => updateColumnName(e, i)">
-                  <button v-if="getFieldType(header)?.display!=='required'"  class="btn btn-outline-secondary icon" type="button" @click.prevent="deleteColumn(i)">
+                  <button v-if="getFieldType(header)?.display!=='required' && parentDisplayType!=='readonly'"  class="btn btn-outline-secondary icon" type="button" @click.prevent="deleteColumn(i)">
                     <font-awesome-icon class="fa-sm" icon="fa-trash"></font-awesome-icon>
                   </button>
                 </template>
@@ -220,14 +232,14 @@ defineExpose({ errors, thisSection });
                 />
               </td>
               <td class="grip">
-                <font-awesome-icon v-if="!(index===0 && sectionType?.display==='required' )" class="fa-sm" icon="fa-trash" role="button"
+                <font-awesome-icon v-if="!(index===0 && sectionType?.display==='required' ) && parentDisplayType!=='readonly'" class="fa-sm" icon="fa-trash" role="button"
                                    @click="deleteRow(index)"></font-awesome-icon>
               </td>
             </tr>
           </template>
         </draggable>
       </table>
-      <div>
+      <div v-if="parentDisplayType!=='readonly'">
         <button class="btn btn-outline-secondary btn-sm" @click="addRow">
           Add Row
         </button>

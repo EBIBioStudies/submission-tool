@@ -4,26 +4,49 @@
       <font-awesome-icon icon="fas fa-user-secret" class="p-2 link-dark" type="button" @click="offCanvasJson.show();"></font-awesome-icon>
     </div>
   </teleport>
-  <div class="container">
-    <div class="row">
-      <div class="col"></div>
-        <div class="col-6 gy-6">
-          <div class="">
-            <div v-if="success" class="alert-success">
-              <h4 class="card-title">Document submitted successfully</h4>
-            </div>
-            <div v-else class="invalid-feedback">
-              {{serverErrorMessage}}
-            </div>
-          </div>
-        </div>
-      <div class="col"/>
+  <div v-if="success" className="card">
+    <div  className="card-body">
+      <h2  className="card-title ng-star-inserted">
+        <i aria-hidden="true" className="fa fa-check-circle"></i> Study <span  className="ng-star-inserted">submitted</span>
+      </h2>
+      <p className="card-text mb-1 ng-star-inserted"> The study has been successfully submitted to the BioStudies database and is now being processed. </p>
+      <div  className="mt-3 ng-star-inserted">
+        <h5>Please note <i  className="far fa-hand-point-down"></i></h5>
+        <ul>
+          <li className="mb-3">
+            <mark>As soon as your study is processed, you will receive its accession number by e-mail</mark>
+          </li>
+          <li className="mb-3">
+            <mark> The system may take up to 24 hours after submission to register any new studies in the database. </mark>
+          </li>
+          <li className="mb-3">
+            <mark>Any registered study will remain private and accessible only through login until the release date in the Western European Time Zone.</mark>
+          </li>
+        </ul>
+      </div>
+      <div className="mt-3 ng-star-inserted">
+        <strong>
+          <a target="_blank" href="http://europepmc.org/abstract/MED/26700850"> Citing the BioStudies database <i className="fa fa-fw fa-external-link-square"></i></a>
+        </strong>
+        <p>Sarkans U, Gostev M, Athar A, et al. <a href="http://doi.org/10.1093/nar/gkx965">The BioStudies database-one stop shop for all data supporting a life sciences study. </a><i>Nucleic Acids Res.</i> 2018;46(D1):D1266-D1270. doi:10.1093/nar/gkx965
+        </p>
+      </div>
+      <a tooltip="List all other submitted studies" routerlink="/" className="btn btn-primary ng-star-inserted" href="/biostudies/submissions/"> Show all submitted </a>
     </div>
+  </div>
+  <div v-else >
+    <div v-if="serverErrorMessage" class="card">
+      <div class="card-body">
+        {{serverErrorMessage}}
+      </div>
+    </div>
+  </div>
+  <div class="container">
     <div class="row">
       <div class="col text-end pb-4">
         <font-awesome-icon v-if="isSaving" :icon="['far','floppy-disk']" beat-fade class="pe-2"/>
-        <button class="btn btn-primary" type="button" @click="submitDraft()">Submit</button>
-        <button class="btn btn-outline-danger ms-2" type="button" @click="revertDraft()">Revert</button>
+        <button v-if="!displayType" class="btn btn-primary" type="button" @click="submitDraft()">Submit</button>
+        <button v-if="!displayType" class="btn btn-outline-danger ms-2" type="button" @click="revertDraft()">Revert</button>
       </div>
     </div>
     <div class="row">
@@ -106,8 +129,11 @@ const isSaving = ref(true);
 const hasValidated = ref(false);
 const success = ref(false)
 const serverErrorMessage = ref('')
+const displayType = ref('')
 provide('hasValidated', hasValidated)
 provide('submission', submission)
+provide('parentDisplayType', displayType)
+
 
 const submissionComponent = ref({})
 
@@ -127,6 +153,7 @@ const submitDraft = async () => {
       const response = await axios.post(`/api/submissions/drafts/${props.accession}/submit`);
       if (response.status === 200) {
         success.value = true;
+        displayType.value='readonly'
       }
       else{
         success.value=false;

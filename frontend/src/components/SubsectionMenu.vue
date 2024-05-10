@@ -1,14 +1,16 @@
 <script setup>
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
+import {inject} from "vue";
 
 const props = defineProps(['sectionType'])
 const emits = defineEmits(['newTable', 'newSection'])
+const parentDisplayType = inject('parentDisplayType')
 
 </script>
 
 <template>
   <!--  add other sections button start -->
-  <div class="dropdown dropend">
+  <div v-if="parentDisplayType!=='readonly'" class="dropdown dropend">
     <svg class="plus-icon" height="1em" viewBox="0 0 640 512" aria-expanded="false"
          xmlns="http://www.w3.org/2000/svg" data-bs-toggle="dropdown" role="button">
       <path fill="currentColor"

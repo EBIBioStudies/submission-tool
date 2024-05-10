@@ -10,6 +10,7 @@ const emits = defineEmits(['deleteOrg', 'createOrg']);
 
 // get organisation which matches the affiliation reference
 const organisations = ref([]);
+const parentDisplayType = inject('parentDisplayType')
 
 const updateOptions = async (query) => {
   if (!query || query.length < 3) return [];
@@ -51,6 +52,7 @@ organisations.value = model.value.map(affiliation => {
                :object="true"
                :delay="0"
                :min-chars="3"
+               :disabled="parentDisplayType==='readonly'"
                :filter-results="false"
                :hide-selected="true"
                :can-clear="false"

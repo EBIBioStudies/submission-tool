@@ -6,7 +6,6 @@ import Authors from "@/components/Authors.vue";
 const props = defineProps(['section', 'sectionType']);
 const sectionComponent = ref(null)
 const authorComponent = ref(null)
-provide('parentDisplayType', props?.sectionType?.display)
 const errors = computed(() => [...authorComponent.value.errors, ...sectionComponent.value.errors])
 defineExpose({errors});
 </script>

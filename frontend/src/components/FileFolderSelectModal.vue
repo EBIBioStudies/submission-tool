@@ -1,6 +1,6 @@
 <script setup>
 
-import {computed, getCurrentInstance, onMounted, ref} from "vue";
+import {getCurrentInstance, inject, onMounted, ref} from "vue";
 import FileTree from "./FileTree.vue";
 import {Modal} from "bootstrap";
 import axios from 'axios';
@@ -18,7 +18,7 @@ const MAX_UPLOAD_SIZE = 1024; //1GB
 const errorMessage = ref('');
 const route = useRoute();
 const curRow = ref(props.row)
-
+const parentDisplayType = inject('parentDisplayType')
 
 
 defineExpose({errorMessage});
@@ -112,11 +112,13 @@ const loadTree = () => {
 <template>
   <div class="form-control" >
     <div class="input-group input-group-sm" :class="props.class">
-      <input type="text" class="form-control bg-body-secondary" v-model="thisFile.path" readonly data-bs-toggle="modal"
+      <input type="text" class="form-control bg-body-secondary" v-model="thisFile.path" readonly data-bs-toggle="modal" :disabled="parentDisplayType==='readonly'"
+
              :data-bs-target="'#fileFolderSelectModal'+thisComponent.uid"
              @click="loadTree()" :class="{'is-invalid': errorMessage}">
       <button class="btn btn-secondary" type="button" data-bs-toggle="modal"
               @click="loadTree()"
+              :disabled="parentDisplayType==='readonly'"
               :data-bs-target="'#fileFolderSelectModal'+thisComponent.uid">
         Select File
       </button>
