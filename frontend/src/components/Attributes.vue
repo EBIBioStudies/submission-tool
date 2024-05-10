@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import {computed, inject, ref} from 'vue';
 import Attribute from './Attribute.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
@@ -10,6 +10,7 @@ const duplicateAttributes = attributeList.value?.filter(
   (value, index, array) => array.find((v, i) => v.name === value.name) !== value && value.name !== '',
 );
 const attributeRefs = ref([]);
+const parentDisplayType = inject('parentDisplayType')
 
 // const nonTemplateAttributes = computed(() => {
 //   const fieldTypeNames = props.fieldTypes?.map((f) => f.name) ?? [];
@@ -82,7 +83,7 @@ addMissingAttributes();
     </div>
 
     <div class="branch mt-2">
-    <button class="btn btn-light btn-small text-black-50" @click="$emit('newAttribute')">
+    <button v-if="parentDisplayType !== 'readonly'" class="btn btn-light btn-small text-black-50" @click="$emit('newAttribute')">
       <font-awesome-icon :icon="['fas','plus']" class="icon fa-fw"></font-awesome-icon>
       <i>New Attribute</i>
     </button>

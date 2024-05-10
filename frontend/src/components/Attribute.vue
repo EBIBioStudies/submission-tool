@@ -175,6 +175,7 @@ const showHelp = () => {
       </span>
       <span v-else>
       <input
+        :disabled="parentDisplayType==='readonly'"
         type="text"
         class="form-control attribute-name"
         v-model="thisAttribute.name"
