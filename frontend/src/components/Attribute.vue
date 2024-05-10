@@ -362,6 +362,7 @@ const showHelp = () => {
       v-if="display !== 'required' && display!=='readonly' &&  !props.isTableAttribute"
     >
       <font-awesome-icon
+        v-if="display!=='readonly'"
         class="icon fa-sm"
         role="button"
         icon="fa-trash"

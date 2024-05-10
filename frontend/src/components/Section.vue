@@ -231,7 +231,7 @@ defineExpose({errors, thisSection});
             v-model="thisSection.type"/>
         </span>
       </span>
-      <span v-if="sectionType?.display!='required'" class="mt-2 btn btn-sm btn-delete" role="button">
+      <span v-if="sectionType?.display!='required' && parentDisplayType!=='readonly'" class="mt-2 btn btn-sm btn-delete" role="button">
         <font-awesome-icon
           role="button"
           @click="$emit('delete')"
