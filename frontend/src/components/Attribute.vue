@@ -335,7 +335,7 @@ const showHelp = () => {
     />
 
     <Publication
-      v-else-if="fieldType?.controlType?.name === 'pubmedid' || fieldType?.controlType?.name === 'pmid'"
+      v-else-if="fieldType?.controlType?.name === 'pubmedid' || fieldType?.controlType?.name === 'pmid' || fieldType?.controlType?.name === 'pubmed id'"
       ref="attributeControl"
       :row="props.parent"
       :pmid="thisAttribute"
