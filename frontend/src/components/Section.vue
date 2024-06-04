@@ -47,12 +47,14 @@ const getSectionsWithRowsAsSections = (type) => {
   return combined
 }
 
+const tableTypes = new Set(["Publication", "Funding", "File", "Link"]);
+
 const specialSectionMap = computed(() => {
   const curMap = new Map();
   props?.sectionType?.tableTypes?.forEach(
     (tbType) => {
       const combined = getSectionsWithRowsAsSections(tbType.name);
-      if (combined.length > 0) {
+      if (combined?.length > 0) {
         curMap.set(tbType.name, combined);
       }
     }
@@ -328,15 +330,15 @@ defineExpose({errors, thisSection});
             <!-- Subsections start -->
             <div v-for="(subsection, i) in section.subsections" :key="i" ref="sectionsComponent">
               <!-- section -->
-<!--              <Section-->
-<!--                v-if="!Array.isArray(subsection)"-->
-<!--                :section="subsection"-->
-<!--                :sectionType="subSectionTypeMap.get(subsection)"-->
-<!--                :depth="props.depth + 1"-->
-<!--                @delete="deleteSubSection(section.subsections, i)"-->
-<!--                @addTable="(msg)=>addTable(msg.section, msg.instance)"-->
-<!--                ref="subsectionsRef"-->
-<!--              />-->
+              <Section
+                v-if="!Array.isArray(subsection) && (!tableTypes.has(subsection?.type) || !subSectionTypeMap.get(subsection?.type)?.rowAsSection)"
+                :section="subsection"
+                :sectionType="subSectionTypeMap.get(subsection)"
+                :depth="props.depth + 1"
+                @delete="deleteSubSection(section.subsections, i)"
+                @addTable="(msg)=>addTable(msg.section, msg.instance)"
+                ref="subsectionsRef"
+              />
               <!-- or table -->
               <SectionTable
                 v-if="Array.isArray(subsection)"
@@ -352,14 +354,23 @@ defineExpose({errors, thisSection});
                 ref="sectionTablesRef"
               />
 
-<!--              <SubsectionMenu v-if="depth===0"-->
-<!--                              :sectionType="sectionType"-->
-<!--                              @newSection="(type)=> addSubsection(section,i+1, type)"-->
-<!--                              @newTable="(type)=> addTable(section,i+1, type)"-->
-<!--              ></SubsectionMenu>-->
+              <SubsectionMenu v-if="depth===0"
+                              :sectionType="sectionType"
+                              @newSection="(type)=> addSubsection(section,i+1, type)"
+                              @newTable="(type)=> addTable(section,i+1, type)"
+              ></SubsectionMenu>
             </div>
 
             <div v-for="(item, index) in specialSectionMap" :key="index" ref="sectionsComponent">
+<!--              <Section-->
+<!--                v-if="!Array.isArray(item[1]) && item[1].length==1"-->
+<!--                :section="item[1]"-->
+<!--                :sectionType="subSectionTypeMap.get(item[1])"-->
+<!--                :depth="props.depth + 1"-->
+<!--                @delete="deleteSubSection(section.subsections, index)"-->
+<!--                @addTable="(msg)=>addTable(msg.section, index, msg.instance)"-->
+<!--                ref="subsectionsRef"-->
+<!--              />-->
               <SubSectionTable
                 v-if="Array.isArray(item[1])"
                 :rows="item[1]"
