@@ -40,8 +40,11 @@ function handleSelect(selectedItem) {
   pmidQuery.value.value = selectedItem.id;
   if(Array.isArray(row.value)){
     row.value.forEach(item => {
-      if(item.name === 'PMID')
+      if(item.name === 'PMID'){
         item.value = selectedItem.pmid;
+        if(!selectedItem.pmid)
+          item.value = selectedItem.id;
+      }
       else if(item.name === 'Title')
         item.value = selectedItem.title;
       else if(item.name === 'Authors')
