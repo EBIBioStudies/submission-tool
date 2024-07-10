@@ -1,207 +1,202 @@
 <script setup>
-  import {onMounted, ref, onBeforeUnmount} from 'vue';
-  import AuthService from "@/services/AuthService.js";
-  import axios from "axios";
-  import { from, Subject, Observable } from 'rxjs';
-  import { map, mergeAll, last, takeUntil, catchError } from 'rxjs/operators';
+import { onMounted, ref, onBeforeUnmount } from 'vue';
+import AuthService from "@/services/AuthService.js";
+import axios from "axios";
+import { from, Subject, Observable } from 'rxjs';
+import { map, mergeAll, last, takeUntil, catchError } from 'rxjs/operators';
 
-  const fileInput = ref(null);
-  const folderInput = ref(null);
-  const selectedFiles = ref([]);
-  const collections = ref([])
-  const selectedCollection = ref(null)
-  const ngUnsubscribe = new Subject();
-  const uploadResults = ref([]);
-  const successSubmit = ref(false);
-  const errorMessage = ref(null);
-  const showModalMessage = ref(false);
+const fileInput = ref(null);
+const folderInput = ref(null);
+const selectedFiles = ref([]);
+const collections = ref([]);
+const selectedCollection = ref(null);
+const ngUnsubscribe = new Subject();
+const uploadResults = ref([]);
+const successSubmit = ref(false);
+const errorMessage = ref(null);
+const showModalMessage = ref(false);
 
+const triggerFileSelect = () => {
+  fileInput.value.click();
+};
 
+const triggerFolderSelect = () => {
+  folderInput.value.click();
+};
 
-
-
-  const triggerFileSelect = () => {
-    fileInput.value.click();
-  };
-
-  const triggerFolderSelect = () => {
-    folderInput.value.click();
-  };
-
-  const handleFileChange = (event) => {
-    const files = event.target.files;
-    if (files.length > 0) {
-      for (let i = 0; i < files.length; i++) {
-        // console.log('Selected file:', files[i].name);
-        addUniqueFile(files[i]);
-      }
-      // Handle the selected files
+const handleFileChange = (event) => {
+  const files = event.target.files;
+  if (files.length > 0) {
+    for (let i = 0; i < files.length; i++) {
+      addUniqueFile(files[i]);
     }
-  };
+  }
+};
 
-  const handleFolderChange = (event) => {
-    const files = event.target.files;
-    if (files.length > 0) {
-      for (let i = 0; i < files.length; i++) {
-        addUniqueFile(files[i]);
-      }
-      // Handle the selected files from the folder
+const handleFolderChange = (event) => {
+  const files = event.target.files;
+  if (files.length > 0) {
+    for (let i = 0; i < files.length; i++) {
+      addUniqueFile(files[i]);
     }
-  };
+  }
+};
 
-  const hasStudyExtension = (fileName) => {
-    const extensions = [".json", ".xml", ".tsv", ".xlsx"];
-    return extensions.some(ext => fileName.endsWith(ext));
+const hasStudyExtension = (fileName) => {
+  const extensions = [".json", ".xml", ".tsv", ".xlsx"];
+  return extensions.some(ext => fileName.endsWith(ext));
+};
+
+const addUniqueFile = (file) => {
+  const isDuplicate = selectedFiles.value.some(f => f.name === file.name && f.size === file.size);
+  if (!isDuplicate) {
+    file.isChecked = false;
+    file.hasStudyExtension = hasStudyExtension(file.name);
+    file.status = 0;
+    selectedFiles.value.push(file);
+    if(successSubmit.value)
+      successSubmit.value = false;
+  }
+};
+
+const getCheckedFiles = () => {
+  return selectedFiles.value.filter(file => file.isChecked);
+};
+
+const getNonCheckedFiles = () => {
+  return selectedFiles.value.filter(file => !file.isChecked);
+};
+
+const removeFile = (file) => {
+  selectedFiles.value = selectedFiles.value.filter(f => !(f.name === file.name && f.size === file.size));
+};
+
+const submitForm = () => {
+  const studyFiles = selectedFiles.value.filter(file => file.isChecked);
+  const nonStudyFiles = selectedFiles.value.filter(file => !file.isChecked);
+
+  if (studyFiles.length === 0) {
+    showModalMessage.value = true;
+    return;
   }
 
-  const addUniqueFile = (file) => {
-    const isDuplicate = selectedFiles.value.some(f => f.name === file.name && f.size === file.size);
-    if (!isDuplicate) {
-      file.isChecked = false;
-      file.hasStudyExtension = hasStudyExtension(file.name);
-      file.status = 0;
-      selectedFiles.value.push(file);
-    }
-  };
+  errorMessage.value = "";
+  successSubmit.value = false;
 
-  const getCheckedFiles = () => {
-    return selectedFiles.value.filter(file => file.isChecked);
-  };
+  const uploads$ = from([...nonStudyFiles, ...studyFiles]).pipe(
+    map(file => file.isChecked ? doUploadStudyFile(file) : doUploadRegularFile(file)),
+    mergeAll(20), // assuming maxConcurrent is 20
+    takeUntil(ngUnsubscribe),
+    catchError(err => {
+      errorMessage.value = err?.message || 'Unknown error';
+      return [];
+    })
+  );
 
-  const getNonCheckedFiles = () => {
-    return selectedFiles.value.filter(file => !file.isChecked);
-  };
-
-  const removeFile = (file) => {
-    selectedFiles.value = selectedFiles.value.filter(f => !(f.name === file.name && f.size === file.size));
-  };
-
-  const submitForm = () => {
-    const studyFiles = selectedFiles.value.filter(file => file.isChecked);
-    const nonStudyFiles = selectedFiles.value.filter(file => !file.isChecked);
-    // if(selectedCollection.value == null || selectedCollection.value.length == 0){
-    //   //TODO show an error modal and ask for choosing a collection
-    //   return;
-    // }
-
-    if(studyFiles.length==0){
-      showModalMessage.value = true;
-      return;
-    }
-    errorMessage.value = "";
-    if(nonStudyFiles.length>0){
-      uploadFiles(nonStudyFiles, false).subscribe({
-        next: (result) => {
-          uploadResults.value.push(result);
-        },
-        complete: () => {
-          updateSelectedFiles();
-        },
-        error: (error) => {
-          console.error('Upload error:', error);
-        },
-      });
-    }
-    uploadFiles(studyFiles, true).subscribe({
-      next: (result) => {
-        uploadResults.value.push(result);
-      },
-      complete: () => {
-        updateSelectedFiles();
-      },
-      error: (error) => {
-        console.error('Upload error:', error);
-      },
-    });
-  };
-
-  const updateSelectedFiles = () => {
-    uploadResults.value.forEach(result => {
-      const index = selectedFiles.value.findIndex(f => f.name === result.name && f.size === result.size);
-      if (index !== -1) {
-        selectedFiles.value[index] = result;
+  uploads$.subscribe({
+    next: (result) => {
+      uploadResults.value.push(result);
+    },
+    complete: () => {
+      updateSelectedFiles();
+      if (!uploadResults.value.some(file => file.status === 2)) {
+        successSubmit.value = true;
+        resetForm();
       }
-    });
-  };
-
-  onMounted(async () => {
-    if (!AuthService.isAuthenticated()) return;
-    try {
-      await axios.get(`/api/collections`).then(response=>{
-        collections.value = response.data;
-        const none = {accno:"none", title:"None"}
-        collections.value.push(none)
-        selectedCollection.value = none;
-      });
-    } catch (error) {
-      //console.error('Failed to fetch collections:', error);
+    },
+    error: (error) => {
+      errorMessage.value = error?.message || 'Unknown error';
     }
   });
+};
 
-
-  const uploadFiles = (files, isStudyFile) => {
-    return from(files).pipe(
-      map((file) => isStudyFile ? doUploadStudyFile(file): doUploadRegularFile(file)),
-      mergeAll(10), // assuming maxConcurrent is 10
-      last(null, []),
-      takeUntil(ngUnsubscribe)
-    );
-  };
-
-  const doUploadRegularFile = (file) => {
-    // Simulate an upload observable
-    return new Observable((observer) => {
-      const formData = new FormData();
-      formData.append('files', file);
-
-      axios.post('/api/files/user/', formData)
-        .then((response) => {
-          file.status = 1;
-          observer.next(file);
-          observer.complete();
-        })
-        .catch((error) => {
-          file.status = 2;
-          file.message = error.response?.data || error.message || 'Unknown error';
-          errorMessage.value = error?.response?.data?.log?.message || error?.message || 'Unknown Error';
-          observer.next(file);
-          observer.complete();
-        });
-    });
-  }
-
-  const doUploadStudyFile = (file) => {
-    // Simulate an upload observable
-    return new Observable((observer) => {
-      const formData = new FormData();
-      if (selectedCollection.value.name!==null && selectedCollection.value.name!==undefined && selectedCollection.value.length>0)  {
-        const collection = { name: 'AttachTo', value: selectedCollection.value.name };
-        formData.append('attributes', JSON.stringify(collection));
-      }
-      formData.append('submission', file);
-
-      axios.post('/api/submissions/async/direct', formData)
-        .then((response) => {
-          file.status = 1;
-          observer.next(file);
-          observer.complete();
-        })
-        .catch((error) => {
-          file.status = 2;
-          file.message = error.response?.data || error.message || 'Unknown error';
-          errorMessage.value = error?.response?.data?.log?.message || error?.message || 'Unknown Error';
-          observer.next(file);
-          observer.complete();
-        });
-    });
-  }
-
-  onBeforeUnmount(() => {
-    ngUnsubscribe.next();
-    ngUnsubscribe.complete();
+const updateSelectedFiles = () => {
+  uploadResults.value.forEach(result => {
+    const index = selectedFiles.value.findIndex(f => f.name === result.name && f.size === result.size);
+    if (index !== -1) {
+      selectedFiles.value[index] = result;
+    }
   });
+};
 
+const resetForm = () => {
+  uploadResults.value = [];
+  selectedFiles.value = [];
+  selectedCollection.value = collections.value.find(col => col.title === "None") || null;
+};
+
+onMounted(async () => {
+  if (!AuthService.isAuthenticated()) return;
+  try {
+    const response = await axios.get(`/api/collections`);
+    collections.value = response.data;
+    const none = { accno: "none", title: "None" };
+    collections.value.push(none);
+    selectedCollection.value = none;
+  } catch (error) {
+    console.error('Failed to fetch collections:', error);
+  }
+});
+
+const uploadFiles = (files, isStudyFile) => {
+  return from(files).pipe(
+    map((file) => isStudyFile ? doUploadStudyFile(file) : doUploadRegularFile(file)),
+    takeUntil(ngUnsubscribe)
+  );
+};
+
+const doUploadRegularFile = (file) => {
+  return new Observable((observer) => {
+    const formData = new FormData();
+    formData.append('files', file);
+
+    axios.post('/api/files/user/', formData)
+      .then(() => {
+        file.status = 1;
+        observer.next(file);
+        observer.complete();
+      })
+      .catch((error) => {
+        file.status = 2;
+        file.message = error.response?.data || error.message || 'Unknown error';
+        errorMessage.value = error?.response?.data?.log?.message || error?.message || 'Unknown Error';
+        observer.next(file);
+        observer.complete();
+      });
+  });
+};
+
+const doUploadStudyFile = (file) => {
+  return new Observable((observer) => {
+    const formData = new FormData();
+    if (selectedCollection.value.name) {
+      const collection = { name: 'AttachTo', value: selectedCollection.value.name };
+      formData.append('attributes', JSON.stringify(collection));
+    }
+    formData.append('submission', file);
+
+    axios.post('/api/submissions/async/direct', formData)
+      .then(() => {
+        file.status = 1;
+        observer.next(file);
+        observer.complete();
+      })
+      .catch((error) => {
+        file.status = 2;
+        file.message = error.response?.data || error.message || 'Unknown error';
+        errorMessage.value = error?.response?.data?.log?.message || error?.message || 'Unknown Error';
+        observer.next(file);
+        observer.complete();
+      });
+  });
+};
+
+onBeforeUnmount(() => {
+  ngUnsubscribe.next();
+  ngUnsubscribe.complete();
+});
 </script>
+
 
 <template>
 
