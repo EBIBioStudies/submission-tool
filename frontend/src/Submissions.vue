@@ -19,7 +19,9 @@
       </thead>
       <tbody>
       <tr v-for="submission in submissions">
-        <td>{{ submission.accno }}</td>
+        <td v-if="submission?.status == 'PROCESSED'">{{ submission.accno }}</td>
+        <td v-else><font-awesome-icon :icon="['fas', 'spinner']" class="spinner-border spinner-border-sm status-spinner fa-spin" />
+        </td>
         <td>{{ submission.title }}</td>
         <td>{{ moment(submission.rtime).format("DD MMM YYYY") }}</td>
         <td>{{ moment(submission.mtime).format("DD MMM YYYY") }}</td>

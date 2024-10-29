@@ -15,6 +15,7 @@ const uploadResults = ref([]);
 const successSubmit = ref(false);
 const errorMessage = ref(null);
 const showModalMessage = ref(false);
+const loading = ref(false);
 
 const triggerFileSelect = () => {
   fileInput.value.click();
@@ -53,6 +54,7 @@ const addUniqueFile = (file) => {
     file.isChecked = false;
     file.hasStudyExtension = hasStudyExtension(file.name);
     file.status = 0;
+    file.progress = 0;
     selectedFiles.value.push(file);
     if(successSubmit.value)
       successSubmit.value = false;
@@ -82,6 +84,7 @@ const submitForm = () => {
 
   errorMessage.value = "";
   successSubmit.value = false;
+  loading.value = true;
 
   const uploads$ = from([...nonStudyFiles, ...studyFiles]).pipe(
     map(file => file.isChecked ? doUploadStudyFile(file) : doUploadRegularFile(file)),
@@ -89,6 +92,7 @@ const submitForm = () => {
     takeUntil(ngUnsubscribe),
     catchError(err => {
       errorMessage.value = err?.message || 'Unknown error';
+      loading.value = false;
       return [];
     })
   );
@@ -103,9 +107,11 @@ const submitForm = () => {
         successSubmit.value = true;
         resetForm();
       }
+      loading.value = false;
     },
     error: (error) => {
       errorMessage.value = error?.message || 'Unknown error';
+      loading.value = false;
     }
   });
 };
@@ -146,18 +152,26 @@ const uploadFiles = (files, isStudyFile) => {
 };
 
 const doUploadRegularFile = (file) => {
+  if (file?.progress==100 && file.status==1)
+    return;
   return new Observable((observer) => {
     const formData = new FormData();
     formData.append('files', file);
 
-    axios.post('/api/files/user/', formData)
+    axios.post('/api/files/user/', formData, {
+      onUploadProgress: (progressEvent) => {
+        file.progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+      }
+    })
       .then(() => {
         file.status = 1;
+        file.progress = 100;
         observer.next(file);
         observer.complete();
       })
       .catch((error) => {
         file.status = 2;
+        file.progress = 0;
         file.message = error.response?.data || error.message || 'Unknown error';
         errorMessage.value = error?.response?.data?.log?.message || error?.message || 'Unknown Error';
         observer.next(file);
@@ -175,14 +189,20 @@ const doUploadStudyFile = (file) => {
     }
     formData.append('submission', file);
 
-    axios.post('/api/submissions/async/direct', formData)
+    axios.post('/api/submissions/async/direct', formData, {
+      onUploadProgress: (progressEvent) => {
+        file.progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+      }
+    })
       .then(() => {
         file.status = 1;
+        file.progress = 100;
         observer.next(file);
         observer.complete();
       })
       .catch((error) => {
         file.status = 2;
+        file.progress = 0;
         file.message = error.response?.data || error.message || 'Unknown error';
         errorMessage.value = error?.response?.data?.log?.message || error?.message || 'Unknown Error';
         observer.next(file);
@@ -190,6 +210,18 @@ const doUploadStudyFile = (file) => {
       });
   });
 };
+
+const moveCheckedFileToTop = (file) => {
+  // Remove the file from its current position
+  selectedFiles.value = selectedFiles.value.filter(f => f !== file);
+  // Add the file to the beginning if checked, otherwise add it to the end
+  if (file.isChecked) {
+    selectedFiles.value.unshift(file);
+  } else {
+    selectedFiles.value.push(file);
+  }
+};
+
 
 onBeforeUnmount(() => {
   ngUnsubscribe.next();
@@ -221,38 +253,44 @@ onBeforeUnmount(() => {
       <div class="col-2">
         <div  class="d-md-block sidebar sidebar-expanded border-right">
           <div class="sidebar-container">
-        <div class="card">
-          <div class="form-group mt-3 mx-3">
-            <div class="border-bottom mb-2 d-flex align-items-center justify-content-between">
-              <label  class="m-0">Files</label>
-              <span  class=" m-0"> {{ selectedFiles.length }} </span>
+            <div v-if="loading" class="card">
+              <div  class="d-flex justify-content-center">
+                <font-awesome-icon :icon="['fas', 'spinner']" class="fa-spin fa-spinner fa-2x" />
+              </div>
             </div>
-            <div class="btn-group border-bottom mb-2">
-              <button @click="triggerFileSelect" class="btn btn-primary btn-sm w-25  left-btn mx-1">Add File</button>
-              <button @click="triggerFolderSelect" class="btn btn-primary  btn-sm  w-25  right-btn mx-1">Add Folder</button>
-              <input type="file" ref="fileInput" @change="handleFileChange" style="display: none;" multiple>
-              <input type="file" ref="folderInput" @change="handleFolderChange" webkitdirectory directory style="display: none;">
-            </div>
-          </div>
 
-          <div class="form-group mx-3">
-            <div class="form-group">
-              <div class="border-bottom mb-2 d-flex align-items-center justify-content-between">
-                <label class="m-0">Collection</label>
-                <span class="text-muted"><i>Optional</i></span>
+            <div v-else class="card">
+              <div class="form-group mt-3 mx-3">
+                <div class="border-bottom mb-2 d-flex align-items-center justify-content-between">
+                  <label  class="m-0">Files</label>
+                  <span  class=" m-0"> {{ selectedFiles.length }} </span>
+                </div>
+                <div class="btn-group border-bottom mb-2">
+                  <button @click="triggerFileSelect" class="btn btn-primary btn-sm w-25  left-btn mx-1">Add File</button>
+                  <button @click="triggerFolderSelect" class="btn btn-primary  btn-sm  w-25  right-btn mx-1">Add Folder</button>
+                  <input type="file" ref="fileInput" @change="handleFileChange" style="display: none;" multiple>
+                  <input type="file" ref="folderInput" @change="handleFolderChange" webkitdirectory directory style="display: none;">
+                </div>
               </div>
-              <div v-for="col in collections" :key="col" class="ng-star-inserted">
-                <label>
-                  <input type="radio" name="project" class="ng-untouched ng-pristine ng-valid" :value="col" v-model="selectedCollection">
-                  {{ col.title }}
-                </label>
-              </div>
-              <div class="d-flex justify-content-center">
-                <button @click="submitForm" id="single-button" type="button" class="btn btn-success btn-submit"> Upload </button>
+
+              <div class="form-group mx-3">
+                <div class="form-group">
+                  <div class="border-bottom mb-2 d-flex align-items-center justify-content-between">
+                    <label class="m-0">Collection</label>
+                    <span class="text-muted"><i>Optional</i></span>
+                  </div>
+                  <div v-for="col in collections" :key="col" class="ng-star-inserted">
+                    <label>
+                      <input type="radio" name="project" class="ng-untouched ng-pristine ng-valid" :value="col" v-model="selectedCollection">
+                      {{ col.title }}
+                    </label>
+                  </div>
+                  <div class="d-flex justify-content-center">
+                    <button @click="submitForm" id="single-button" type="button" class="btn btn-success btn-submit"> Upload </button>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
           </div>
         </div>
 
@@ -293,15 +331,17 @@ onBeforeUnmount(() => {
               </p>
             </div>
           </div>
-          <div v-if="errorMessage">
+          <div v-if="errorMessage" class="alert" >
+            <div  class=" alert alert-danger">
               <h4>Error while uploading study</h4>
               <p>The study highlighted below is invalid or an unexpected
                 error was encountered.</p>
               <p>Please try to correct any issues before uploading the affected
                 files again.</p>
+            </div>
           </div>
 
-          <div v-if="successSubmit">
+          <div v-if="successSubmit" class="alert alert-success">
             <h4>Study uploaded</h4>
             <p>
               The study has been successfully uploaded to the BioStudies database. <br />
@@ -346,12 +386,16 @@ onBeforeUnmount(() => {
                 <h5 class="st-direct-submit-file-name m-0">{{ file.name }}</h5>
               </div>
               <span class="text-danger" v-if="file.status===2">{{file.message}}</span>
+              <div v-if="file.progress > 0">
+                <p>Uploading: {{ file.progress }}%</p>
+                <progress :value="file.progress" max="100"></progress>
+              </div>
             </div>
             <div class="card-footer d-flex align-items-center">
               <div  class="flex-grow-1">
                 <button v-if="file.hasStudyExtension" class="btn btn-link text-muted d-inline p-0">
                   <label class="sr-only" :for="'is-study-checkbox-' + file.name">Is {{ file.name }} containing the study information?</label>
-                  <input type="checkbox" :id="'is-study-checkbox-' + file.name" v-model="file.isChecked"> Study File
+                  <input type="checkbox" :id="'is-study-checkbox-' + file.name" v-model="file.isChecked" @change="moveCheckedFileToTop(file)"> Study File
                 </button>
               </div>
               <button type="button" class="btn btn-outline-danger btn-sm d-flex align-items-center" :aria-label="'Delete file ' + file.name" :title="'Delete file ' + file.name" @click="removeFile(file)">
@@ -380,6 +424,11 @@ onBeforeUnmount(() => {
   .right-btn {
     margin-left: auto;
   }
+
+  .st-direct-submit-file-name {
+    word-wrap: anywhere;
+  }
+
 
   .sidebar {
     background-color: #6d9fc1;
@@ -461,6 +510,10 @@ onBeforeUnmount(() => {
 
   .error-icon {
     color: red;
+  }
+  .fa-spinner {
+    color: #0275d8;
+    margin-top: 20px;
   }
 
 </style>
