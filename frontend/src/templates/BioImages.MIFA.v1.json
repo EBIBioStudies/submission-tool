@@ -289,12 +289,12 @@
         "name": "Annotation",
         "fieldTypes": [
           {
-            "name": "Annotation Overview",
+            "name": "Annotation Type",
             "controlType": {
               "name": "text"
             },
             "description": "Short descriptive summary indicating the type of annotation and how it was generated",
-            "display": "desirable",
+            "display": "required",
             "helpContextual": {
               "description": "",
               "examples": []
@@ -305,7 +305,7 @@
             "controlType": {
               "name": "text"
             },
-            "display": "desirable",
+            "display": "required",
             "helpContextual": {
               "description": "Description of how the annotations where created.",
               "examples": [
@@ -355,6 +355,18 @@
               "description": "If the dataset is not completely annotated, which images from the dataset were annotated, and what percentage of the data has been annotated from what is available?",
               "examples": []
             }
+          },
+          {
+            "name": "File List",
+            "icon": "fa-file",
+            "controlType": {
+              "name": "filelist",
+              "allowFolders": false
+            },
+            "display": "required",
+            "helpText": "Examples",
+            "helpLink": "/bioimage-archive/help-file-list/",
+            "asyncValueValidatorName": "forFileList"
           }
         ],
         "tableTypes": [],

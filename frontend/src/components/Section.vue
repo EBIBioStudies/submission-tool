@@ -22,6 +22,7 @@ const sectionTablesRef = ref([])
 const sectionFilesRef = ref(null)
 const sectionLinksRef = ref(null)
 const parentDisplayType = inject('parentDisplayType')
+const allowedSections = new Set(["annotation", "link", "funding", "publication"])
 
 const thisSection = ref(props.section);
 const deleteTag = (msg) => deleteAttribute(msg.index);
@@ -241,7 +242,7 @@ defineExpose({errors, thisSection});
           class="section-control"
           :icon="'fa-caret-' + (isCollapsed ? 'right' : 'down')"
         ></font-awesome-icon>
-        <span v-if="sectionType?.name" class="ms-2"
+        <span v-if="typeof  sectionType !== 'string' || allowedSections.has(sectionType.toLowerCase()) " class="ms-2"
               :data-bs-toggle="sectionType?.description ? 'tooltip' : false" data-bs-html="true"
               :data-bs-title="sectionType?.description"><font-awesome-icon
           v-if="sectionType?.icon" class="icon" :icon="sectionType?.icon"/>{{ section.type }}</span>
@@ -331,9 +332,9 @@ defineExpose({errors, thisSection});
             <div v-for="(subsection, i) in section.subsections" :key="i" ref="sectionsComponent">
               <!-- section -->
               <Section
-                v-if="!Array.isArray(subsection) && (!tableTypes.has(subsection?.type) || !subSectionTypeMap.get(subsection?.type)?.rowAsSection)"
+                v-if="!Array.isArray(subsection) && ((!tableTypes.has(subsection?.type) || !subSectionTypeMap.get(subsection?.type)?.rowAsSection))"
                 :section="subsection"
-                :sectionType="subSectionTypeMap.get(subsection)"
+                :sectionType="subSectionTypeMap.get(subsection) || subsection?.type"
                 :depth="props.depth + 1"
                 @delete="deleteSubSection(section.subsections, i)"
                 @addTable="(msg)=>addTable(msg.section, msg.instance)"
@@ -346,7 +347,7 @@ defineExpose({errors, thisSection});
                 :depth="props.depth+1"
                 :sectionType="subSectionTypeMap.get(subsection)"
                 :sectionSubType="subSectionTypeMap.get(subsection)?.name"
-                :parent = section
+                :parent=section
                 @rowsReordered="(e) => rowsReordered(e, subsection)"
                 @columnUpdated="(msg) => updateColumnName(subsection, msg)"
                 @columnsReordered="(msg) => sectionsRefreshKey+= 1"
@@ -362,22 +363,22 @@ defineExpose({errors, thisSection});
             </div>
 
             <div v-for="(item, index) in specialSectionMap" :key="index" ref="sectionsComponent">
-<!--              <Section-->
-<!--                v-if="!Array.isArray(item[1]) && item[1].length==1"-->
-<!--                :section="item[1]"-->
-<!--                :sectionType="subSectionTypeMap.get(item[1])"-->
-<!--                :depth="props.depth + 1"-->
-<!--                @delete="deleteSubSection(section.subsections, index)"-->
-<!--                @addTable="(msg)=>addTable(msg.section, index, msg.instance)"-->
-<!--                ref="subsectionsRef"-->
-<!--              />-->
+              <!--              <Section-->
+              <!--                v-if="!Array.isArray(item[1]) && item[1].length==1"-->
+              <!--                :section="item[1]"-->
+              <!--                :sectionType="subSectionTypeMap.get(item[1])"-->
+              <!--                :depth="props.depth + 1"-->
+              <!--                @delete="deleteSubSection(section.subsections, index)"-->
+              <!--                @addTable="(msg)=>addTable(msg.section, index, msg.instance)"-->
+              <!--                ref="subsectionsRef"-->
+              <!--              />-->
               <SubSectionTable
                 v-if="Array.isArray(item[1])"
                 :rows="item[1]"
                 :depth="props.depth+1"
                 :sectionType="subSectionTypeMap.get(item[1])"
                 :sectionSubType="item[0]"
-                :parent = section
+                :parent=section
                 @rowsReordered="(e) => rowsReordered(e, item[1])"
                 @columnUpdated="(msg) => updateColumnName(item[1], msg)"
                 @columnsReordered="(msg) => sectionsRefreshKey+= 1"
