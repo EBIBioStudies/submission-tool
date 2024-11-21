@@ -235,12 +235,12 @@ defineExpose({ errors, thisSection });
 <!--                                     icon="fa-trash"></font-awesome-icon>-->
                     </label>
                 </template>
-                <template v-else>
-                  <input ref="headerComponent" :value="header" class="form-control" :disabled="parentDisplayType === 'readonly'" type="text"
-                         @change.stop="(e) => updateColumnName(e, i)">
-                  <button v-if="getFieldType(header)?.display !== 'required' && parentDisplayType !== 'readonly'" class="btn btn-outline-secondary icon" type="button" @click.prevent="deleteColumn(i)">
-                    <font-awesome-icon class="fa-sm" icon="fa-trash"></font-awesome-icon>
-                  </button>
+                <template v-else-if="header?.toLowerCase()!=='type' || tableType!=='Link'">
+                    <input ref="headerComponent" :value="header" class="form-control" :disabled="parentDisplayType === 'readonly'" type="text"
+                           @change.stop="(e) => updateColumnName(e, i)">
+                    <button v-if="getFieldType(header)?.display !== 'required' && parentDisplayType !== 'readonly'" class="btn btn-outline-secondary icon" type="button" @click.prevent="deleteColumn(i)">
+                      <font-awesome-icon class="fa-sm" icon="fa-trash"></font-awesome-icon>
+                    </button>
                 </template>
               </div>
             </th>
@@ -254,7 +254,7 @@ defineExpose({ errors, thisSection });
                 <font-awesome-icon icon="fa-solid fa-grip-vertical" />
               </td>
               <td v-for="(col, j) in [...headers].filter((v, i) => i > 0 && i < headers.length - 1 )" :key="j">
-                <Attribute :key="index"
+                <Attribute v-if="tableType!=='Link' || col?.toLowerCase()!=='type'" :key="index"
                            ref="attributeRefs"
                            :attribute="getCell(row, col)"
                            :row="row"
