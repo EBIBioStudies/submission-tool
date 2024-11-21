@@ -3,7 +3,7 @@ import {computed, inject, ref} from 'vue';
 import Attribute from './Attribute.vue';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 
-const props = defineProps(['attributes', 'fieldTypes']);
+const props = defineProps(['attributes', 'fieldTypes', "isSectionAttribute"]);
 const emits = defineEmits(['deleteAttribute', 'createTag', 'deleteTag', 'newAttribute']);
 const attributeList = ref(props.attributes);
 const duplicateAttributes = attributeList.value?.filter(
@@ -78,12 +78,13 @@ addMissingAttributes();
       <template v-if="!processed(attribute)">
         <Attribute :key="index" ref="attributeRefs" :attribute="attribute" :field-type="getFieldType(attribute)"
                    :parent="attributeList" @createTag="(v) => emits('createTag', v)"
+                   :isSectionAttribute="isSectionAttribute"
                    @deleteAttribute="(v) => emits('deleteAttribute', index)"
                    @deleteTag="(v) => emits('deleteTag', v)"/>
       </template>
     </div>
 
-    <div class="branch mt-2">
+    <div v-if="isSectionAttribute" class="branch mt-2">
       <button v-if="parentDisplayType !== 'readonly'" class="btn btn-light btn-small text-black-50"
               @click="$emit('newAttribute')">
         <font-awesome-icon :icon="['fas','plus']" class="icon fa-fw"></font-awesome-icon>

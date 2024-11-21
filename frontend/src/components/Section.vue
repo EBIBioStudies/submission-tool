@@ -9,7 +9,7 @@ import utils from "@/utils";
 import SubSectionTable from "@/components/SubSectionTable.vue";
 
 
-const props = defineProps(['section', 'sectionType', 'depth']);
+const props = defineProps(['section', 'sectionType', 'depth', 'sectionTypeMap']);
 const emits = defineEmits(['delete', 'addTable']);
 
 const componentInstance = getCurrentInstance();
@@ -22,7 +22,6 @@ const sectionTablesRef = ref([])
 const sectionFilesRef = ref(null)
 const sectionLinksRef = ref(null)
 const parentDisplayType = inject('parentDisplayType')
-const allowedSections = new Set(["annotation", "link", "funding", "publication"])
 
 const thisSection = ref(props.section);
 const deleteTag = (msg) => deleteAttribute(msg.index);
@@ -34,17 +33,17 @@ if (props?.sectionType?.display) {
 const attributesRefreshKey = ref(0);
 const sectionsRefreshKey = ref(0);
 
-const subSectionTypeMap = new Map();
+const subSectionTypeMap = props.sectionTypeMap ? props.sectionTypeMap : new Map();
 props?.sectionType?.tableTypes?.forEach(
   (tbType) => {
-    subSectionTypeMap.set(tbType.name, tbType)
+    subSectionTypeMap.set(tbType?.name?.toLowerCase(), tbType)
   }
 );
 
 const renderedRowSections = new Set();
 const getSectionsWithRowsAsSections = (type) => {
   renderedRowSections.add(type?.toLowerCase());
-  const combined = thisSection?.value?.subsections?.filter(s => s?.type?.toLowerCase() === type.toLowerCase() && subSectionTypeMap.get(type)?.rowAsSection)
+  const combined = thisSection?.value?.subsections?.filter(s => s?.type?.toLowerCase() === type.toLowerCase() && subSectionTypeMap.get(type.toLowerCase())?.rowAsSection)
   return combined
 }
 
@@ -74,7 +73,7 @@ props.section?.subsections?.forEach((s) => {
   const type = subsections.find(
     (f) => f?.name?.toLowerCase() === typeName,
   );
-  subSectionTypeMap.set(s, type)
+  subSectionTypeMap.set(s?.type?.toLowerCase(), type)
 });
 
 const isCollapsed = ref((props?.depth ?? 0) >= 2);
@@ -242,10 +241,10 @@ defineExpose({errors, thisSection});
           class="section-control"
           :icon="'fa-caret-' + (isCollapsed ? 'right' : 'down')"
         ></font-awesome-icon>
-        <span v-if="typeof  sectionType !== 'string' || allowedSections.has(sectionType.toLowerCase()) " class="ms-2"
+        <span v-if="typeof  props.sectionType !== 'string' || subSectionTypeMap.has(props.sectionType?.toLowerCase()) " class="ms-2"
               :data-bs-toggle="sectionType?.description ? 'tooltip' : false" data-bs-html="true"
               :data-bs-title="sectionType?.description"><font-awesome-icon
-          v-if="sectionType?.icon" class="icon" :icon="sectionType?.icon"/>{{ section.type }}</span>
+          v-if="props.sectionType?.icon" class="icon" :icon="props.sectionType?.icon"/>{{ section.type }}</span>
         <span v-else>
           <input
             class="ms-2"
@@ -255,7 +254,7 @@ defineExpose({errors, thisSection});
             v-model="thisSection.type"/>
         </span>
       </span>
-      <span v-if="sectionType?.display!='required' && parentDisplayType!=='readonly'" class="mt-2 btn btn-sm btn-delete" role="button">
+      <span v-if="sectionType?.display!=='required' && parentDisplayType!=='readonly'" class="mt-2 btn btn-sm btn-delete" role="button">
         <font-awesome-icon
           role="button"
           @click="$emit('delete')"
@@ -276,6 +275,7 @@ defineExpose({errors, thisSection});
             ref="attributesComponent"
             :attributes="section.attributes"
             :fieldTypes="sectionType?.fieldTypes || sectionType?.columnTypes"
+            :isSectionAttribute="subSectionTypeMap.get(sectionType?.name?.toLowerCase())?.rowAsSection==false ? true : false"
             @deleteAttribute="deleteAttribute"
             @createTag="createTag"
             @deleteTag="deleteTag"
@@ -307,7 +307,7 @@ defineExpose({errors, thisSection});
               v-if="section.files && section.files.length"
               :rows="section.files"
               :depth="props.depth+1"
-              :sectionType="subSectionTypeMap.get('File')"
+              :sectionType="subSectionTypeMap.get('file')"
               sectionSubType="File"
               @rowsReordered="(e) => rowsReordered(e, section.files)"
               @columnUpdated="(msg) => updateColumnName(section.files, msg)"
@@ -315,12 +315,17 @@ defineExpose({errors, thisSection});
               @delete="deleteSubSection(section.files, 0)"
               ref="sectionFilesRef"
             />
+            <SubsectionMenu v-if="depth===0 && (section.files && section.files.length)"
+                            :sectionType="sectionType"
+                            @newSection="(type)=> addSubsection(section,index+1, type)"
+                            @newTable="(type)=> addTable(section,index+1, type)"
+            ></SubsectionMenu>
             <!-- Links -->
             <SectionTable
               v-if="section.links && section.links.length"
               :rows="section.links"
               :depth="props.depth+1"
-              :sectionType="subSectionTypeMap.get('Link')"
+              :sectionType="subSectionTypeMap.get('link')"
               sectionSubType="Link"
               @rowsReordered="(e) => rowsReordered(e, section.links)"
               @columnUpdated="(msg) => updateColumnName(section.links, msg)"
@@ -328,39 +333,11 @@ defineExpose({errors, thisSection});
               @delete="deleteSubSection(section.links, 0)"
               ref="sectionLinksRef"
             />
-            <!-- Subsections start -->
-            <div v-for="(subsection, i) in section.subsections" :key="i" ref="sectionsComponent">
-              <!-- section -->
-              <Section
-                v-if="!Array.isArray(subsection) && ((!tableTypes.has(subsection?.type) || !subSectionTypeMap.get(subsection?.type)?.rowAsSection))"
-                :section="subsection"
-                :sectionType="subSectionTypeMap.get(subsection) || subsection?.type"
-                :depth="props.depth + 1"
-                @delete="deleteSubSection(section.subsections, i)"
-                @addTable="(msg)=>addTable(msg.section, msg.instance)"
-                ref="subsectionsRef"
-              />
-              <!-- or table -->
-              <SectionTable
-                v-if="Array.isArray(subsection)"
-                :rows="subsection"
-                :depth="props.depth+1"
-                :sectionType="subSectionTypeMap.get(subsection)"
-                :sectionSubType="subSectionTypeMap.get(subsection)?.name"
-                :parent=section
-                @rowsReordered="(e) => rowsReordered(e, subsection)"
-                @columnUpdated="(msg) => updateColumnName(subsection, msg)"
-                @columnsReordered="(msg) => sectionsRefreshKey+= 1"
-                @delete="deleteSubSection(section.subsections, i)"
-                ref="sectionTablesRef"
-              />
-
-              <SubsectionMenu v-if="depth===0"
-                              :sectionType="sectionType"
-                              @newSection="(type)=> addSubsection(section,i+1, type)"
-                              @newTable="(type)=> addTable(section,i+1, type)"
-              ></SubsectionMenu>
-            </div>
+            <SubsectionMenu v-if="depth===0 && (section.links && section.links.length)"
+                            :sectionType="sectionType"
+                            @newSection="(type)=> addSubsection(section,index+1, type)"
+                            @newTable="(type)=> addTable(section,index+1, type)"
+            ></SubsectionMenu>
 
             <div v-for="(item, index) in specialSectionMap" :key="index" ref="sectionsComponent">
               <!--              <Section-->
@@ -376,7 +353,7 @@ defineExpose({errors, thisSection});
                 v-if="Array.isArray(item[1])"
                 :rows="item[1]"
                 :depth="props.depth+1"
-                :sectionType="subSectionTypeMap.get(item[1])"
+                :sectionType="subSectionTypeMap.get(item[0].toLowerCase())"
                 :sectionSubType="item[0]"
                 :parent=section
                 @rowsReordered="(e) => rowsReordered(e, item[1])"
@@ -385,12 +362,54 @@ defineExpose({errors, thisSection});
                 @delete="deleteSubSection(section.subsections, index)"
                 ref="sectionTablesRef"
               />
-              <SubsectionMenu v-if="depth===0"
+              <SubsectionMenu v-if="depth===0 && Array.isArray(item[1])"
                               :sectionType="sectionType"
                               @newSection="(type)=> addSubsection(section,index+1, type)"
                               @newTable="(type)=> addTable(section,index+1, type)"
               ></SubsectionMenu>
             </div>
+
+            <!-- Subsections start -->
+            <div v-for="(subsection, i) in section.subsections" :key="i" ref="sectionsComponent">
+              <!-- section -->
+              <Section
+                v-if="!Array.isArray(subsection) && !subSectionTypeMap.get(subsection?.type.toLowerCase())?.rowAsSection"
+                :section="subsection"
+                :sectionType="subSectionTypeMap.get(subsection?.type?.toLowerCase()) || subsection?.type?.toLowerCase()"
+                :depth="props.depth + 1"
+                :sectionTypeMap="subSectionTypeMap"
+                @delete="deleteSubSection(section.subsections, i)"
+                @addTable="(msg)=>addTable(msg.section, msg.instance)"
+                ref="subsectionsRef"
+              />
+              <SubsectionMenu v-if="depth===0 && (!Array.isArray(subsection) && !subSectionTypeMap.get(subsection?.type.toLowerCase())?.rowAsSection)"
+                              :sectionType="sectionType"
+                              @newSection="(type)=> addSubsection(section,index+1, type)"
+                              @newTable="(type)=> addTable(section,index+1, type)"
+              ></SubsectionMenu>
+              <!-- or table -->
+              <SectionTable
+                v-if="Array.isArray(subsection)"
+                :rows="subsection"
+                :depth="props.depth+1"
+                :sectionType="subSectionTypeMap.get(subsection?.name?.toLowerCase())"
+                :sectionSubType="subSectionTypeMap.get(subsection?.name?.toLowerCase())?.name"
+                :parent=section
+                @rowsReordered="(e) => rowsReordered(e, subsection)"
+                @columnUpdated="(msg) => updateColumnName(subsection, msg)"
+                @columnsReordered="(msg) => sectionsRefreshKey+= 1"
+                @delete="deleteSubSection(section.subsections, i)"
+                ref="sectionTablesRef"
+              />
+
+              <SubsectionMenu v-if="depth===0 && Array.isArray(subsection)"
+                              :sectionType="sectionType"
+                              @newSection="(type)=> addSubsection(section,i+1, type)"
+                              @newTable="(type)=> addTable(section,i+1, type)"
+              ></SubsectionMenu>
+            </div>
+
+
             <!-- Subsections end -->
           </div>
         </div>

@@ -36,6 +36,7 @@
       {
         "name":"Description",
         "icon":"fa-comment",
+        "display":"desirable",
         "controlType":{
           "name":"largetext",
           "placeholder":"Brief description of the project"
@@ -141,6 +142,7 @@
         "icon":"fa-book",
         "display":"desirable",
         "uniqueCols":true,
+        "rowAsSection": false,
         "columnTypes":[
           {
             "name":"PMID",
@@ -536,6 +538,7 @@
             "icon":"fa-list",
             "description":"List of computational algorithms and their parameters and sources used for data processing",
             "display":"desirable",
+            "rowAsSection": false,
             "columnTypes":[
               {
                 "name":"Treatment",
@@ -550,6 +553,7 @@
           {
             "name":"Software",
             "icon":"fa-comment",
+            "rowAsSection": false,
             "controlType":{
               "name":"text",
               "placeholder":"If manufacturer’s software was used for data processing, the name and version of software."
@@ -560,6 +564,7 @@
       },
       {
         "name":"Instrument metadata",
+        "rowAsSection": false,
         "displayAnnotations":true,
         "minRequired":0,
         "icon":"fa-file-invoice",

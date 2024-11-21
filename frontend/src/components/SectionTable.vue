@@ -3,6 +3,8 @@ import { computed, inject, ref, nextTick } from 'vue';
 import draggable from 'vuedraggable';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Attribute from '@/components/Attribute.vue';
+import utils from "@/utils";
+
 
 const props = defineProps(['rows', 'depth', 'sectionType', 'sectionSubType', 'parent', 'startCollapsed', 'title']);
 const emits = defineEmits([
@@ -160,6 +162,25 @@ const errors = computed(() => {
   return _errors;
 });
 
+const showHelp = (header) => {
+  if (!header) return; // Ensure header is defined to avoid runtime errors
+
+  utils.confirm(
+    header?.name || "Help",
+    `<p>${header?.helpContextual?.description || "No description available."}</p>` +
+    (header?.helpContextual?.examples?.length
+      ? `<p><h6>Examples:</h6><i>${header.helpContextual.examples.join('</i></p><p><i>')}</i></p>`
+      : ""),
+    "Close",
+    true,
+    false
+  );
+};
+
+function log(message, obj) {
+  console.log(message)
+}
+
 defineExpose({ errors, thisSection });
 
 </script>
@@ -185,14 +206,34 @@ defineExpose({ errors, thisSection });
     <div v-if="!isCollapsed" :key="sectionsRefreshKey" class="ps-3">
       <table class="table table-responsive">
         <thead>
-        <draggable v-model="headers" :item-key="(key) => key" tag="tr" @end.stop="reorderColumns">
+        <draggable v-model="headers" :item-key="(key) => key" tag="tr" @end.stop="reorderColumns" :disabled="true">
           <template #item="{ element: header, index: i }">
             <th :class="{ fixed: i === 0 || i === headers?.length - 1 }">
               <div v-if="i > 0 && i < headers.length - 1" class="input-group input-group-sm align-items-center">
                 <template v-if="!getFieldType(header)?.createdOnRender">
-                  <span class="form-control-sm">{{ getFieldType(header).name }}</span>
-                  <font-awesome-icon v-if="getFieldType(header)?.display !== 'required' && parentDisplayType !== 'readonly'" role="button" @click.prevent="deleteColumn(i)" class="icon fa-sm"
-                                     icon="fa-trash"></font-awesome-icon>
+                    <label class="input-group-text " >
+<!--                      <font-awesome-icon-->
+<!--                        v-if="getFieldType(header)?.icon"-->
+<!--                        class="icon"-->
+<!--                        :icon="getFieldType(header)?.icon"-->
+<!--                      ></font-awesome-icon>-->
+<!--                      <font-awesome-icon-->
+<!--                        v-else-->
+<!--                        class="icon"-->
+<!--                        inverse-->
+<!--                        icon="fa-check"-->
+<!--                      ></font-awesome-icon>-->
+                      <span class="form-control-sm">{{ getFieldType(header).name }}
+                        <span class="text-danger"
+                              v-if="getFieldType(header)?.display==='required' || getFieldType(header)?.controlType?.minlength >0">*</span>
+                      </span>
+                      <font-awesome-icon v-if="getFieldType(header)?.helpContextual" :icon="['fas','circle-question']"
+                                         class="text-black-50 ps-1 small"
+                                         role="button" @click="showHelp(getFieldType(header))"/>
+
+<!--                  <font-awesome-icon v-if="getFieldType(header)?.display !== 'required' && parentDisplayType !== 'readonly'" role="button" @click.prevent="deleteColumn(i)" class="icon fa-sm"-->
+<!--                                     icon="fa-trash"></font-awesome-icon>-->
+                    </label>
                 </template>
                 <template v-else>
                   <input ref="headerComponent" :value="header" class="form-control" :disabled="parentDisplayType === 'readonly'" type="text"
@@ -206,7 +247,7 @@ defineExpose({ errors, thisSection });
           </template>
         </draggable>
         </thead>
-        <draggable v-model="theseRows" item-key="name" tag="tbody" @end="(e) => emits('rowsReordered', e)">
+        <draggable :disabled="true" v-model="theseRows" item-key="name" tag="tbody" @end="(e) => emits('rowsReordered', e)">
           <template #item="{ element: row, index: index }">
             <tr>
               <td class="grip">
@@ -244,7 +285,6 @@ defineExpose({ errors, thisSection });
     </div>
   </div>
 </template>
-
 
 <style scoped>
 .grip {

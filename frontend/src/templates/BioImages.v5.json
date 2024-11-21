@@ -713,7 +713,7 @@
         "fieldTypes": [
           {
             "name": "Title",
-            "display": "required",
+            "display": "desirable",
             "controlType": {
               "name": "text"
             },
@@ -773,7 +773,7 @@
         "fieldTypes": [
           {
             "name": "Title",
-            "display": "required",
+            "display": "desirable",
             "controlType": {
               "name": "text"
             },

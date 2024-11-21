@@ -324,7 +324,9 @@
         "icon": "fa-book",
         "uniqueCols": true,
         "allowImport": false,
-        "rowAsSection": true,
+        "rowAsSection": false,
+        "display": "desirable",
+        "helpContextual": {},
         "columnTypes": [
           {
             "name": "PMID",

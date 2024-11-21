@@ -18,7 +18,8 @@ const props = defineProps({
   'fieldType': Object,
   'parent': Object,
   'row': Object,
-  'isTableAttribute': Boolean
+  'isTableAttribute': Boolean,
+  'isSectionAttribute': Boolean
 });
 const emits = defineEmits(['createTag', 'deleteTag', 'deleteAttribute', 'deleteOrg', 'createOrg']);
 const attributeId = 'attribute-' + getCurrentInstance().uid;
@@ -32,7 +33,7 @@ const thisMultiValuedAttribute = ref(
 )
 const parentDisplayType = inject('parentDisplayType')
 const display = computed(() => {
-  return props?.fieldType?.value?.display || parentDisplayType?.value || 'optional';
+  return props?.fieldType?.display || parentDisplayType?.value || 'optional';
 });
 
 function isString(val) {
@@ -169,7 +170,7 @@ const showHelp = () => {
         inverse
         icon="fa-check"
       ></font-awesome-icon>
-      <span class="text-muted" v-if="fieldType"><span class="attribute-name">{{ fieldType.name }}</span>
+      <span class="text-muted" v-if="fieldType?.display"><span class="attribute-name">{{ fieldType.name }}</span>
         <span class="text-danger"
               v-if="fieldType?.display==='required' || fieldType?.controlType?.minlength >0">*</span>
       </span>
@@ -361,10 +362,9 @@ const showHelp = () => {
     <!-- delete icon -->
     <div
       class="input-group-text btn-group-vertical"
-      v-if="display !== 'required' && display!=='readonly' &&  !props.isTableAttribute"
+      v-if="!fieldType?.display || (display !== 'required' && display!=='readonly' &&  !props.isTableAttribute && !props.isSectionAttribute)"
     >
       <font-awesome-icon
-        v-if="display!=='readonly'"
         class="icon fa-sm"
         role="button"
         icon="fa-trash"
@@ -396,7 +396,7 @@ label.attribute {
 }
 
 .multiselect-wrapper, .multiselect  {
-  min-height: calc( 1.2rem + calc(var(--bs-border-width) * 2)) !important;
+  min-height: calc(1.8rem - calc(var(--bs-border-width) * 2)) !important;
   min-width: 84pt !important;
 }
 
