@@ -29,7 +29,7 @@ const attributeControl = ref(null);
 const thisMultiValuedAttribute = ref(
   props.parent?.map((a, i) => { // save the original index -- needed when deleting
       return {index: i, ...a};
-    })?.filter( a  =>  a.name === thisAttribute.value.name && a?.value?.value !== '')
+    })?.filter( a  =>  a.name === thisAttribute.value.name && a?.value )
 )
 const parentDisplayType = inject('parentDisplayType')
 const display = computed(() => {
@@ -125,8 +125,12 @@ const errors = computed(() => {
       _errors.push(`Invalid ORCID value`);
     }
   } else if (display.value === 'required' && props.fieldType?.name?.toLowerCase()!=='file' && props.fieldType?.name?.toLowerCase()!=='link' && (!thisAttribute.value?.value || thisAttribute?.value?.value?.trim() === '')) {
-     if(!(thisMultiValuedAttribute?.value?.value?.length>0))
+     if(!(thisMultiValuedAttribute?.value?.value?.length>0) && props.fieldType?.name?.toLowerCase()!=='organisation')
        _errors.push(`${thisAttribute?.value?.name} required`);
+     else if(props.fieldType?.name?.toLowerCase()==='organisation')
+       if(!(thisMultiValuedAttribute?.value?.length>0)){
+         _errors.push(`${thisAttribute?.value?.name} required`);
+       }
   } else if(display.value === 'required' && props.fieldType?.name?.toLowerCase()==='file' && !thisAttribute?.value?.path){
     _errors.push('File path required');
   } else if(display.value === 'required' && props.fieldType?.name?.toLowerCase()==='link' && !thisAttribute?.value?.url){
