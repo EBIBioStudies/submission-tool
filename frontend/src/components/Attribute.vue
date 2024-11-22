@@ -29,11 +29,11 @@ const attributeControl = ref(null);
 const thisMultiValuedAttribute = ref(
   props.parent?.map((a, i) => { // save the original index -- needed when deleting
       return {index: i, ...a};
-    })?.filter( a  =>  a.name === thisAttribute.value.name && a?.value !== '')
+    })?.filter( a  =>  a.name === thisAttribute.value.name && a?.value?.value !== '')
 )
 const parentDisplayType = inject('parentDisplayType')
 const display = computed(() => {
-  return props?.fieldType?.display || parentDisplayType?.value || 'optional';
+  return props?.fieldType?.display || parentDisplayType || 'optional';
 });
 
 function isString(val) {
@@ -107,8 +107,8 @@ const withinThreeYears = (date) => {
 const errors = computed(() => {
   const _errors = []
   //validate text fields
-  if (thisAttribute?.value?.type === 'file') {
-    if (display === 'required' && (!thisAttribute?.value?.path || thisAttribute?.value?.path === '')) {
+  if (thisAttribute?.value?.type?.toLowerCase() === 'file') {
+    if (display.value === 'required' && (!thisAttribute?.value?.path || thisAttribute?.value?.path === '')) {
       _errors.push(`File required`);
     }
   // } else if (thisAttribute?.value?.hasOwnProperty('url')) {
@@ -117,19 +117,19 @@ const errors = computed(() => {
   //   if (display === 'required' && (!thisAttribute?.value?.url || thisAttribute?.value?.url === '' || (!IDENTIFIER_REGEXP.test(thisAttribute.value?.url) && !URL_REGEXP.test(thisAttribute.value?.url)))) {
   //     _errors.push(`Link required`);
   //   }
-  } else if (props.fieldType?.controlType?.name === 'orcid') {
+  } else if (props.fieldType?.controlType?.name?.toLowerCase() === 'orcid') {
     const isValidOrcid =  utils.isOrcidValid(thisAttribute?.value?.value)
-    if ( (display === 'required' && !isValidOrcid) ||
-      (display !== 'required' && thisAttribute?.value?.value && thisAttribute?.value?.value!=='')
+    if ( (display.value === 'required' && !isValidOrcid) ||
+      (display.value !== 'required' && thisAttribute?.value?.value && thisAttribute?.value?.value!=='')
       ) {
       _errors.push(`Invalid ORCID value`);
     }
-  } else if (display === 'required' && props.fieldType?.name!=='File' && props.fieldType?.name!=='Link' && (!thisAttribute.value?.value || thisAttribute?.value?.value?.trim() === '')) {
-     if(!(thisMultiValuedAttribute?.value?.length>0))
+  } else if (display.value === 'required' && props.fieldType?.name?.toLowerCase()!=='file' && props.fieldType?.name?.toLowerCase()!=='link' && (!thisAttribute.value?.value || thisAttribute?.value?.value?.trim() === '')) {
+     if(!(thisMultiValuedAttribute?.value?.value?.length>0))
        _errors.push(`${thisAttribute?.value?.name} required`);
-  } else if(display === 'required' && props.fieldType?.name==='File' && !thisAttribute?.value?.path){
+  } else if(display.value === 'required' && props.fieldType?.name?.toLowerCase()==='file' && !thisAttribute?.value?.path){
     _errors.push('File path required');
-  } else if(display === 'required' && props.fieldType?.name==='Link' && !thisAttribute?.value?.url){
+  } else if(display.value === 'required' && props.fieldType?.name?.toLowerCase()==='link' && !thisAttribute?.value?.url){
     _errors.push('Link url required');
 
   }

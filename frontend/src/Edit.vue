@@ -79,7 +79,7 @@
             <template v-for="error in validationErrors">
               <li v-if="error?.control?.errors?.length" role="button"
                   class="list-group-item list-group-item-action" @click="expandAndFocus(error?.element)">
-                <strong>{{ error?.element.id}}:</strong> {{
+                <strong>{{ getErrorAttName(error)}}:</strong> {{
                   error.errorMessage
                 }}
               </li>
@@ -107,7 +107,7 @@
   font-size: 8pt;
   white-space: pre-wrap;
   color: #222222;
-  overflow: both;
+  overflow: auto;
 }
 </style>
 
@@ -287,6 +287,16 @@ const expandAndFocus = async (el) => {
   }
   await el.scrollIntoView()
 }
+
+const getErrorAttName = (error) =>{
+    if(error?.errorMessage) {
+      const index = error?.errorMessage?.toLowerCase()?.indexOf("required"); // Find "required" case-insensitively
+      if (index !== -1) {
+        return error?.errorMessage?.slice(0, index)?.trim();
+      }
+    }
+    return error?.element?.id
+  }
 
 </script>
 
