@@ -36,7 +36,7 @@ const removeSuggestions = ()=>{
 }
 
 onMounted(async () => {
-  const attribute = row.value?.attributes.find(att => att?.name === 'Type');
+  const attribute = row.value?.attributes?.find(att => att?.name === 'Type');
   const type = attribute ? attribute.value : undefined;
   let fullLink = type ? `${type}:${row.value.url}` : row.value.url;
   thisLink.value = isIdLink(fullLink) ? fullLink : row.value.url

@@ -120,7 +120,7 @@ const errors = computed(() => {
   } else if (props.fieldType?.controlType?.name?.toLowerCase() === 'orcid') {
     const isValidOrcid =  utils.isOrcidValid(thisAttribute?.value?.value)
     if ( (display.value === 'required' && !isValidOrcid) ||
-      (display.value !== 'required' && thisAttribute?.value?.value && thisAttribute?.value?.value!=='')
+      (display.value !== 'required' && thisAttribute?.value?.value && thisAttribute?.value?.value!=='' && !isValidOrcid)
       ) {
       _errors.push(`Invalid ORCID value`);
     }
