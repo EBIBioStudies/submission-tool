@@ -1,5 +1,5 @@
 <template>
-  <div tabindex="-1" class="modal fade show" style="display: block;" aria-modal="true">
+  <div tabindex="-1" class="modal fade show" style="display: block;" aria-modal="true" @click="close">
     <div class="modal-dialog modal-lg">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
@@ -9,7 +9,7 @@
         <div class="modal-body">
           <div v-if="loading">Loading...</div>
           <div v-else>
-            <input type="text" placeholder="Search with pmid" class="form-control mb-3" v-model="pmidQuery"  />
+            <input  type="text" placeholder="Search with pmid" class="form-control mb-3" v-model="pmidQuery" ref="searchInput" />
             <table v-if="searchResults.length">
               <thead>
               <tr>
@@ -42,17 +42,18 @@
 </template>
 
 <script setup>
-import {defineProps, defineEmits, ref, watchEffect} from 'vue';
+import {defineProps, defineEmits, ref, watchEffect, watch, nextTick} from 'vue';
 
 const props = defineProps({
   pmid: String
 });
 
-const pmidQuery = ref('');
-pmidQuery.value = props.pmid
+const pmidQuery = ref(props.pmid || '');
 const emit = defineEmits(['select', 'close']);
 const searchResults = ref([]);
 const loading = ref(false)
+const searchInput = ref(null); // Ref for the input element
+
 
 
 function debounce(fn, delay) {
@@ -64,6 +65,16 @@ function debounce(fn, delay) {
     }, delay);
   };
 }
+
+// Watch for the modal opening
+watch(searchInput, async (newVal) => {
+  if (newVal) {
+    await nextTick();
+    setTimeout(() => {
+      searchInput.value?.focus();
+    }, 0); // Small delay to ensure rendering
+  }
+});
 
 
 // Create a debounced function for search
