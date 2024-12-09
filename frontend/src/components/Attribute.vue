@@ -33,7 +33,7 @@ const thisMultiValuedAttribute = ref(
 )
 const parentDisplayType = inject('parentDisplayType')
 const display = computed(() => {
-  return props?.fieldType?.display || parentDisplayType || 'optional';
+  return props?.fieldType?.display || parentDisplayType?.value || 'optional';
 });
 
 function isString(val) {
@@ -180,7 +180,7 @@ const showHelp = () => {
       </span>
       <span v-else>
       <input
-        :disabled="parentDisplayType==='readonly'"
+        :disabled="parentDisplayType==='readonly' || display==='readonly'"
         type="text"
         class="form-control attribute-name"
         v-model="thisAttribute.name"
@@ -203,7 +203,7 @@ const showHelp = () => {
       :placeholder="fieldType?.controlType?.placeholder"
       v-model="thisAttribute.value"
       :class="{'is-invalid':errors && hasValidated}"
-      :disabled="display==='readonly'"
+      :disabled="parentDisplayType==='readonly' || display==='readonly'"
       :required="fieldType?.display==='required' || fieldType?.controlType?.minlength >0"
     ></textarea>
 
@@ -220,6 +220,7 @@ const showHelp = () => {
       :searchable="true"
       :options="singleSelectValues"
       :class="{'is-invalid':errors && hasValidated, 'form-control-sm':isTableAttribute}"
+      :disabled="parentDisplayType==='readonly' || display==='readonly'"
       :allow-empty="false"
       @change="onChangeSelect"
     >
@@ -251,12 +252,13 @@ const showHelp = () => {
       :createOption="fieldType?.controlType?.enableValueAdd ?? true"
       :allowAbsent="fieldType?.controlType?.enableValueAdd ?? true"
       :options="singleSelectValues"
+      :can-clear="false"
       noOptionsText="Type and press ↵ to add"
       @create="onCreateTag"
       @deselect="onDeleteTag"
       @select="onCreateTag"
       :class="{'is-invalid':errors && hasValidated , 'form-control-sm':isTableAttribute}"
-      :disabled="display==='readonly'"
+      :disabled="parentDisplayType==='readonly' || display==='readonly'"
       object
     >
       <template v-slot:tag="{ option, handleTagRemove, disabled }">
@@ -287,7 +289,7 @@ const showHelp = () => {
       valueType="format"
       placeholder="Select date"
       format="YYYY-MM-DD"
-      :disabled="parentDisplayType==='readonly'"
+      :disabled="parentDisplayType==='readonly' || display==='readonly'"
       :disabledDate="withinThreeYears"
       :class="{'is-invalid':errors && hasValidated}"
     />
@@ -323,7 +325,7 @@ const showHelp = () => {
       v-model="thisAttribute.value"
       :class="{'is-invalid':errors && hasValidated}"
       :fieldType="fieldType"
-      :disabled="display==='readonly'"
+      :disabled="parentDisplayType==='readonly' || display==='readonly'"
     >
     </Reference>
 
@@ -336,7 +338,7 @@ const showHelp = () => {
       :placeholder="fieldType?.controlType?.placeholder"
       v-model="thisAttribute.value"
       :required="fieldType?.display==='required' || fieldType?.controlType?.minlength >0"
-      :disabled="display==='readonly'"
+      :disabled="parentDisplayType==='readonly' || display==='readonly'"
     />
 
     <Publication
@@ -344,7 +346,7 @@ const showHelp = () => {
       ref="attributeControl"
       :row="props.parent"
       :pmid="thisAttribute"
-      :disabled="display==='readonly'"
+      :disabled="parentDisplayType==='readonly' || display==='readonly'"
       :class="{'is-invalid':errors && hasValidated}"
       :placeholder="fieldType?.controlType?.placeholder"
     />
@@ -356,7 +358,7 @@ const showHelp = () => {
       type="text"
       class="form-control"
       :class="{'is-invalid':errors && hasValidated}"
-      :disabled="display==='readonly'"
+      :disabled="parentDisplayType==='readonly' || display==='readonly'"
       :placeholder="fieldType?.controlType?.placeholder"
       v-model="thisAttribute.value"
       :required="fieldType?.display==='required' || fieldType?.controlType?.minlength >0"

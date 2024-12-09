@@ -25,9 +25,9 @@ const parentDisplayType = inject('parentDisplayType')
 
 const thisSection = ref(props.section);
 const deleteTag = (msg) => deleteAttribute(msg.index);
-if (props?.sectionType?.display) {
-  provide('parentDisplayType', props?.sectionType?.display)
-}
+// if (props?.sectionType?.display) {
+//   provide('parentDisplayType', props?.sectionType?.display)
+// }
 // hack: variable to trigger re-rendering of attributes when needed
 // TODO: figure out how to avoid this
 const attributesRefreshKey = ref(0);

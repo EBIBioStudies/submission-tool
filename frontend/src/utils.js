@@ -80,8 +80,10 @@ const prompt = (title, message, okayLabel = 'Close', isLarge = false, showCancel
 }
 
 const isOrcidValid = (orcid) => {
+  if(!orcid)
+    return false
   const orcidFormatRegex = /\d{4}-\d{4}-\d{4}-\d{3}[\dX]/gi;
-  const matches = orcid.match(orcidFormatRegex);
+  const matches = orcid?.match(orcidFormatRegex);
   if (matches === null) return false;
   const digits = orcid.replace(/-/g, '');
   const baseDigits = digits.slice(0, 15).split('');
