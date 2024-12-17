@@ -158,7 +158,6 @@ const submitDraft = async () => {
       else{
         success.value=false;
       }
-      console.log(response)
     }catch (error){
       success.value = false;
       serverErrorMessage.value = error?.response?.data?.log?.message || 'Unknown Error';

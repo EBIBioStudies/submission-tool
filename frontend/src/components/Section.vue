@@ -7,6 +7,7 @@ import SubsectionMenu from "@/components/SubsectionMenu.vue";
 import {fillTemplate} from "@/templates/templates";
 import utils from "@/utils";
 import SubSectionTable from "@/components/SubSectionTable.vue";
+import EditableLabel from "@/components/EditableLabel.vue";
 
 
 const props = defineProps(['section', 'sectionType', 'depth', 'sectionTypeMap']);
@@ -17,8 +18,8 @@ const componentInstance = getCurrentInstance();
 const attributesComponent = ref(null);
 const sectionsComponent = ref(null);
 
-const subsectionsRef = ref([])
-const sectionTablesRef = ref([])
+const subsectionsRef = ref(null)
+const sectionTablesRef = ref(null)
 const sectionFilesRef = ref(null)
 const sectionLinksRef = ref(null)
 const parentDisplayType = inject('parentDisplayType')
@@ -90,16 +91,18 @@ const addSubsection = async (aSection, i, type) => {
   else {
     obj.accno = (props.section.accno ?? Date.now()) + '-' + (props.section.subsections.length + 1);
     obj.type = '';
-    obj.attributes = [{name: '', value: ''}];
+    // obj.attributes = [{name: '', value: ''}];
   }
+  obj.accno = String(obj.accno) + "-removable";
 
-  aSection.subsections.splice(i, 0, obj);
+  // aSection.subsections.splice(i, 0, obj);
+  aSection.subsections.push(obj)
 
   sectionsRefreshKey.value += 1
 
   // wait till the UI is updated and the focus the first attribute name
   await nextTick();
-  const added = [...componentInstance.refs.sectionsComponent][i]
+  const added = [...componentInstance?.refs?.sectionTablesRef || [], ...componentInstance?.refs?.subsectionsRef || []]?.pop();
   added.scrollIntoView();
   added.querySelector('input')?.focus();
   // Expand section if collapsed
@@ -107,6 +110,29 @@ const addSubsection = async (aSection, i, type) => {
     added.querySelector('.section-title').click();
 
 };
+
+const findLastInput = (item) => {
+  let added = item && typeof item.querySelector === 'function' ? item : added?.$el;
+  return added?.querySelector('input');
+  // const lastInput = inputs && inputs.length > 1 ? inputs[inputs.length - 2] : inputs[0];
+}
+
+const findAddedSection = (type) => {
+  let added;
+  if(type === 'Link')
+    added = componentInstance?.refs?.sectionLinksRef
+  else if(type === 'File')
+    added = componentInstance?.refs?.sectionFilesRef
+  if(added) {
+    return added.$el;
+  }
+  if(type)
+    added = [...componentInstance?.refs?.sectionTablesRef || [], ...componentInstance?.refs?.subsectionsRef || []]?.filter(item => item?.innerText?.includes(type))?.pop()
+  else
+    added = [...componentInstance?.refs?.sectionTablesRef || [], ...componentInstance?.refs?.subsectionsRef || []]?.pop()
+
+  return added;
+}
 
 const addTable = async (aSection, i, type) => {
   if(parentDisplayType.value === 'readonly')
@@ -120,15 +146,25 @@ const addTable = async (aSection, i, type) => {
     obj.type = 'Table';
     obj.attributes = [{name: 'Column 1', value: ''}];
   }
-  obj = (type?.name !== 'Publication' && type?.name !== 'Funding') ? [obj] : obj;
-  aSection.subsections.splice(i, 0, obj);
+  obj.accno = String(obj.accno) + "-removable";
+  if(type?.name === 'Link')
+    aSection.links ? aSection.links.push(obj) : aSection.links = [obj]
+  else if(type?.name === 'File')
+    aSection.files ?  aSection.files.push(obj) : aSection.files = [obj]
+  else
+    type ? aSection.subsections.push(obj) : aSection.subsections.push([obj])
+
+  // obj = (type?.name !== 'Publication' && type?.name !== 'Funding') ? [obj] : obj;
+  // aSection.subsections.splice(i, 0, obj);
+
   sectionsRefreshKey.value += 1
 
   // wait till the UI is updated and the focus the first attribute name
   await nextTick();
-  const added = [...componentInstance.refs.sectionsComponent][i]
+  const added = findAddedSection(type?.name);
+    //[...componentInstance.refs.sectionsComponent][0]
   added?.scrollIntoView();
-  added?.querySelector('input')?.focus();
+  findLastInput(added)?.focus();
 
   // Expand section if collapsed
   if (added?.querySelector('.section-block')?.classList.contains('collapsed'))
@@ -217,6 +253,10 @@ const errors = computed(() => {
      if (!canRender(subsec.thisSection)) return
      _errors = [..._errors, ...subsec.errors]
   });
+  sectionTablesRef?.value.forEach(subsec => {
+    if (!canRender(subsec.thisSection)) return
+    _errors = [..._errors, ...subsec.errors]
+  });
   if (sectionFilesRef) {
     _errors = [..._errors, ...sectionFilesRef?.value?.errors ?? []]
   }
@@ -246,15 +286,16 @@ defineExpose({errors, thisSection});
               :data-bs-title="sectionType?.description"><font-awesome-icon
           v-if="props.sectionType?.icon" class="icon" :icon="props.sectionType?.icon"/>{{ section.type }}</span>
         <span v-else>
-          <input
+          <EditableLabel
             class="ms-2"
             @click.stop=""
             type="text"
             placeholder="Enter section type"
-            v-model="thisSection.type"/>
+            :is-editable="true"
+            :data="thisSection"/>
         </span>
       </span>
-      <span v-if="sectionType?.display!=='required' && parentDisplayType!=='readonly'" class="mt-2 btn btn-sm btn-delete" role="button">
+      <span v-if="(sectionType?.display!=='required' || thisSection?.accno?.includes('-removable')) && parentDisplayType!=='readonly'" class="mt-2 btn btn-sm btn-delete" role="button">
         <font-awesome-icon
           role="button"
           @click="$emit('delete')"
@@ -282,12 +323,7 @@ defineExpose({errors, thisSection});
             @newAttribute="addAttribute"
           />
 
-          <!--SubsectionMenu
-            :sectionType="sectionType"
-            @newAttribute="addAttribute(section)"
-            @newSection="(type)=> addSubsection(section,0, type)"
-            @newTable="(type)=> addTable(section,0, type)"
-          ></SubsectionMenu-->
+
 
 
           <div class="p-0" :key="sectionsRefreshKey">
@@ -315,11 +351,11 @@ defineExpose({errors, thisSection});
               @delete="deleteSubSection(section.files, 0)"
               ref="sectionFilesRef"
             />
-            <SubsectionMenu v-if="depth===0 && (section.files && section.files.length)"
-                            :sectionType="sectionType"
-                            @newSection="(type)=> addSubsection(section,index+1, type)"
-                            @newTable="(type)=> addTable(section,index+1, type)"
-            ></SubsectionMenu>
+<!--            <SubsectionMenu v-if="depth===0 && (section.files && section.files.length)"-->
+<!--                            :sectionType="sectionType"-->
+<!--                            @newSection="(type)=> addSubsection(section,index+1, type)"-->
+<!--                            @newTable="(type)=> addTable(section,index+1, type)"-->
+<!--            ></SubsectionMenu>-->
             <!-- Links -->
             <SectionTable
               v-if="section.links && section.links.length"
@@ -333,13 +369,13 @@ defineExpose({errors, thisSection});
               @delete="deleteSubSection(section.links, 0)"
               ref="sectionLinksRef"
             />
-            <SubsectionMenu v-if="depth===0 && (section.links && section.links.length)"
-                            :sectionType="sectionType"
-                            @newSection="(type)=> addSubsection(section,index+1, type)"
-                            @newTable="(type)=> addTable(section,index+1, type)"
-            ></SubsectionMenu>
+<!--            <SubsectionMenu v-if="depth===0 && (section.links && section.links.length)"-->
+<!--                            :sectionType="sectionType"-->
+<!--                            @newSection="(type)=> addSubsection(section,index+1, type)"-->
+<!--                            @newTable="(type)=> addTable(section,index+1, type)"-->
+<!--            ></SubsectionMenu>-->
 
-            <div v-for="(item, index) in specialSectionMap" :key="index" ref="sectionsComponent">
+            <div v-for="(item, index) in specialSectionMap" :key="index" ref="sectionTablesRef">
               <!--              <Section-->
               <!--                v-if="!Array.isArray(item[1]) && item[1].length==1"-->
               <!--                :section="item[1]"-->
@@ -360,17 +396,16 @@ defineExpose({errors, thisSection});
                 @columnUpdated="(msg) => updateColumnName(item[1], msg)"
                 @columnsReordered="(msg) => sectionsRefreshKey+= 1"
                 @delete="deleteSubSection(section.subsections, index)"
-                ref="sectionTablesRef"
               />
-              <SubsectionMenu v-if="depth===0 && Array.isArray(item[1])"
-                              :sectionType="sectionType"
-                              @newSection="(type)=> addSubsection(section,index+1, type)"
-                              @newTable="(type)=> addTable(section,index+1, type)"
-              ></SubsectionMenu>
+<!--              <SubsectionMenu v-if="depth===0 && Array.isArray(item[1])"-->
+<!--                              :sectionType="sectionType"-->
+<!--                              @newSection="(type)=> addSubsection(section,index+1, type)"-->
+<!--                              @newTable="(type)=> addTable(section,index+1, type)"-->
+<!--              ></SubsectionMenu>-->
             </div>
 
             <!-- Subsections start -->
-            <div v-for="(subsection, i) in section.subsections" :key="i" ref="sectionsComponent">
+            <div v-for="(subsection, i) in section.subsections" :key="i" ref="subsectionsRef">
               <!-- section -->
               <Section
                 v-if="!Array.isArray(subsection) && !subSectionTypeMap.get(subsection?.type.toLowerCase())?.rowAsSection"
@@ -380,13 +415,12 @@ defineExpose({errors, thisSection});
                 :sectionTypeMap="subSectionTypeMap"
                 @delete="deleteSubSection(section.subsections, i)"
                 @addTable="(msg)=>addTable(msg.section, msg.instance)"
-                ref="subsectionsRef"
               />
-              <SubsectionMenu v-if="depth===0 && (!Array.isArray(subsection) && !subSectionTypeMap.get(subsection?.type.toLowerCase())?.rowAsSection)"
-                              :sectionType="sectionType"
-                              @newSection="(type)=> addSubsection(section,index+1, type)"
-                              @newTable="(type)=> addTable(section,index+1, type)"
-              ></SubsectionMenu>
+<!--              <SubsectionMenu v-if="depth===0 && (!Array.isArray(subsection) && !subSectionTypeMap.get(subsection?.type.toLowerCase())?.rowAsSection)"-->
+<!--                              :sectionType="sectionType"-->
+<!--                              @newSection="(type)=> addSubsection(section,index+1, type)"-->
+<!--                              @newTable="(type)=> addTable(section,index+1, type)"-->
+<!--              ></SubsectionMenu>-->
               <!-- or table -->
               <SectionTable
                 v-if="Array.isArray(subsection)"
@@ -399,15 +433,19 @@ defineExpose({errors, thisSection});
                 @columnUpdated="(msg) => updateColumnName(subsection, msg)"
                 @columnsReordered="(msg) => sectionsRefreshKey+= 1"
                 @delete="deleteSubSection(section.subsections, i)"
-                ref="sectionTablesRef"
               />
 
-              <SubsectionMenu v-if="depth===0 && Array.isArray(subsection)"
-                              :sectionType="sectionType"
-                              @newSection="(type)=> addSubsection(section,i+1, type)"
-                              @newTable="(type)=> addTable(section,i+1, type)"
-              ></SubsectionMenu>
+<!--              <SubsectionMenu v-if="depth===0 && Array.isArray(subsection)"-->
+<!--                              :sectionType="sectionType"-->
+<!--                              @newSection="(type)=> addSubsection(section,i+1, type)"-->
+<!--                              @newTable="(type)=> addTable(section,i+1, type)"-->
+<!--              ></SubsectionMenu>-->
             </div>
+            <SubsectionMenu
+                            :sectionType="sectionType"
+                            @newSection="(type)=> addSubsection(section,1, type)"
+                            @newTable="(type)=> addTable(section,1, type)"
+            ></SubsectionMenu>
 
 
             <!-- Subsections end -->

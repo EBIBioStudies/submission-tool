@@ -178,7 +178,7 @@ const showHelp = () => {
         <span class="text-danger"
               v-if="fieldType?.display==='required' || fieldType?.controlType?.minlength >0">*</span>
       </span>
-      <span v-else>
+    <span v-else>
       <input
         :disabled="parentDisplayType==='readonly' || display==='readonly'"
         type="text"

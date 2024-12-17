@@ -4,6 +4,7 @@ import draggable from 'vuedraggable';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Attribute from '@/components/Attribute.vue';
 import utils from "@/utils";
+import EditableLabel from "@/components/EditableLabel.vue";
 
 
 const props = defineProps(['rows', 'depth', 'sectionType', 'sectionSubType', 'parent', 'startCollapsed', 'title']);
@@ -25,7 +26,6 @@ const theseRows = ref(props.rows);
 const headerMap = new Map();
 const parentDisplayType = inject('parentDisplayType');
 const sectionsRefreshKey = ref(0);
-
 if (tableType.value === 'File') {
   headerMap.set('File', []);
 } else if (tableType.value === 'Link') {
@@ -197,7 +197,8 @@ defineExpose({ errors, thisSection });
               data-bs-html="true"><font-awesome-icon v-if="sectionType?.icon" :icon="sectionType?.icon"
                                                      class="icon" />{{ tableType }}</span>
         <span v-else>
-          <input v-model="tableType" class="ms-2" placeholder="Enter table name" type="text" @click.stop="" />
+<!--          <input v-model="props.rows[0].type" class="ms-2" placeholder="Enter table name" type="text" @click.stop="" />-->
+          <EditableLabel :data="props.rows[0]" class="ms-2" placeholder="Enter table name"  :isEditable="true"  />
           <font-awesome-icon v-if="parentDisplayType !== 'readonly'" class="icon ps-2" icon="fa-trash" role="button" size="sm" @click="$emit('delete')"
                              @click.stop=""></font-awesome-icon>
         </span>
