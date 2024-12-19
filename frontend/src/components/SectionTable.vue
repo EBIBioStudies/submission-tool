@@ -143,6 +143,7 @@ const updateColumnName = (event, index) => {
   if (index === headers.value.length - 1) return;
   const oldValue = headers.value[index];
   const newValue = event.target.value;
+  if(newValue?.toLowerCase() === 'organisation' && headers.value.some(head => head?.toLowerCase() === 'affiliation')) return;na
   if (headers.value.find((n) => n === newValue)) return;
   emits('columnUpdated', { old: oldValue, new: newValue, index: index });
 };

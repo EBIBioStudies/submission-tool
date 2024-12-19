@@ -17,8 +17,8 @@ const componentInstance = getCurrentInstance();
 
 const attributesComponent = ref(null);
 
-const subsectionsRef = ref([])
-const sectionTablesRef = ref([])
+const subsectionsRef = ref(null)
+const sectionTablesRef = ref(null)
 const sectionFilesRef = ref(null)
 const sectionLinksRef = ref(null)
 const parentDisplayType = inject('parentDisplayType')
