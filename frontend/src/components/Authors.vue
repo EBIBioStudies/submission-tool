@@ -1,12 +1,26 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, onMounted, ref} from "vue";
 import SectionTable from "@/components/SectionTable.vue";
 
 const props = defineProps(['section', 'sectionType']);
 
 const thisSection = ref(props.section);
 const startCollapsed = ref(false); //TODO: change to true
-const authors = computed(() => (thisSection?.value?.subsections?.filter((s) => s?.type?.toLowerCase() === 'author') ?? []));
+const authors = computed(() => {
+  let authors = thisSection?.value?.subsections?.filter((s) => s?.type?.toLowerCase() === 'author') ?? [];
+  if (authors[0] && authors[0].accno.includes('-init')) {
+    authors[0].accno = authors[0].accno.replace('-init', "")
+    let contact = props.sectionType?.name?.toLowerCase() === 'contact' ? props.sectionType : props.sectionType?.tableTypes?.filter(s => s?.type?.toLowerCase() === 'contact');
+    let existingAttributeNames = authors[0].attributes.map(attr => attr.name);
+    contact.columnTypes.forEach(column => {
+      if (!existingAttributeNames.includes(column.name) && column?.name?.toLowerCase() !== 'organisation') {
+        authors[0].attributes.push({name: column.name, value: ""});
+      }
+    });
+  }
+  return (authors??[])
+
+});
 const authorTableRef = ref()
 const authorRefreshKey = ref(0);
 const OnDeleteOrg = (o) => {
@@ -59,14 +73,15 @@ const OnCreateOrg = (o)=> {
 
   // delete empty org
   const emptyIndex = authors.value[o.authorIndex].attributes.findIndex( attr=> attr.name.toLowerCase()==='affiliation' && attr.value==='');
-  if (emptyIndex!==-1) authors.value[o.authorIndex].attributes.splice(emptyIndex,1);
+  // if (emptyIndex!==-1) authors.value[o.authorIndex].attributes.splice(emptyIndex,1);
 
   // assign it to the author
-  authors.value[o.authorIndex].attributes.push({
-      name: "affiliation",
-      value: org.accno,
-      reference: true
-  })
+  authors.value[o.authorIndex].attributes[emptyIndex].value = org.accno
+  authors.value[o.authorIndex].attributes[emptyIndex].reference = true
+  //     name: "affiliation",
+  //     value: org.accno,
+  //     reference: true
+  // })
 
   return refresh();
 }
@@ -162,9 +177,9 @@ defineExpose({errors});
         :depth="0"
         :sectionType="props.sectionType"
         :startCollapsed = "startCollapsed"
-        sectionSubType="Contacts"
+        sectionSubType="123"
         :isTableAttribute="true"
-        title="Authors"
+        title="Contacts"
         @rowsReordered="reorderAuthors"
         @columnUpdated="OnColumnUpdated"
         @columnsReordered="refresh"

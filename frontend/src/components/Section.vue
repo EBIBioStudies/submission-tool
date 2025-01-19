@@ -8,6 +8,7 @@ import {fillTemplate} from "@/templates/templates";
 import utils from "@/utils";
 import SubSectionTable from "@/components/SubSectionTable.vue";
 import EditableLabel from "@/components/EditableLabel.vue";
+import Authors from "@/components/Authors.vue";
 
 
 const props = defineProps(['section', 'sectionType', 'depth', 'sectionTypeMap']);
@@ -25,6 +26,8 @@ const parentDisplayType = inject('parentDisplayType')
 const errSecRefs = ref([])
 const errSecTableRefs = ref([])
 const errSpecialSecTableRefs = ref([])
+const authorComponent = ref(null)
+
 
 
 const thisSection = ref(props.section);
@@ -50,8 +53,6 @@ const getSectionsWithRowsAsSections = (type) => {
   const combined = thisSection?.value?.subsections?.filter(s => s?.type?.toLowerCase() === type.toLowerCase() && subSectionTypeMap.get(type.toLowerCase())?.rowAsSection)
   return combined
 }
-
-const tableTypes = new Set(["Publication", "Funding", "File", "Link"]);
 
 const specialSectionMap = computed(() => {
   const curMap = new Map();
@@ -126,6 +127,8 @@ const findAddedSection = (type) => {
     added = componentInstance?.refs?.sectionLinksRef
   else if(type === 'File')
     added = componentInstance?.refs?.sectionFilesRef
+  else if(type=='Contact')
+    added = componentInstance?.refs?.authorComponent
   if(added) {
     return added.$el;
   }
@@ -138,6 +141,9 @@ const findAddedSection = (type) => {
 }
 
 const addTable = async (aSection, i, type) => {
+  // if (type?.name?.toLowerCase()==='contact')
+  //   authorComponent.add
+  //   return
   if(parentDisplayType.value === 'readonly')
     return;
   aSection.subsections = aSection.subsections || [];
@@ -154,8 +160,17 @@ const addTable = async (aSection, i, type) => {
     aSection.links ? aSection.links.push(obj) : aSection.links = [obj]
   else if(type?.name === 'File')
     aSection.files ?  aSection.files.push(obj) : aSection.files = [obj]
-  else
+  else {
+    if(type?.name === 'Contact'){
+      obj.type='Author'
+      obj?.attributes?.forEach(attribute => {
+        if (attribute.name === 'Organisation') {
+          attribute.name = 'affiliation';
+        }
+      });
+    }
     type ? aSection.subsections.push(obj) : aSection.subsections.push([obj])
+  }
 
   // obj = (type?.name !== 'Publication' && type?.name !== 'Funding') ? [obj] : obj;
   // aSection.subsections.splice(i, 0, obj);
@@ -250,7 +265,7 @@ const canRender = (sec) => {
 }
 
 const errors = computed(() => {
-  let _errors = [...attributesComponent.value?.errors]
+  let _errors = [...authorComponent.value?.errors??[], ...attributesComponent.value?.errors]
   if (sectionFilesRef) {
     _errors = [..._errors, ...sectionFilesRef?.value?.errors ?? []]
   }
@@ -258,17 +273,17 @@ const errors = computed(() => {
     _errors = [..._errors, ...sectionLinksRef?.value?.errors ?? []]
   }
   // validate subsections
-  errSpecialSecTableRefs?.value.forEach(subsec => {
+  errSpecialSecTableRefs?.value?.forEach(subsec => {
      if (!canRender(subsec.thisSection)) return
-     _errors = [..._errors, ...subsec.errors]
+     _errors = [..._errors, ...subsec?.errors]
   });
-  errSecRefs?.value.forEach(subsec => {
+  errSecRefs?.value?.forEach(subsec => {
     if (!canRender(subsec.thisSection)) return
-    _errors = [..._errors, ...subsec.errors]
+    _errors = [..._errors, ...subsec?.errors]
   });
-  errSecTableRefs?.value.forEach(subsec => {
+  errSecTableRefs?.value?.forEach(subsec => {
     if (!canRender(subsec.thisSection)) return
-    _errors = [..._errors, ...subsec.errors]
+    _errors = [..._errors, ...subsec?.errors]
   });
 
   return _errors
@@ -278,7 +293,11 @@ defineExpose({errors, thisSection});
 </script>
 
 <template>
+
   <div v-if="canRender(props.section)" class="section-block pb-2" :class="{ collapsed: isCollapsed }">
+    <div v-if="section?.type==='Study'" :key="sectionsRefreshKey">
+      <Authors v-if="section" :section="section" :sectionType="sectionType?.tableTypes?.find( (s) => s.name.toLowerCase() === 'contact')" ref="authorComponent"/>
+    </div>
     <!-- section title -->
     <div class="align-text-bottom">
       <span class="col" :class="[depth > 0 ? 'branch' : 'branch spacer']"></span>

@@ -33,7 +33,7 @@ const createNewSubmission = async ()=> {
   draft.section = { type: tmpl.name };
   fillTemplate(draft.section, tmpl);
   const author =  {
-    accno : "author-1",
+    accno : "author-1-init",
     type : "Author",
     attributes : [ {
       name : "Name",

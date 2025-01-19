@@ -125,17 +125,28 @@ const errors = computed(() => {
       _errors.push(`Invalid ORCID value`);
     }
   } else if (display.value === 'required' && props.fieldType?.name?.toLowerCase()!=='file' && props.fieldType?.name?.toLowerCase()!=='link' && (!thisAttribute.value?.value || thisAttribute?.value?.value?.trim() === '')) {
-     if(!(thisMultiValuedAttribute?.value?.value?.length>0) && props.fieldType?.name?.toLowerCase()!=='organisation')
+     if(!(thisMultiValuedAttribute?.value?.value?.length>0) && props.fieldType?.name?.toLowerCase()!=='organisation' && props.fieldType?.name?.toLowerCase()!=='file list')
        _errors.push(`${thisAttribute?.value?.name} required`);
-     else if(props.fieldType?.name?.toLowerCase()==='organisation')
+     else if(props.fieldType?.name?.toLowerCase()==='organisation'){
        if(!(thisMultiValuedAttribute?.value?.length>0)){
          _errors.push(`${thisAttribute?.value?.name} required`);
        }
+     }
+     else if(props.fieldType?.name?.toLowerCase()==='file list'){
+       if(!(thisAttribute?.value?.path?.length>0))
+         _errors.push(`${thisAttribute?.value?.name} required`);
+     }
   } else if(display.value === 'required' && props.fieldType?.name?.toLowerCase()==='file' && !thisAttribute?.value?.path){
     _errors.push('File path required');
   } else if(display.value === 'required' && props.fieldType?.name?.toLowerCase()==='link' && !thisAttribute?.value?.url){
     _errors.push('Link url required');
 
+  }
+  if (thisAttribute?.value?.name?.toLowerCase()==='e-mail'){
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if ((display?.value === 'required' && !thisAttribute?.value?.value) || (thisAttribute?.value?.value && !regex.test(thisAttribute?.value?.value))) {
+      _errors.push(`${thisAttribute?.value?.name} is not valid`);
+    }
   }
   if (props.fieldType?.controlType?.minlength > (`${thisAttribute?.value?.value}`.trim()?.length ?? 0)) {
     _errors.push(`Please enter at least ${props.fieldType?.controlType?.minlength} characters. `)
@@ -334,7 +345,7 @@ const showHelp = () => {
       v-else-if="fieldType?.controlType?.name === 'orcid'"
       type="text"
       class="form-control"
-      :class="{'is-invalid':errors && hasValidated, 'form-control-sm':isTableAttribute}"
+      :class="{'is-invalid':errors && hasValidated, 'form-control':isTableAttribute}"
       :placeholder="fieldType?.controlType?.placeholder"
       v-model="thisAttribute.value"
       :required="fieldType?.display==='required' || fieldType?.controlType?.minlength >0"

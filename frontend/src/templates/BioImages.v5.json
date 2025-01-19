@@ -148,6 +148,7 @@
         "columnTypes": [
           {
             "name": "Name",
+            "display": "required",
             "controlType": {
               "name": "text"
             },
@@ -157,6 +158,7 @@
           },
           {
             "name": "E-mail",
+            "display": "required",
             "controlType": {
               "name": "text"
             },
@@ -175,6 +177,7 @@
           },
           {
             "name": "Role",
+            "display": "optional",
             "controlType": {
               "name": "select",
               "values": [
@@ -195,6 +198,7 @@
           },
           {
             "name": "ORCID",
+            "display": "desirable",
             "controlType": {
               "name": "orcid"
             },
