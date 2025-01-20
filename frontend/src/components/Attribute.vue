@@ -368,7 +368,10 @@ const showHelp = () => {
       v-else
       type="text"
       class="form-control"
-      :class="{'is-invalid':errors && hasValidated}"
+      :class="{
+        'is-invalid': errors && hasValidated,
+        'min-width-inp': isTableAttribute
+      }"
       :disabled="parentDisplayType==='readonly' || display==='readonly'"
       :placeholder="fieldType?.controlType?.placeholder"
       v-model="thisAttribute.value"
@@ -379,7 +382,7 @@ const showHelp = () => {
     <!-- delete icon -->
     <div
       class="input-group-text btn-group-vertical"
-      v-if="!fieldType?.display || (display !== 'required' && display!=='readonly' &&  !props.isTableAttribute && !props.isSectionAttribute)"
+      v-if="(!fieldType?.display && !props.isTableAttribute) || (display !== 'required' && display!=='readonly' && !props.isTableAttribute && !props.isSectionAttribute)"
     >
       <font-awesome-icon
         class="icon fa-sm"
@@ -440,6 +443,9 @@ label.attribute {
 
 .small {
   font-size: 0.8em;
+}
+.min-width-inp{
+  min-width: 100px !important;
 }
 </style>
 <style src="@vueform/multiselect/themes/default.css"></style>

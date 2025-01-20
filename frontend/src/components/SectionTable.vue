@@ -203,76 +203,78 @@ defineExpose({ errors, thisSection });
       </span>
     </div>
     <div v-if="!isCollapsed" :key="sectionsRefreshKey" class="ps-3">
-      <table class="table table-responsive">
-        <thead>
-        <draggable v-model="headers" :item-key="(key) => key" tag="tr" @end.stop="reorderColumns" :disabled="true">
-          <template #item="{ element: header, index: i }">
-            <th :class="{ fixed: i === 0 || i === headers?.length - 1 }">
-              <div v-if="i > 0 && i < headers.length - 1" class="input-group input-group-sm align-items-center">
-                <template v-if="!getFieldType(header)?.createdOnRender">
-                    <label class="input-group-text " >
-<!--                      <font-awesome-icon-->
-<!--                        v-if="getFieldType(header)?.icon"-->
-<!--                        class="icon"-->
-<!--                        :icon="getFieldType(header)?.icon"-->
-<!--                      ></font-awesome-icon>-->
-<!--                      <font-awesome-icon-->
-<!--                        v-else-->
-<!--                        class="icon"-->
-<!--                        inverse-->
-<!--                        icon="fa-check"-->
-<!--                      ></font-awesome-icon>-->
-                      <span class="form-control-sm">{{ getFieldType(header).name }}
-                        <span class="text-danger"
-                              v-if="getFieldType(header)?.display==='required' || getFieldType(header)?.controlType?.minlength >0">*</span>
-                      </span>
-                      <font-awesome-icon v-if="getFieldType(header)?.helpContextual" :icon="['fas','circle-question']"
-                                         class="text-black-50 ps-1 small"
-                                         role="button" @click="showHelp(getFieldType(header))"/>
+      <div class="table-container">
+        <table class="table table-responsive">
+          <thead>
+          <draggable v-model="headers" :item-key="(key) => key" tag="tr" @end.stop="reorderColumns" :disabled="true">
+            <template #item="{ element: header, index: i }">
+              <th :class="{ fixed: i === 0 || i === headers?.length - 1 }">
+                <div v-if="i > 0 && i < headers.length - 1" class="input-group input-group-sm align-items-center">
+                  <template v-if="!getFieldType(header)?.createdOnRender">
+                      <label class="input-group-text " >
+  <!--                      <font-awesome-icon-->
+  <!--                        v-if="getFieldType(header)?.icon"-->
+  <!--                        class="icon"-->
+  <!--                        :icon="getFieldType(header)?.icon"-->
+  <!--                      ></font-awesome-icon>-->
+  <!--                      <font-awesome-icon-->
+  <!--                        v-else-->
+  <!--                        class="icon"-->
+  <!--                        inverse-->
+  <!--                        icon="fa-check"-->
+  <!--                      ></font-awesome-icon>-->
+                        <span class="form-control-sm">{{ getFieldType(header).name }}
+                          <span class="text-danger"
+                                v-if="getFieldType(header)?.display==='required' || getFieldType(header)?.controlType?.minlength >0">*</span>
+                        </span>
+                        <font-awesome-icon v-if="getFieldType(header)?.helpContextual" :icon="['fas','circle-question']"
+                                           class="text-black-50 ps-1 small"
+                                           role="button" @click="showHelp(getFieldType(header))"/>
 
-<!--                  <font-awesome-icon v-if="getFieldType(header)?.display !== 'required' && parentDisplayType !== 'readonly'" role="button" @click.prevent="deleteColumn(i)" class="icon fa-sm"-->
-<!--                                     icon="fa-trash"></font-awesome-icon>-->
-                    </label>
-                </template>
-                <template v-else-if="header?.toLowerCase()!=='type' || tableType!=='Link'">
-                    <input ref="headerComponent" :value="header" class="form-control" :disabled="parentDisplayType === 'readonly'" type="text"
-                           @change.stop="(e) => updateColumnName(e, i)">
-                    <button v-if="getFieldType(header)?.display !== 'required' && parentDisplayType !== 'readonly'" class="btn btn-outline-secondary icon" type="button" @click.prevent="deleteColumn(i)">
-                      <font-awesome-icon class="fa-sm" icon="fa-trash"></font-awesome-icon>
-                    </button>
-                </template>
-              </div>
-            </th>
-          </template>
-        </draggable>
-        </thead>
-        <draggable :disabled="true" v-model="theseRows" item-key="name" tag="tbody" @end="(e) => emits('rowsReordered', e)">
-          <template #item="{ element: row, index: index }">
-            <tr>
-              <td class="grip">
-                <font-awesome-icon icon="fa-solid fa-grip-vertical" />
-              </td>
-              <td v-for="(col, j) in [...headers].filter((v, i) => i > 0 && i < headers.length - 1 )" :key="j">
-                <Attribute v-if="tableType!=='Link' || col?.toLowerCase()!=='type'" :key="index"
-                           ref="attributeRefs"
-                           :attribute="getCell(row, col)"
-                           :row="row"
-                           :field-type="getFieldType(getCell(row, col))"
-                           :isTableAttribute="true"
-                           :parent="row.attributes"
-                           @deleteAttribute="(v) => emits('deleteAttribute', index)"
-                           @deleteOrg="(v) => emits('deleteOrg', {...v,...{'authorIndex':index}})"
-                           @createOrg="(v) => emits('createOrg', {...v,...{'authorIndex':index}})"
-                />
-              </td>
-              <td class="grip">
-                <font-awesome-icon v-if="!(index === 0 && sectionType?.display === 'required') && parentDisplayType !== 'readonly'" class="fa-sm" icon="fa-trash" role="button"
-                                   @click="deleteRow(index)"></font-awesome-icon>
-              </td>
-            </tr>
-          </template>
-        </draggable>
-      </table>
+  <!--                  <font-awesome-icon v-if="getFieldType(header)?.display !== 'required' && parentDisplayType !== 'readonly'" role="button" @click.prevent="deleteColumn(i)" class="icon fa-sm"-->
+  <!--                                     icon="fa-trash"></font-awesome-icon>-->
+                      </label>
+                  </template>
+                  <template v-else-if="header?.toLowerCase()!=='type' || tableType!=='Link'">
+                      <input ref="headerComponent" :value="header" class="form-control" :disabled="parentDisplayType === 'readonly'" type="text"
+                             @change.stop="(e) => updateColumnName(e, i)">
+                      <button v-if="getFieldType(header)?.display !== 'required' && parentDisplayType !== 'readonly'" class="btn btn-outline-secondary icon" type="button" @click.prevent="deleteColumn(i)">
+                        <font-awesome-icon class="fa-sm" icon="fa-trash"></font-awesome-icon>
+                      </button>
+                  </template>
+                </div>
+              </th>
+            </template>
+          </draggable>
+          </thead>
+          <draggable :disabled="true" v-model="theseRows" item-key="name" tag="tbody" @end="(e) => emits('rowsReordered', e)">
+            <template #item="{ element: row, index: index }">
+              <tr>
+                <td class="grip">
+                  <font-awesome-icon icon="fa-solid fa-grip-vertical" />
+                </td>
+                <td v-for="(col, j) in [...headers].filter((v, i) => i > 0 && i < headers.length - 1 )" :key="j">
+                  <Attribute v-if="tableType!=='Link' || col?.toLowerCase()!=='type'" :key="index"
+                             ref="attributeRefs"
+                             :attribute="getCell(row, col)"
+                             :row="row"
+                             :field-type="getFieldType(getCell(row, col))"
+                             :isTableAttribute="true"
+                             :parent="row.attributes"
+                             @deleteAttribute="(v) => emits('deleteAttribute', index)"
+                             @deleteOrg="(v) => emits('deleteOrg', {...v,...{'authorIndex':index}})"
+                             @createOrg="(v) => emits('createOrg', {...v,...{'authorIndex':index}})"
+                  />
+                </td>
+                <td class="grip">
+                  <font-awesome-icon v-if="!(index === 0 && sectionType?.display === 'required') && parentDisplayType !== 'readonly'" class="fa-sm" icon="fa-trash" role="button"
+                                     @click="deleteRow(index)"></font-awesome-icon>
+                </td>
+              </tr>
+            </template>
+          </draggable>
+        </table>
+      </div>
       <div v-if="parentDisplayType !== 'readonly'">
         <button class="btn btn-outline-secondary btn-sm" @click="addRow">
           Add Row
@@ -307,10 +309,6 @@ span.grip {
   font-size: 10pt;
 }
 
-th {
-  cursor: grab;
-}
-
 th .form-control {
   font-weight: bold;
 }
@@ -318,4 +316,20 @@ th .form-control {
 th:active {
   cursor: grabbing;
 }
+
+
+.table-container {
+  width: 100%; /* Set your desired fixed width */
+  overflow-x: auto; /* Add horizontal scrollbar when content overflows */
+  white-space: nowrap; /* Prevent content from wrapping to the next line */
+  display: flex;
+}
+
+.table-container table {
+  flex: none; /* Prevents the table from shrinking */
+  min-width: 100%; /* Ensures the table takes at least the full width of the container */
+}
+
+
+
 </style>
