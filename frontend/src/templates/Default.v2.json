@@ -113,12 +113,12 @@
         }
       },
       {
-        "display": "readonly",
+        "display": "required",
         "name": "License",
         "uniqueValues": false,
         "helpLink": "help#license",
         "controlType": {
-          "name": "selectvalquals",
+          "name": "select",
           "defaultValue": "CC0",
           "values": [
             {
