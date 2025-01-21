@@ -56,6 +56,7 @@ organisations.value = model.value.map(affiliation => {
                :filter-results="false"
                :hide-selected="true"
                :can-clear="false"
+               :append-to-body="true"
                @deselect="(v) => { emits('deleteOrg', v); return false;}"
                @create="(v) => { emits('createOrg', v); return false;}"
                @select="(v) => { emits('createOrg', v); return false;}"

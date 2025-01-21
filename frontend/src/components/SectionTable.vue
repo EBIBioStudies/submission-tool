@@ -203,7 +203,7 @@ defineExpose({ errors, thisSection });
       </span>
     </div>
     <div v-if="!isCollapsed" :key="sectionsRefreshKey" class="ps-3">
-      <div class="table-container">
+      <div :class="{ 'table-container': tableType === 'Contacts' }">
         <table class="table table-responsive">
           <thead>
           <draggable v-model="headers" :item-key="(key) => key" tag="tr" @end.stop="reorderColumns" :disabled="true">
@@ -320,7 +320,8 @@ th:active {
 
 .table-container {
   width: 100%; /* Set your desired fixed width */
-  overflow-x: auto; /* Add horizontal scrollbar when content overflows */
+  overflow-x: scroll; /* Add horizontal scrollbar when content overflows */
+  overflow-y: visible;
   white-space: nowrap; /* Prevent content from wrapping to the next line */
   display: flex;
 }

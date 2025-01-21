@@ -73,15 +73,14 @@ const OnCreateOrg = (o)=> {
 
   // delete empty org
   const emptyIndex = authors.value[o.authorIndex].attributes.findIndex( attr=> attr.name.toLowerCase()==='affiliation' && attr.value==='');
-  // if (emptyIndex!==-1) authors.value[o.authorIndex].attributes.splice(emptyIndex,1);
+  if (emptyIndex!==-1) authors.value[o.authorIndex].attributes.splice(emptyIndex,1);
 
   // assign it to the author
-  authors.value[o.authorIndex].attributes[emptyIndex].value = org.accno
-  authors.value[o.authorIndex].attributes[emptyIndex].reference = true
-  //     name: "affiliation",
-  //     value: org.accno,
-  //     reference: true
-  // })
+  authors.value[o.authorIndex].attributes.push({
+    name: "affiliation",
+    value: org.accno,
+    reference: true
+  })
 
   return refresh();
 }
@@ -177,7 +176,7 @@ defineExpose({errors});
         :depth="0"
         :sectionType="props.sectionType"
         :startCollapsed = "startCollapsed"
-        sectionSubType="123"
+        sectionSubType="Contacts"
         :isTableAttribute="true"
         title="Contacts"
         @rowsReordered="reorderAuthors"
