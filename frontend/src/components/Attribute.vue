@@ -233,6 +233,7 @@ const showHelp = () => {
       :class="{'is-invalid':errors && hasValidated, 'form-control-sm':isTableAttribute}"
       :disabled="parentDisplayType==='readonly' || display==='readonly'"
       :allow-empty="false"
+      :append-to-body="true"
       @change="onChangeSelect"
     >
     </Multiselect>
@@ -270,6 +271,7 @@ const showHelp = () => {
       @select="onCreateTag"
       :class="{'is-invalid':errors && hasValidated , 'form-control-sm':isTableAttribute}"
       :disabled="parentDisplayType==='readonly' || display==='readonly'"
+      :append-to-body="true"
       object
     >
       <template v-slot:tag="{ option, handleTagRemove, disabled }">
