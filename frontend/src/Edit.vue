@@ -46,7 +46,7 @@
       <div class="col text-end pb-4">
         <font-awesome-icon v-if="isSaving" :icon="['far','floppy-disk']" beat-fade class="pe-2"/>
         <button v-if="!displayType" class="btn btn-primary" type="button" @click="submitDraft()">Submit</button>
-        <button v-if="!displayType" class="btn btn-outline-danger ms-2" type="button" @click="revertDraft()">Revert</button>
+        <button v-if="displayType!=='readonly' && !accession.startsWith('TMP_')" class="btn btn-outline-danger ms-2" type="button" @click="revertDraft()">Revert</button>
       </div>
     </div>
     <div class="row">
