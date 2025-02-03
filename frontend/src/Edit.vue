@@ -31,7 +31,13 @@
         <p>Sarkans U, Gostev M, Athar A, et al. <a href="http://doi.org/10.1093/nar/gkx965">The BioStudies database-one stop shop for all data supporting a life sciences study. </a><i>Nucleic Acids Res.</i> 2018;46(D1):D1266-D1270. doi:10.1093/nar/gkx965
         </p>
       </div>
-      <a tooltip="List all other submitted studies" routerlink="/" className="btn btn-primary ng-star-inserted" href="/biostudies/submissions/"> Show all submitted </a>
+      <RouterLink
+        to="/"
+        class="btn btn-primary ng-star-inserted"
+        v-tooltip="'List all other submitted studies'"
+      >
+        Show all submitted
+      </RouterLink>
     </div>
   </div>
   <div v-else >
@@ -121,6 +127,7 @@ import {allTemplates} from "@/templates/templates";
 import {Offcanvas} from "bootstrap";
 import axios from "axios";
 import utils from "@/utils";
+import router from "./router.js";
 
 const props = defineProps(['accession']);
 const submission = ref({});
