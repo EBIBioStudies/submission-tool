@@ -4,7 +4,10 @@
       <font-awesome-icon icon="fas fa-user-secret" class="p-2 link-dark" type="button" @click="offCanvasJson.show();"></font-awesome-icon>
     </div>
   </teleport>
-  <div v-if="success" className="card">
+  <div v-if="isLoading" class="loading-overlay">
+    <div class="spinner"></div>
+  </div>
+  <div v-else-if="success" className="card">
     <div  className="card-body">
       <h2  className="card-title ng-star-inserted">
         <i aria-hidden="true" className="fa fa-check-circle"></i> Study <span  className="ng-star-inserted">submitted</span>
@@ -137,6 +140,7 @@ const hasValidated = ref(false);
 const success = ref(false)
 const serverErrorMessage = ref('')
 const displayType = ref('')
+const isLoading = ref(false);
 provide('hasValidated', hasValidated)
 provide('submission', submission)
 provide('parentDisplayType', displayType)
@@ -157,6 +161,7 @@ const submitDraft = async () => {
   } else {
     offCanvasErrors.hide();
     try{
+      isLoading.value = true;
       const response = await axios.post(`/api/submissions/drafts/${props.accession}/submit`);
       if (response.status === 200) {
         success.value = true;
@@ -169,6 +174,8 @@ const submitDraft = async () => {
       success.value = false;
       serverErrorMessage.value = error?.response?.data?.log?.message || 'Unknown Error';
 
+    }finally {
+      isLoading.value = false;
     }
   }
 }
@@ -315,5 +322,33 @@ label {
 .form-group {
   margin-bottom: inherit;
 }
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.spinner {
+  border: 8px solid #f3f3f3;
+  border-top: 8px solid #3498db;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 
 </style>
