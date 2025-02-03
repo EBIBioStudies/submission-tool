@@ -322,7 +322,7 @@ defineExpose({errors, thisSection});
             :data="thisSection"/>
         </span>
       </span>
-      <span v-if="(sectionType?.display!=='required' || thisSection?.accno?.includes('-removable')) && parentDisplayType!=='readonly'" class="mt-2 btn btn-sm btn-delete" role="button">
+      <span v-if="(sectionType?.display!=='required' || thisSection?.accno?.includes('-removable')) && parentDisplayType!=='readonly' && sectionType?.name!=='Study'" class="mt-2 btn btn-sm btn-delete" role="button">
         <font-awesome-icon
           role="button"
           @click="$emit('delete')"
