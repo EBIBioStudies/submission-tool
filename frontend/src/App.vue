@@ -53,7 +53,7 @@
 <script setup>
 import AuthService from "./services/AuthService";
 import {useRouter} from "vue-router";
-import {onMounted} from "vue";
+import {nextTick, onMounted} from "vue";
 import {Tooltip} from "bootstrap";
 import ImpersonateModal from './components/ImpersonateModal.vue';
 
@@ -66,16 +66,15 @@ const logout = async () => {
 };
 
 onMounted(() => {
-  tooltips = new Tooltip(document.body, {
-    selector: '[data-bs-toggle=\'tooltip\']',
-    delay: { 'hide': 300 },
-    trigger: 'mouseover',
+  onMounted(() => {
+    nextTick(() => {
+      const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+      const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
+      if (window.ebiFrameworkRunDataProtectionBanner !== undefined) {
+        window.ebiFrameworkRunDataProtectionBanner('other');
+      }
+    });
   });
-  const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
-  const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
-  if (window.ebiFrameworkRunDataProtectionBanner !== undefined) {
-    window.ebiFrameworkRunDataProtectionBanner('other');
-  }
 });
 </script>
 

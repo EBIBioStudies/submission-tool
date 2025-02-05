@@ -37,7 +37,7 @@
       <RouterLink
         to="/"
         class="btn btn-primary ng-star-inserted"
-        v-tooltip="'List all other submitted studies'"
+        tooltip="'List all other submitted studies'"
       >
         Show all submitted
       </RouterLink>
@@ -49,13 +49,26 @@
         {{serverErrorMessage}}
       </div>
     </div>
+    <div v-else>
+      <div  class="card ng-star-inserted">
+        <div  class="card-body st-edit-status-message">
+          <h2  class="card-title ng-star-inserted">New  submission</h2>
+          <p  class="card-text ng-star-inserted"> Please fill in the form below. The
+            <span  class="font-weight-bold">Validation</span> tab on the right-hand side lists those fields still incomplete or incorrect. Use the
+            <strong>Add or <font-awesome-icon :icon="['fas','plus']" class="icon fa-fw"></font-awesome-icon></strong> buttons to quickly add new rows or tables. </p>
+          <div  role="alert" class="alert alert-warning mb-0 ng-star-inserted">
+            <strong >Please note:</strong> all fields with * are required
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="container">
     <div class="row">
       <div class="col text-end pb-4">
         <font-awesome-icon v-if="isSaving" :icon="['far','floppy-disk']" beat-fade class="pe-2"/>
-        <button v-if="!displayType" class="btn btn-primary" type="button" @click="submitDraft()">Submit</button>
-        <button v-if="displayType!=='readonly' && !accession.startsWith('TMP_')" class="btn btn-outline-danger ms-2" type="button" @click="revertDraft()">Revert</button>
+        <button v-if="!displayType" class="btn btn-primary btn-top-margin" type="button" @click="submitDraft()">Submit</button>
+        <button v-if="displayType!=='readonly' && !accession.startsWith('TMP_')" class="btn btn-outline-danger ms-2 btn-top-margin" type="button" @click="revertDraft()">Revert</button>
       </div>
     </div>
     <div class="row">
@@ -317,6 +330,10 @@ const getErrorAttName = (error) =>{
 label {
   display: inherit;
   margin-bottom: inherit;
+}
+
+.btn-top-margin {
+  margin-top: 10px; /* Adjust the width, style, and color as needed */
 }
 
 .form-group {

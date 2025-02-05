@@ -1,5 +1,5 @@
 <script setup>
-import { computed, getCurrentInstance, nextTick, ref, inject, provide } from 'vue';
+import {computed, getCurrentInstance, nextTick, ref, inject, provide, onMounted, onUnmounted} from 'vue';
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import Attributes from '@/components/Attributes.vue';
 import SectionTable from '@/components/SectionTable.vue';
@@ -9,6 +9,8 @@ import utils from "@/utils";
 import SubSectionTable from "@/components/SubSectionTable.vue";
 import EditableLabel from "@/components/EditableLabel.vue";
 import Authors from "@/components/Authors.vue";
+import { Tooltip } from 'bootstrap';
+
 
 
 const props = defineProps(['section', 'sectionType', 'depth', 'sectionTypeMap']);
@@ -46,6 +48,18 @@ props?.sectionType?.tableTypes?.forEach(
     subSectionTypeMap.set(tbType?.name?.toLowerCase(), tbType)
   }
 );
+
+onMounted(() => {
+  nextTick(() => {
+    const tooltipElements = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    tooltipElements.forEach((el) => {
+      // Dispose of any existing tooltip instance first (optional)
+      const instance = Tooltip.getInstance(el);
+      if (instance) instance.dispose();
+      new Tooltip(el, {delay: {hide: 300}, trigger: 'hover'});
+    });
+  });
+});
 
 const renderedRowSections = new Set();
 const getSectionsWithRowsAsSections = (type) => {
