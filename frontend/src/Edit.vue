@@ -52,7 +52,8 @@
     <div v-else>
       <div  class="card ng-star-inserted">
         <div  class="card-body st-edit-status-message">
-          <h2  class="card-title ng-star-inserted">New  submission</h2>
+          <h2 v-if="displayType!=='readonly' && !accession.startsWith('TMP_')"  class="card-title ng-star-inserted">Edit submission</h2>
+          <h2 v-else  class="card-title ng-star-inserted">New submission</h2>
           <p  class="card-text ng-star-inserted"> Please fill in the form below. The
             <span  class="font-weight-bold">Validation</span> tab on the right-hand side lists those fields still incomplete or incorrect. Use the
             <strong>Add or <font-awesome-icon :icon="['fas','plus']" class="icon fa-fw"></font-awesome-icon></strong> buttons to quickly add new rows or tables. </p>
