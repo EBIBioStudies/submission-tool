@@ -41,13 +41,12 @@ const createNewSubmission = async ()=> {
     }, {
       name : "E-mail",
       value : AuthService.user?.value?.email
-    }, {
-      name : "Role",
-      value : "submitter"
-    }, {
-      name : "affiliation",
-      value: ""
-    }]
+    },
+      {
+          name : "affiliation",
+          value: ""
+      }]
+
   };
   if (AuthService.user?.value?.orcid) {
     author.attributes.push({name:"ORCID", value:AuthService.user?.value?.orcid})

@@ -3,6 +3,7 @@ import {computed, onMounted, ref} from "vue";
 import SectionTable from "@/components/SectionTable.vue";
 
 const props = defineProps(['section', 'sectionType']);
+const hideNonRequiredColumns = props.sectionType.hideColumns || false;
 
 const thisSection = ref(props.section);
 const startCollapsed = ref(false); //TODO: change to true
@@ -11,12 +12,14 @@ const authors = computed(() => {
   if (authors[0] && authors[0].accno.includes('-init')) {
     authors[0].accno = authors[0].accno.replace('-init', "")
     let contact = props.sectionType?.name?.toLowerCase() === 'contact' ? props.sectionType : props.sectionType?.tableTypes?.filter(s => s?.type?.toLowerCase() === 'contact');
-    let existingAttributeNames = authors[0].attributes.map(attr => attr.name);
-    contact.columnTypes.forEach(column => {
-      if (!existingAttributeNames.includes(column.name) && column?.name?.toLowerCase() !== 'organisation') {
-        authors[0].attributes.push({name: column.name, value: ""});
-      }
-    });
+    if(!hideNonRequiredColumns) {
+      let existingAttributeNames = authors[0].attributes.map(attr => attr.name);
+      contact.columnTypes.forEach(column => {
+        if (!existingAttributeNames.includes(column.name) && column?.name?.toLowerCase() !== 'organisation') {
+          authors[0].attributes.push({name: column.name, value: ""});
+        }
+      });
+    }
   }
   return (authors??[])
 
