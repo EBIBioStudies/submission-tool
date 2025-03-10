@@ -1,6 +1,7 @@
 import {createRouter, createWebHistory} from 'vue-router';
 import AuthService from "./services/AuthService";
 
+const basePath = import.meta.env.VITE_BASE_URL || '/';
 const routes = [
   // ⚠ Any path added here must also be added to Proxy::redirect
   {
@@ -101,7 +102,7 @@ const routes = [
 
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(basePath),
   routes,
 });
 

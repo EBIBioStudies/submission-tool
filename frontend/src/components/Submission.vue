@@ -6,6 +6,7 @@ const props = defineProps(['submission', 'template', 'accession']);
 const studyComponent = ref(null);
 const errors = computed(() => studyComponent.value.errors);
 const doi = computed(() => props.submission?.attributes?.find(a => a.name.toLowerCase() === 'doi')?.value);
+let baseURL = import.meta.env.VITE_BASE_URL?.replace(/\/$/, '') || '';
 defineExpose({ errors });
 </script>
 
@@ -13,7 +14,7 @@ defineExpose({ errors });
   <div>
     <div v-if="template?.sectionType?.banner"
          :style="`background-color: ${template?.sectionType?.banner?.backgroundColor}`" class="card">
-      <img :src="`${template?.sectionType?.banner?.src}`" height="70" />
+      <img :src="`${baseURL}${template?.sectionType?.banner?.src}`" height="70" />
     </div>
     <h5 class="text-success">
       {{ accession }} </h5>

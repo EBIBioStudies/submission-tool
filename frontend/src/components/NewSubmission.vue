@@ -11,6 +11,8 @@ const emits = defineEmits(['select'])
 const showMoreWasPressed = ref(false)
 const selectedTemplate = ref(null)
 const allowedTemplates = ref([])
+const baseURL = import.meta.env.VITE_BASE_URL;
+
 
 const createNewSubmission = async ()=> {
 
@@ -120,8 +122,8 @@ onMounted(async () => {
                 <label class="input-group" :for="`template_${i}`"  :title="tmpl.name">
                 <span class="input-group-text p-4"  style="width:70pt; height: 70pt">
                   <img :alt="tmpl.displayName"  style="width: 48px"
-                       :src="`/images/template-icons/${tmpl.title||'Default'}.png`"
-                       @error="(e)=>e.target.src='/images/template-icons/Default.png'"/>
+                       :src="`${baseURL}images/template-icons/${tmpl.title||'Default'}.png`"
+                       @error="(e) => e.target.src = `${baseURL}images/template-icons/Default.png`"/>
                 </span>
                   <div class="form-control btn-group-vertical">
                     <div><strong>{{ tmpl.title }}</strong></div>

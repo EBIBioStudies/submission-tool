@@ -56,13 +56,14 @@ import {useRouter} from "vue-router";
 import {nextTick, onMounted} from "vue";
 import {Tooltip} from "bootstrap";
 import ImpersonateModal from './components/ImpersonateModal.vue';
+const basePath = import.meta.env.VITE_BASE_URL || '/';
 
 const router = useRouter();
 let tooltips = null;
 
 const logout = async () => {
   AuthService.logout();
-  await router.push('/');
+  await router.push(`${basePath}/`);
 };
 
 onMounted(() => {

@@ -12,6 +12,7 @@ import App from './App.vue';
 import AuthService from "./services/AuthService";
 import axios from "axios";
 
+const baseURL = import.meta.env.VITE_BASE_URL || '/';
 library.add(fas);
 library.add(far);
 const app = createApp(App);
@@ -24,6 +25,8 @@ axios.interceptors.request.use(config => {
     return config; //TODO: fix url if app is not deployed on root context path
   }
 );
+axios.defaults.baseURL = baseURL;
+// '/biostudies/submissions/';
 axios.get(`/config`)
   .then(async (response) => {
     if (response.status === 200) {
