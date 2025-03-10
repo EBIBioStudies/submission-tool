@@ -56,7 +56,7 @@ const getFieldType = (attribute) => {
     if (fieldType) return { ...fieldType, ...{ name: 'Organisation' } };
   }
   name = attribute.hasOwnProperty('url') || attribute.name === 'url' ? 'Link' : name;
-  let fieldType = props.sectionType?.columnTypes?.find((f) => f?.name?.toLowerCase() === name?.toLowerCase());
+  let fieldType = props.sectionType?.columnTypes?.find((f) => typeof f?.name === 'string' && typeof name === 'string' && f?.name?.toLowerCase() === name?.toLowerCase());
   if (fieldType) return fieldType;
   if (!fieldType && name) {
     fieldType = {
@@ -72,7 +72,7 @@ const getFieldType = (attribute) => {
 
 const getCell = (row, col) => {
   let attribute = row?.attributes?.find(
-    (att) => att?.name?.toLowerCase() === col?.toLowerCase(),
+    (att) => (typeof  col === "string") && (typeof att?.name === 'string') && (att?.name?.toLowerCase() === col?.toLowerCase()),
   );
   if (!attribute && (
     (tableType.value === 'File' && col === 'File')
