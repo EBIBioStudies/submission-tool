@@ -180,8 +180,11 @@
             "display": "optional",
             "controlType": {
               "name": "select",
+              "enableValueAdd": true,
+              "createOption": true,
               "values": [
                 "corresponding author",
+                "data steward",
                 "data acquisition",
                 "data analyst",
                 "experiment performer",

@@ -233,6 +233,7 @@ const showHelp = () => {
       :class="{'is-invalid':errors && hasValidated, 'form-control-sm':isTableAttribute}"
       :disabled="parentDisplayType==='readonly' || display==='readonly'"
       :allow-empty="false"
+      :create-option="fieldType?.controlType?.createOption ?? true"
       :append-to-body="true"
       @change="onChangeSelect"
     >
