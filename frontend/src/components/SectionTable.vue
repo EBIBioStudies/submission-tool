@@ -28,10 +28,10 @@ const theseRows = ref(props.rows);
 const headerMap = new Map();
 const parentDisplayType = inject('parentDisplayType');
 const sectionsRefreshKey = ref(0);
-const columnTypes = props.sectionType.columnTypes || [];
+const columnTypes = props?.sectionType?.columnTypes || [];
 const requiredColumnsArr = columnTypes.filter(item => item.display !== "required").map(item => item.name);
 
-const hideNonRequiredColumns = props.sectionType.hideColumns || false;
+const hideNonRequiredColumns = props?.sectionType?.hideColumns || false;
 
 if (tableType.value === 'File') {
   headerMap.set('File', []);
@@ -56,9 +56,9 @@ const getFieldType = (attribute) => {
     if (fieldType) return { ...fieldType, ...{ name: 'Organisation' } };
   }
   name = attribute.hasOwnProperty('url') || attribute.name === 'url' ? 'Link' : name;
-  let fieldType = props.sectionType?.columnTypes?.find((f) => f?.name?.toLowerCase() === name?.toLowerCase());
+  let fieldType = props.sectionType?.columnTypes?.find((f) => (typeof f?.name === 'string') && (typeof name === 'string') && (f?.name?.toLowerCase() === name?.toLowerCase()));
   if (fieldType) return fieldType;
-  if (!fieldType && name) {
+  if (!fieldType && name && typeof name==='string') {
     fieldType = {
       'name': name,
       'createdOnRender': true,
@@ -66,13 +66,15 @@ const getFieldType = (attribute) => {
         'name': name?.toLowerCase(),
       },
     };
+  }else{
+    return ""
   }
   return fieldType;
 };
 
 const getCell = (row, col) => {
   let attribute = row?.attributes?.find(
-    (att) => att?.name?.toLowerCase() === col?.toLowerCase(),
+    (att) => (typeof  col === "string") && (typeof att?.name === 'string') && (att?.name?.toLowerCase() === col?.toLowerCase()),
   );
   if (!attribute && (
     (tableType.value === 'File' && col === 'File')
