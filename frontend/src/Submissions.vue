@@ -32,7 +32,7 @@
           <button v-if="submission.status==='PROCESSED'" class="btn btn-link text-primary" @click.stop="edit(submission.accno)">
             <font-awesome-icon icon="fa-edit"></font-awesome-icon>
           </button>
-          <button v-if="canDelete(submission)" class="btn btn-link text-primary" @click.stop="delete(submission.accno)">
+          <button v-if="canDelete(submission)" class="btn btn-link text-primary" @click.stop="deleteSubmission(submission.accno)">
             <font-awesome-icon icon="fa-regular fa-trash-alt"></font-awesome-icon>
           </button>
         </td>
@@ -85,6 +85,19 @@ const canDelete = (submission)=> {
     && new Date(submission?.rtime).getTime() > Date.now()
     && submission.status==='PROCESSED')
     || AuthService.user?.value?.superuser
+}
+const deleteSubmission = async (accno) => {
+  if (!await utils.confirm("Delete draft",
+    `The submission with accession number ${accno} may have un-submitted changes. If you proceed, both the submission and any changes will be permanently lost.`,
+    "Delete")) return;
+  isLoading.value = true;
+  const response = await axios.delete(
+    `/api/submissions/${accno}`,
+  );
+  isLoading.value=false;
+  if (response.status === 200) {
+    location.reload();
+  }
 }
 
 watchEffect(async () => {
