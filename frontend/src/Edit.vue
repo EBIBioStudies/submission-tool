@@ -68,9 +68,12 @@
     <div class="row">
       <div class="col text-end pb-4">
         <font-awesome-icon v-if="isSaving" :icon="['far','floppy-disk']" beat-fade class="pe-2"/>
-        <button v-if="!displayType" class="btn btn-primary btn-top-margin" type="button" @click="submitDraft()">Submit</button>
-        <button v-if="displayType!=='readonly' && !accession.startsWith('TMP_')" class="btn btn-outline-danger ms-2 btn-top-margin" type="button" @click="revertDraft()">Revert</button>
+        <button v-if="!displayType" class="btn btn-primary btn-top-margin" type="button" @click="submitDraftPopUp()">Submit</button>
+        <button v-if="isSubmittedSubmission" class="btn btn-outline-danger ms-2 btn-top-margin" type="button" @click="revertDraft()">Revert</button>
       </div>
+    </div>
+    <div v-if="showModal" class="modal-overlay">
+      <ResubmitModal @hide="showModal = false" @resubmit="finalSubmitDraft" />
     </div>
     <div class="row">
       <div class="col-1"></div>
@@ -115,7 +118,7 @@
             All good to go!
           </div>
           <div class="text-center">
-            <button class="btn btn-primary text-center" type="button" @click="submitDraft()">Close and Submit</button>
+            <button class="btn btn-primary text-center" type="button" @click="finalSubmitDraft()">Close and Submit</button>
           </div>
         </p>
       </div>
@@ -139,6 +142,7 @@ import {computed, onMounted, provide, ref, watch, watchEffect} from 'vue';
 
 import Default from './templates/Default.json';
 import Submission from './components/Submission.vue';
+import ResubmitModal from "./components/ResubmitModal.vue";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import {allTemplates} from "@/templates/templates";
 import {Offcanvas} from "bootstrap";
@@ -159,6 +163,8 @@ provide('hasValidated', hasValidated)
 provide('submission', submission)
 provide('parentDisplayType', displayType)
 
+const isSubmittedSubmission = displayType?.value!=='readonly' && !props?.accession?.startsWith('TMP_');
+const showModal = ref(false);
 
 const submissionComponent = ref({})
 
@@ -166,7 +172,15 @@ let offCanvasErrors = null;
 let offCanvasJson = null;
 let validationErrors = ref([]);
 
-const submitDraft = async () => {
+const submitDraftPopUp = ()=>{
+  if(isSubmittedSubmission)
+      showModal.value = true;
+  else
+    finalSubmitDraft("");
+}
+
+const finalSubmitDraft = async (option) => {
+  showModal.value = false;
   hasValidated.value = true;
   validationErrors.value = submissionComponent.value?.errors;
 
@@ -176,7 +190,18 @@ const submitDraft = async () => {
     offCanvasErrors.hide();
     try{
       isLoading.value = true;
-      const response = await axios.post(`/api/submissions/drafts/${props.accession}/submit`);
+      const headers = {
+        "Submission_Type": "application/json"
+      };
+      let params = {
+        preferredSources: "SUBMISSION"
+      };
+      params = option === "noFilesUpdated" ? params : {};
+      const response = await axios.post(
+        `/api/submissions/drafts/${props.accession}/submit`,
+        {},
+        { headers, params }
+      );
       if (response.status === 200) {
         success.value = true;
         displayType.value='readonly'
@@ -328,6 +353,20 @@ const getErrorAttName = (error) =>{
 </script>
 
 <style class="scoped">
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000; /* High z-index to ensure it's on top */
+}
+
 label {
   display: inherit;
   margin-bottom: inherit;
