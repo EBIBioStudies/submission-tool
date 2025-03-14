@@ -1,6 +1,6 @@
 <script setup>
 
-import {getCurrentInstance, inject, onMounted, ref} from "vue";
+import {computed, getCurrentInstance, inject, onMounted, ref} from "vue";
 import FileTree from "./FileTree.vue";
 import {Modal} from "bootstrap";
 import axios from 'axios';
@@ -66,7 +66,9 @@ const uploadFile = async (file) => {
       },
     });
     thisComponent.refs.filetree.show(); // Assuming refreshTree is a method in FileTree
-    thisFile.value.path = file.name; // Update the input box with the file name
+    //We are reusing this component for file and file list selection. File is using path in pagetab but FileList use value
+    //this line is trying to set correct pageTab variable based on component usage
+    isFileList.value ? thisFile.value.value = file.name : thisFile.value.path = file.name; // Update the input box with the file name
     if(isFileList.value){
       await validateFileListFile(file.name);
     }
@@ -90,19 +92,33 @@ const validateFileListFile = async (fileName) => {
     await axios.post(`/api/submissions/fileLists/validate`, formData);
   }catch (error){
     errorMessage.value = 'File list is not valid. ' + (error?.response?.data?.log?.message || '').substring(0, 200)
-    thisFile.value.path = ''
+    isFileList.value ? thisFile.value.value = '' : thisFile.value.path = ''
   }
 };
 
 
 const select = async (node) => {
   modal.hide();
-  thisFile.value.path = (node.path + '/' + node.name).substring(5);
+  const path = (node.path + '/' + node.name).substring(5);
+  isFileList.value ? thisFile.value.value = path : thisFile.value.path = path ;
   emits('select', thisFile.value);
   if(isFileList.value){
-    await validateFileListFile(thisFile.value.path);
+    await validateFileListFile(isFileList.value ? thisFile.value.value : thisFile.value.path);
   }
 }
+
+const fileModalModel = computed({
+  get: () => {
+    return isFileList.value ? thisFile.value.value : thisFile.value.path;
+  },
+  set: (newValue) => {
+    if (isFileList.value) {
+      thisFile.value.value = newValue;
+    } else {
+      thisFile.value.path = newValue;
+    }
+  }
+});
 
 const loadTree = () => {
   thisComponent.refs.filetree.show();
@@ -112,7 +128,7 @@ const loadTree = () => {
 <template>
   <div class="form-control" >
     <div class="input-group input-group-sm" :class="props.class">
-      <input type="text" class="form-control bg-body-secondary" v-model="thisFile.path" readonly data-bs-toggle="modal" :disabled="parentDisplayType==='readonly'"
+      <input type="text" class="form-control bg-body-secondary" v-model="fileModalModel" readonly data-bs-toggle="modal" :disabled="parentDisplayType==='readonly'"
 
              :data-bs-target="'#fileFolderSelectModal'+thisComponent.uid"
              @click="loadTree()" :class="{'is-invalid': errorMessage}">
