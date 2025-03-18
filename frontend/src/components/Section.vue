@@ -45,7 +45,8 @@ const sectionsRefreshKey = ref(0);
 const subSectionTypeMap = props.sectionTypeMap ? props.sectionTypeMap : new Map();
 props?.sectionType?.tableTypes?.forEach(
   (tbType) => {
-    subSectionTypeMap.set(tbType?.name?.toLowerCase(), tbType)
+    if(tbType && tbType.name)
+      subSectionTypeMap.set(tbType?.name?.toLowerCase(), tbType)
   }
 );
 
@@ -416,7 +417,7 @@ defineExpose({errors, thisSection});
             <div v-for="(subsection, i) in section.subsections" :key="i" ref="subsectionsRef">
               <!-- general section -->
               <Section
-                v-if="!Array.isArray(subsection) && !subSectionTypeMap.get(subsection?.type.toLowerCase())?.rowAsSection"
+                v-if="!Array.isArray(subsection) && !subSectionTypeMap.get(subsection?.type?.toLowerCase())?.rowAsSection"
                 :section="subsection"
                 :sectionType="subSectionTypeMap.get(subsection?.type?.toLowerCase()) || subsection?.type?.toLowerCase()"
                 :depth="props.depth + 1"
