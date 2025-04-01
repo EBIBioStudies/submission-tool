@@ -19,9 +19,22 @@
       </thead>
       <tbody>
       <tr v-for="submission in submissions">
-        <td v-if="submission?.status == 'PROCESSED'">{{ submission.accno }}</td>
-        <td v-else><font-awesome-icon :icon="['fas', 'spinner']" class="spinner-border spinner-border-sm status-spinner fa-spin" />
+        <td>
+          <template v-if="submission?.status === 'PROCESSED'">
+            {{ submission.accno }}
+          </template>
+
+          <template v-else-if="submission?.status === 'INVALID'">
+            <button class="btn btn-outline-danger btn-sm" @click="showErrors(submission.errors)">
+              View Errors
+            </button>
+          </template>
+
+          <template v-else>
+            <font-awesome-icon :icon="['fas', 'spinner']" class="spinner-border spinner-border-sm status-spinner fa-spin" />
+          </template>
         </td>
+
         <td>{{ submission.title }}</td>
         <td>{{ moment(submission.rtime).format("DD MMM YYYY") }}</td>
         <td>{{ moment(submission.mtime).format("DD MMM YYYY") }}</td>
@@ -29,7 +42,7 @@
           <button v-if="submission.status==='PROCESSED'" class="btn btn-link text-primary" @click.stop="open(submission.accno)">
             <font-awesome-icon icon="fa-solid fa-arrow-up-right-from-square"></font-awesome-icon>
           </button>
-          <button v-if="submission.status==='PROCESSED'" class="btn btn-link text-primary" @click.stop="edit(submission.accno)">
+          <button v-if="submission.status==='PROCESSED' || submission.status==='INVALID'" class="btn btn-link text-primary" @click.stop="edit(submission.accno)">
             <font-awesome-icon icon="fa-edit"></font-awesome-icon>
           </button>
           <button v-if="canDelete(submission)" class="btn btn-link text-primary" @click.stop="deleteSubmission(submission.accno)">
@@ -60,6 +73,12 @@
   <a href="https://www.ebi.ac.uk/biostudies/studies/" target="_blank"> Search published submissions
     <font-awesome-icon icon="fa-solid fa-external-link-square"></font-awesome-icon>
   </a>
+  <!-- Error Modal, shown only if showModal is true -->
+  <SubmissionErrorsModal
+    v-if="showModal"
+    :errors="currentErrors"
+    @hide="showModal = false"
+  />
 </template>
 
 <script setup>
@@ -70,6 +89,7 @@ import moment from "moment";
 import router from "./router";
 import axios from "axios";
 import NewSubmission from "@/components/NewSubmission.vue";
+import SubmissionErrorsModal from "@/components/SubmissionErrorsModal.vue";
 import utils from '@/utils';
 
 const accession = ref('');
@@ -79,6 +99,14 @@ const pageLength = ref(15)
 const showNext = ref(false)
 const isLoading = ref(true)
 const keywords = ref('');
+
+const showModal = ref(false)
+const currentErrors = ref([])
+
+const showErrors = (errors) => {
+  currentErrors.value = errors
+  showModal.value = true
+}
 
 const canDelete = (submission)=> {
   return (['S-', 'TMP_'].some((prefix) => submission.accno.indexOf(prefix) >= 0)
