@@ -15,9 +15,9 @@
           </div>
         </div>
         <div class="card-footer text-muted">
-          <a href="/signin">
+          <router-link to="/signin">
             <font-awesome-icon :icon="['fas', 'chevron-circle-left']" /> Back to Log in
-          </a>
+          </router-link>
         </div>
       </div>
     </div>

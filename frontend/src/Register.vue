@@ -48,7 +48,7 @@
             <vue-recaptcha v-if="!isCaptchaVerified" required="" class="captcha-root" :sitekey="captchaPublicKey" @verify="onCaptchaVerified"></vue-recaptcha>
           </form>
         </div>
-        <div class="card-footer text-muted"><a href="/signin"><font-awesome-icon :icon="['fas', 'chevron-circle-left']" /> Back to Log in </a></div>
+        <div class="card-footer text-muted"><router-link to="/signin"><font-awesome-icon :icon="['fas', 'chevron-circle-left']" /> Back to Log in </router-link></div>
       </div>
     </div>
     <div class="col"></div>

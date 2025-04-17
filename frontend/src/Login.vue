@@ -24,12 +24,12 @@
             </div>
             <button type="submit" class="btn btn-primary" :class="{disabled: (!username || !password)}">Log In</button>
             <div class="text-right">
-              <a  href="/password_reset_request">Forgot your password?</a>
+              <router-link to="/password_reset_request">Forgot your password?</router-link>
             </div>
-            <div class="text-right"><a href="/activation">Resend activation email</a></div>
+            <div class="text-right"><router-link to="/activation">Resend activation email</router-link></div>
           </form>
         </div>
-        <div class="card-footer text-muted"> Don't have an account? <a href="/signup"> Register <font-awesome-icon :icon="['fas', 'chevron-circle-right']" /> </a>
+        <div class="card-footer text-muted"> Don't have an account? <router-link to="/signup">Register <font-awesome-icon :icon="['fas', 'chevron-circle-right']" /></router-link>
         </div>
       </div>
     </div>
