@@ -37,7 +37,7 @@
           </div>
         </div>
         <div class="card-footer text-muted">
-          <a href="/signin"> <font-awesome-icon :icon="['fas', 'chevron-circle-left']" /> Back to Log in </a>
+          <router-link to="/signin"> <font-awesome-icon :icon="['fas', 'chevron-circle-left']" /> Back to Log in </router-link>
         </div>
       </div>
     </div>
