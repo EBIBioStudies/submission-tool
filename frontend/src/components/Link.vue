@@ -38,8 +38,8 @@ const removeSuggestions = ()=>{
 onMounted(async () => {
   const attribute = row.value?.attributes?.find(att => att?.name === 'Type');
   const type = attribute ? attribute.value : undefined;
-  let fullLink = type ? `${type}:${row.value.url}` : row.value.url;
-  thisLink.value = isIdLink(fullLink) ? fullLink : row.value.url
+  let fullLink = type && (row?.value?.url!==(type+":")) ? `${type}:${row?.value?.url}` : row?.value?.url;
+  thisLink.value = isIdLink(fullLink) ? fullLink : row?.value?.url
 });
 
 watch(thisLink, (newValue) => {
@@ -50,7 +50,7 @@ watch(thisLink, (newValue) => {
     if(urlType === 'http' || urlType === 'https') {
       return
     }
-    row.value.url = parts[1]
+    row.value.url = parts[1]?.trim();
     const typeAttribute = row.value?.attributes?.find(attr => attr.name === 'Type');
     if (typeAttribute) {
       typeAttribute.value = urlType;
@@ -68,7 +68,7 @@ watch(thisLink, (newValue) => {
 
 const selectItem = (item) =>{
   // Set the user input to the selected item and hide suggestions
-  thisLink.value = item+':';
+  thisLink.value = item.endsWith(':') ? item : item + ':';
   showSuggestions.value = false;
 }
 
