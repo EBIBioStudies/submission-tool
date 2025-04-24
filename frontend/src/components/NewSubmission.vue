@@ -111,8 +111,8 @@ onMounted(async () => {
             data submissions</a>.</p>
 
           <div v-for="(tmpl, i) in allowedTemplates" >
-            <div v-if="i<3 || showMoreWasPressed" class="form-check template-button">
-              <div v-if="i<3 || showMoreWasPressed">
+            <div v-if="i<4 || showMoreWasPressed" class="form-check template-button">
+              <div v-if="i<4 || showMoreWasPressed">
                 <input :id="`template_${i}`" type="radio" class="form-check visually-hidden" name="template"
                        v-model="selectedTemplate"
                        :value="tmpl.name"
@@ -133,7 +133,7 @@ onMounted(async () => {
           </div>
 
           <div class="text-center">
-            <button v-if="allowedTemplates.length>3 && !showMoreWasPressed" type="button"
+            <button v-if="allowedTemplates.length>4 && !showMoreWasPressed" type="button"
                     class="btn btn-link text-decoration-none"
                     @click="showMoreWasPressed=true">show more collections...
             </button>
@@ -185,5 +185,13 @@ label {
   border-color: #3b6fb6;
 }
 
+.modal-body {
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 1rem;
+}
+.modal-body p:first-of-type {
+  margin-bottom: 0.25rem;
+}
 
 </style>
