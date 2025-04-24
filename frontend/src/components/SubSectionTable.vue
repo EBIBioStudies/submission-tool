@@ -203,7 +203,10 @@ const updateColumnName = (event, index) => {
   emits('columnUpdated', { old: oldValue, new: newValue, index: index });
 };
 
-const isCollapsed = ref((props?.depth ?? 0) >= 2 || props.startCollapsed);
+const isCollapsed = ref(
+  props.startCollapsed === undefined
+    ? (props?.depth ?? 0) >= 3
+    : props.startCollapsed);
 const toggle = () => (isCollapsed.value = !isCollapsed.value);
 
 const attributeRefs = ref([]);

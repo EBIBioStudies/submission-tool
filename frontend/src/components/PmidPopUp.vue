@@ -142,15 +142,29 @@ async function fetchResults(query) {
   overflow-y: auto;
 }
 
+
 table {
   width: 100%;
-  border-collapse: collapse;
+  table-layout: fixed;
 }
 
-th, td {
+th:nth-child(1), td:nth-child(1) {
+  width: 40%;
+  word-break: break-word;
+}
+
+td, th {
+  white-space: normal;
+  word-break: break-word;
   border: 1px solid #ddd;
   padding: 8px;
   text-align: left;
+}
+
+td:last-child, th:last-child {
+  width: 80px;
+  text-align: center;
+  white-space: nowrap;
 }
 
 tr:hover {
