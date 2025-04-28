@@ -52,13 +52,25 @@ const orgWithAcc = (accno) => thisSection?.value?.subsections?.find(s =>
   (s?.type?.toLowerCase() === 'organisation' || s?.type?.toLowerCase() === 'organization')
   && s?.attributes?.some(a=> a.value===accno));
 
-const OnCreateOrg = (o)=> {
-  let org =  orgWithAcc(o.label);
+const OnCreateOrg = (o) => {
+  let org = orgWithAcc(o.label);
 
   // if org does not exist, create it
   if (!org) {
-    let nextOrgNumber = thisSection?.value?.subsections?.filter(s =>(s?.type?.toLowerCase() === 'organisation' || s?.type?.toLowerCase() === 'organization')).length+1;
-    while (orgWithAcc(`o${nextOrgNumber}`)) nextOrgNumber++; // find the next empty accno
+    // find the highest existing organisation number
+    const existingOrgNumbers = thisSection?.value?.subsections
+      ?.filter(s => (s?.type?.toLowerCase() === 'organisation' || s?.type?.toLowerCase() === 'organization'))
+      .map(s => {
+        const match = s.accno?.match(/^o(\d+)$/);
+        return match ? parseInt(match[1], 10) : 0;
+      });
+
+    const maxOrgNumber = existingOrgNumbers.length > 0 ? Math.max(...existingOrgNumbers) : 0;
+    let nextOrgNumber = maxOrgNumber + 1;
+
+    // double-check that accno is truly unique
+    while (orgWithAcc(`o${nextOrgNumber}`)) nextOrgNumber++;
+
     const newOrg = {
       accno: `o${nextOrgNumber}`,
       attributes: [
@@ -67,33 +79,36 @@ const OnCreateOrg = (o)=> {
           value: o.label
         }
       ],
-      "type": "organisation"
+      type: "organisation"
+    };
+
+    if (o.label !== o.value) {
+      newOrg.attributes.push({ name: 'RORID', value: o.value }); // add ROR ID if available
     }
-    if (o.label!==o.value) newOrg.attributes.push({name:'RORID', value:o.value}); // add ror id if available
-    thisSection?.value?.subsections?.push(newOrg)
-    org = thisSection?.value?.subsections[thisSection?.value?.subsections?.length-1];
+
+    thisSection?.value?.subsections?.push(newOrg);
+    org = thisSection?.value?.subsections[thisSection?.value?.subsections?.length - 1];
   }
 
   // delete empty org
-  const emptyIndex = authors.value[o.authorIndex].attributes.findIndex( attr=> attr.name.toLowerCase()==='affiliation' && attr.value==='');
-  if (emptyIndex!==-1) authors.value[o.authorIndex].attributes.splice(emptyIndex,1);
+  const emptyIndex = authors.value[o.authorIndex].attributes.findIndex(attr => attr.name.toLowerCase() === 'affiliation' && attr.value === '');
+  if (emptyIndex !== -1) authors.value[o.authorIndex].attributes.splice(emptyIndex, 1);
 
   // assign it to the author
   authors.value[o.authorIndex].attributes.push({
     name: "affiliation",
     value: org.accno,
     reference: true
-  })
+  });
 
   return refresh();
-}
+};
 
-const reorderAuthors = (event)=>
-{
+const reorderAuthors = (event) => {
   const authorIndexMap = {}; // lookup for index in authors to index in subsections
   let authIndex = 0;
-  thisSection?.value?.subsections?.forEach( (section, i )=> {
-    if (section?.type?.toLowerCase()==='author') {
+  thisSection?.value?.subsections?.forEach((section, i) => {
+    if (section?.type?.toLowerCase() === 'author') {
       authorIndexMap[authIndex++] = i;
     }
   })
@@ -105,12 +120,11 @@ const reorderAuthors = (event)=>
   return refresh();
 }
 
-const OnDeleteRow = (index)=>
-{
+const OnDeleteRow = (index) => {
   const authorIndexMap = {}; // lookup for index in authors to index in subsections
   let authIndex = 0;
-  thisSection?.value?.subsections?.forEach( (section, i )=> {
-    if (section?.type?.toLowerCase()==='author') {
+  thisSection?.value?.subsections?.forEach((section, i) => {
+    if (section?.type?.toLowerCase() === 'author') {
       authorIndexMap[authIndex++] = i;
     }
   })
@@ -129,7 +143,7 @@ const OnRowAdded = row => {
 
 const OnColumnUpdated = row => {
   thisSection?.value?.subsections?.forEach(section => {
-    if (section?.type?.toLowerCase()!=='author') return;
+    if (section?.type?.toLowerCase() !== 'author') return;
     section.attributes.find((att) => att.name === row.old).name = row.new;
   })
   return refresh();
@@ -138,32 +152,32 @@ const OnColumnUpdated = row => {
 
 const deleteUnusedOrganisations = () => {
   const usedAffiliation = new Set();
-  authors.value.forEach( author => {
+  authors.value.forEach(author => {
     author.attributes.forEach(attr => {
-      if (attr.name?.toLowerCase() === 'affiliation' && attr.value!=='') {
+      if (attr.name?.toLowerCase() === 'affiliation' && attr.value !== '') {
         usedAffiliation.add(attr.value)
       }
     })
   })
 
   const indicesToRemove = []
-  thisSection?.value?.subsections?.forEach((s,i) => {
-    if ( (s.type?.toLowerCase() === 'organisation' || s.type?.toLowerCase() === 'organization') && !usedAffiliation.has(s.accno)) {
+  thisSection?.value?.subsections?.forEach((s, i) => {
+    if ((s.type?.toLowerCase() === 'organisation' || s.type?.toLowerCase() === 'organization') && !usedAffiliation.has(s.accno)) {
       indicesToRemove.push(i);
     }
   })
-  indicesToRemove.sort( (a,b)=> b-a);
+  indicesToRemove.sort((a, b) => b - a);
   indicesToRemove.forEach(orgIndex => thisSection?.value?.subsections?.splice(orgIndex, 1));
 
 }
 
 const refresh = () => {
   startCollapsed.value = false;
-  authorRefreshKey.value +=1;
+  authorRefreshKey.value += 1;
   return false;
 }
 
-const errors = computed(() => authorTableRef?.value?.errors );
+const errors = computed(() => authorTableRef?.value?.errors);
 
 defineExpose({errors});
 
@@ -178,7 +192,7 @@ defineExpose({errors});
         :rows="authors"
         :depth="0"
         :sectionType="props.sectionType"
-        :startCollapsed = "startCollapsed"
+        :startCollapsed="startCollapsed"
         sectionSubType="Contacts"
         :isTableAttribute="true"
         title="Contacts"
