@@ -1,6 +1,7 @@
 <script setup>
 
 import FileFolderSelectModal from "./components/FileFolderSelectModal.vue";
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import {ref} from "vue";
 
 const attr = {path:'/user/structures.svg'};
@@ -31,7 +32,7 @@ const filePath = ref(attr.path)
           <li class="py-2">
             <router-link :to="{ path: '/help', hash: '#help-about' }">About</router-link>
             <a href="mailto:biostudies@ebi.ac.uk?Subject=Submission%20Tool" class="float-right">
-              <i class="fa fa-envelope-square"></i>
+              <font-awesome-icon icon="envelope-square" />
               Contact us
             </a>
           </li>
@@ -45,11 +46,11 @@ const filePath = ref(attr.path)
             </p>
             <ul>
               <li>
-                <strong><i class="fas fa-database" aria-hidden="true"></i> Studies</strong>:
+                <strong><font-awesome-icon icon="database" /> Studies</strong>:
                 Submissions that have already been submitted to the BioStudies database.
               </li>
               <li>
-                <strong><i class="fas fa-clock" aria-hidden="true"></i> Drafts</strong>:
+                <strong><font-awesome-icon icon="clock" /> Drafts</strong>:
                 New studies which are incomplete or updates of the existing studies that have not been
                 submitted to the BioStudies database yet. New studies have a temporary identifier starting with
                 <i>TMP_</i>.
@@ -59,16 +60,16 @@ const filePath = ref(attr.path)
               Entries in either tabs can be edited or deleted using
               <span class="btn-group btn-group-sm">
               <button type="button" class="btn btn-link btn-sm">
-                <i class="fas fa-pencil-alt"></i>
+                <font-awesome-icon icon="pencil-alt" />
               </button> or
               <button type="button" class="btn btn-link btn-sm">
-                <i class="fas fa-trash-alt fa-fw"></i>
+                <font-awesome-icon icon="trash-alt" class="fa-fw" />
               </button>
             </span>
               under the <i>"Actions"</i> column respectively. Released submissions cannot be deleted.
               The entire list can be filtered by pressing the
               <span class="ag-fresh">
-              <i class="fa fa-filter"></i>
+              <font-awesome-icon icon="filter" />
             </span>
               icon in the relevant column.
             </p>
@@ -81,7 +82,7 @@ const filePath = ref(attr.path)
               Each user's files are stored in a central repository and made available for all your
               submissions. To navigate and list all your files, click on
               <button class="btn btn-link">
-                <i class="fa fa-folder-open"></i>
+                <font-awesome-icon icon="folder-open" />
                 Files
               </button>
               in the navigation bar. Click the
@@ -276,5 +277,13 @@ a:hover {
   float: right;
   font-size: 0.9rem;
   margin-top: 0.5rem;
+}
+
+.status-spinner {
+  color: #343a40; /* Bootstrap's dark */
+}
+
+.badge-primary{
+  color: #343a40;
 }
 </style>
