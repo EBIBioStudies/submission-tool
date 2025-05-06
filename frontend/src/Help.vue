@@ -104,15 +104,15 @@ const filePath = ref(attr.path)
           </dd>
           <dt id="help-start" class="border-bottom"><h4>3. Starting a new submission</h4></dt>
           <dd class="pt-2">
-            You can click on the <strong>New Submissions</strong> button to start a new study draft. You will be asked
-            to select the collection that you are submitting to. Please select <strong>Default</strong> for
-            general submissions to BioStudies. For submissions to BioImage Archive, please <a
-            href="https://www.ebi.ac.uk/bioimage-archive/submit/">read the guide here</a> before proceeding. After
-            clicking
-            <button type="button" class="btn btn-primary btn-sm">Add</button>
-            you will be presented with a collection specific form for
-            <router-link :to="{ path: '/help', hash: '#help-edit' }">editing your study.</router-link>
-
+            <p>
+              You can click on the <strong>New Submissions</strong> button to start a new study draft. You will be asked
+              to select the collection that you are submitting to. Please select <strong>Default</strong> for
+              general submissions to BioStudies. For submissions to BioImage Archive, please <a
+              href="https://www.ebi.ac.uk/bioimage-archive/submit/">read the guide here</a> before proceeding. After
+              clicking
+              <button type="button" class="btn btn-primary btn-sm">Add</button>
+              you will be presented with a collection specific form for <router-link :to="{ path: '/help', hash: '#help-edit' }">editing your study.</router-link>
+            </p>
             <img class="help-img" src="/images/help/new_submission.png" width="650" alt="Collection dialog" />
 
           </dd>
