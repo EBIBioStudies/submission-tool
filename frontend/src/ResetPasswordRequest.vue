@@ -71,7 +71,7 @@ const submitData = async () => {
   if (validEmail.value && validCaptcha.value) {
     const parameters = {
       email: email.value,
-      path: '/biostudies/submissions/password_reset_request',
+      path: '/biostudies/submissions/password_reset',
       'recaptcha2-response': recaptchaToken.value,
       'instanceKey':instanceKey
     };
