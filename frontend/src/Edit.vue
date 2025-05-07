@@ -12,18 +12,21 @@
       <h2  className="card-title ng-star-inserted">
         <i aria-hidden="true" className="fa fa-check-circle"></i> Study <span  className="ng-star-inserted">submitted</span>
       </h2>
-      <p className="card-text mb-1 ng-star-inserted"> The study has been successfully submitted to the BioStudies database and is now being processed. </p>
+      <p className="card-text mb-1 ng-star-inserted"> The study has been submitted to the BioStudies database and is now being processed. </p>
       <div  className="mt-3 ng-star-inserted">
         <h5>Please note <i  className="far fa-hand-point-down"></i></h5>
         <ul>
           <li className="mb-3">
-            <mark>As soon as your study is processed, you will receive its accession number by e-mail</mark>
+            <mark>Data processing time depends on the number and size of your files.</mark>
           </li>
           <li className="mb-3">
-            <mark> The system may take up to 24 hours after submission to register any new studies in the database. </mark>
+            <mark>If there are any further validation errors, they will be available from the Submissions list page</mark>
           </li>
           <li className="mb-3">
-            <mark>Any registered study will remain private and accessible only through login until the release date in the Western European Time Zone.</mark>
+            <mark>On successful processing you will receive the study accession number by e-mail.</mark>
+          </li>
+          <li className="mb-3">
+            <mark>The study will remain private and accessible only via login until the release date in the Western European Time Zone.</mark>
           </li>
         </ul>
       </div>

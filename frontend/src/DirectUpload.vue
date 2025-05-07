@@ -344,22 +344,27 @@ onBeforeUnmount(() => {
           <div v-if="successSubmit" class="alert alert-success">
             <h4>Study uploaded</h4>
             <p>
-              The study has been successfully uploaded to the BioStudies database. <br />
+              The study has been uploaded to the BioStudies database. <br />
             </p>
             <div class="mt-3">
               <h5>Please note <i class="far fa-hand-point-down"></i></h5>
               <ul>
                 <li class="mb-3">
-                  <mark>As soon as your study is processed, you will receive its accession number by e-mail</mark>
+                  <mark>Data processing time depends on the number and size of your files.</mark>
                 </li>
                 <li class="mb-3">
                   <mark>
-                    The system may take up to 24 hours after submission to register any new studies in the database.
+                    If there are any further validation errors, they will be available from the Submissions list page.
                   </mark>
                 </li>
                 <li class="mb-3">
-                  <mark>Any registered study will remain private and accessible only through login until the release date in the
-                    Western European Time Zone.
+                  <mark>
+                    On successful processing you will receive the study accession number by e-mail.
+                  </mark>
+                </li>
+                <li class="mb-3">
+                  <mark>
+                    The study will remain private and accessible only via login until the release date in the Western European Time Zone.
                   </mark>
                 </li>
               </ul>
