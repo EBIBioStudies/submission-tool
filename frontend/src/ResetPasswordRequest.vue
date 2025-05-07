@@ -51,6 +51,7 @@ const hasError = ref(false);
 const success = ref(false);
 const recaptchaToken = ref('');
 const captchaPublicKey = window.config.recaptchaKey;
+const instanceKey = import.meta.env.VITE_INSTANCE_KEY;
 
 const validEmail = computed(() => {
   const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -71,7 +72,8 @@ const submitData = async () => {
     const parameters = {
       email: email.value,
       path: '/biostudies/submissions/password_reset_request',
-      'recaptcha2-response': recaptchaToken.value
+      'recaptcha2-response': recaptchaToken.value,
+      'instanceKey':instanceKey
     };
     try {
       const response = await axios.post(`/api/auth/password/reset`, parameters);
