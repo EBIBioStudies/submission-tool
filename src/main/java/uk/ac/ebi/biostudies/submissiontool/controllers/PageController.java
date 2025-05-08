@@ -10,6 +10,7 @@ public class PageController {
             "/signup/**",
             "/reset/**",
             "/activation/**",
+            "/password_reset/**",
             "/drafts/**",
             "/edit/**",
             "/files/**",
