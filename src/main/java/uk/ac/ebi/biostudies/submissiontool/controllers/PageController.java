@@ -11,6 +11,7 @@ public class PageController {
             "/reset/**",
             "/activation/**",
             "/activate/**",
+            "/password_reset/**",
             "/drafts/**",
             "/edit/**",
             "/files/**",
