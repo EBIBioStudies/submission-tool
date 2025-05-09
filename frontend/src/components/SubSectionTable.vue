@@ -1,7 +1,7 @@
 <script setup>
 import {computed, inject, nextTick, ref} from 'vue';
 import draggable from 'vuedraggable';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import Attribute from '@/components/Attribute.vue';
 import utils from "@/utils";
 
@@ -14,7 +14,8 @@ const emits = defineEmits([
   'delete',
   'deleteRow',
   'deleteOrg',
-  'createOrg'
+  'createOrg',
+  'refreshSection'
 ]);
 const thisSection = ref(props.rows);
 const rowSectionType = props.rows && props.rows[0]?.type ? ('' + props.rows[0].type) : '';
@@ -43,18 +44,18 @@ const sectionsRefreshKey = ref(0);
 const getFieldType = (attribute) => {
   let name = attribute?.type?.toLowerCase() === 'file' || attribute.hasOwnProperty('path') ? 'File' : attribute?.name || attribute;
   // override affiliation
-  if (name==='affiliation') {
+  if (name === 'affiliation') {
     let fieldType = props.sectionType?.columnTypes?.find((f) => f.name?.toLowerCase() === 'organisation');
-    if (fieldType) return {...fieldType, ...{name:'Organisation'}};
+    if (fieldType) return {...fieldType, ...{name: 'Organisation'}};
   }
-  name = attribute.hasOwnProperty('url') || attribute.name==='url'  ? 'Link' : name;
+  name = attribute.hasOwnProperty('url') || attribute.name === 'url' ? 'Link' : name;
   // return the column type. Expects either an object or a column name (for use in draggable)
   let fieldType = props.sectionType?.columnTypes?.find((f) => f.name?.toLowerCase() === name?.toLowerCase());
   if (fieldType) return fieldType;
   if (!fieldType && name) {
     fieldType = {
       'name': name,
-      'createdOnRender' : true,
+      'createdOnRender': true,
       'controlType': {
         'name': name?.toLowerCase(),
       },
@@ -75,7 +76,7 @@ const getCell = (row, col) => {
     return row;
   }
   if (!attribute) {
-    attribute = { name: col, value: '' };
+    attribute = {name: col, value: ''};
     row.attributes.push(attribute);
   }
   return attribute;
@@ -111,14 +112,14 @@ const areObjectsEqual = (obj1, obj2) => {
 
 
 const addColumn = (event) => {
-  if(parentDisplayType.value === 'readonly')
+  if (parentDisplayType.value === 'readonly')
     return;
   const columnName = 'Column ' + (headers.value.length - 1);
   headers.value.splice(-1, 0, columnName);
   const rows = subSections.value.filter(item => item?.type?.toLowerCase() === tableType.value.toLowerCase());
   rows.forEach((row) => {
       if (!row.attributes) row.attributes = [];
-      row.attributes.push({ name: columnName, value: '' });
+      row.attributes.push({name: columnName, value: ''});
     },
   );
   theseRows.value = rows;
@@ -154,12 +155,21 @@ const deleteRow = async (index) => {
     return;
   const removedItem = theseRows.value[index];
   const delIndex = subSections.value.findIndex(item => areObjectsEqual(item, removedItem));
-  if(delIndex!=-1)
-    subSections.value.splice(delIndex, 1);
-  theseRows.value.splice(index, 1);
-  sectionsRefreshKey.value += 1;
-  await nextTick();
-  emits('deleteRow', index);
+  if (delIndex !== -1) {
+    subSections.value.splice(delIndex, 1); // Only mutate the source
+  }
+
+  // Refresh theseRows from the current state of subSections
+  theseRows.value = subSections.value.filter(
+    item => item?.type?.toLowerCase() === tableType.value.toLowerCase()
+  );
+  if (theseRows.value.length === 0) {
+    emits('refreshSection', index); // Notify parent to clean up
+  }else{
+    sectionsRefreshKey.value += 1;
+    await nextTick();
+    emits('deleteRow', index);
+  }
 };
 
 const deleteColumn = (index) => {
@@ -270,7 +280,7 @@ defineExpose({ errors, thisSection });
               <th :class="{ fixed: i === 0 || i === headers?.length - 1 }">
                 <div v-if="i > 0 && i < headers.length - 1" class="input-group input-group-sm align-items-center">
                   <template v-if="!getFieldType(header)?.createdOnRender">
-                    <label class="input-group-text " >
+                    <label class="input-group-text ">
                                             <span class="form-control-sm">{{ getFieldType(header).name }}
                           <span class="text-danger"
                                 v-if="getFieldType(header)?.display==='required' || getFieldType(header)?.controlType?.minlength >0">*</span>

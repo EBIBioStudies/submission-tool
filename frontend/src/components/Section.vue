@@ -212,6 +212,9 @@ const deleteSubSection = async (someSubSections, index) => {
   thisSection.value.subsections = someSubSections.filter((v, i) => i !== index);
   sectionsRefreshKey.value += 1;
 };
+const refreshSection = async () => {
+  sectionsRefreshKey.value += 1;
+}
 
 const addAttribute = async () => {
   if(parentDisplayType.value === 'readonly')
@@ -371,7 +374,7 @@ defineExpose({errors, thisSection});
           <div class="p-0" :key="sectionsRefreshKey">
             <!-- Files -->
             <SectionTable
-              v-if="section.files && section.files.length"
+              v-if="section.files && section.files?.length > 0"
               :rows="section.files"
               :depth="props.depth+1"
               :sectionType="subSectionTypeMap.get('file')"
@@ -380,12 +383,13 @@ defineExpose({errors, thisSection});
               @columnUpdated="(msg) => updateColumnName(section.files, msg)"
               @columnsReordered="(msg) => sectionsRefreshKey+= 1"
               @delete="deleteSubSection(section.files, 0)"
+              @refreshSection="refreshSection()"
               ref="sectionFilesRef"
             />
 
             <!-- Links -->
             <SectionTable
-              v-if="section.links && section.links.length"
+              v-if="section.links && section.links?.length>0"
               :rows="section.links"
               :depth="props.depth+1"
               :sectionType="subSectionTypeMap.get('link')"
@@ -394,12 +398,13 @@ defineExpose({errors, thisSection});
               @columnUpdated="(msg) => updateColumnName(section.links, msg)"
               @columnsReordered="(msg) => sectionsRefreshKey+= 1"
               @delete="deleteSubSection(section.links, 0)"
+              @refreshSection="refreshSection()"
               ref="sectionLinksRef"
             />
 <!--            render special sections in the computed specialSectionMap -->
             <div v-for="(item, index) in specialSectionMap" :key="index" ref="sectionTablesRef">
               <SubSectionTable
-                v-if="Array.isArray(item[1])"
+                v-if="Array.isArray(item[1]) && item[1]?.length > 0"
                 :rows="item[1]"
                 :depth="props.depth+1"
                 :sectionType="subSectionTypeMap.get(item[0].toLowerCase())"
@@ -409,6 +414,7 @@ defineExpose({errors, thisSection});
                 @columnUpdated="(msg) => updateColumnName(item[1], msg)"
                 @columnsReordered="(msg) => sectionsRefreshKey+= 1"
                 @delete="deleteSubSection(section.subsections, index)"
+                @refreshSection="refreshSection()"
                 ref="errSpecialSecTableRefs"
               />
             </div>
@@ -429,7 +435,7 @@ defineExpose({errors, thisSection});
 
               <!-- general Table -->
               <SectionTable
-                v-if="Array.isArray(subsection)"
+                v-if="Array.isArray(subsection) && subsection?.length > 0"
                 :rows="subsection"
                 :depth="props.depth+1"
                 :sectionType="subSectionTypeMap.get(subsection?.name?.toLowerCase())"
@@ -439,6 +445,7 @@ defineExpose({errors, thisSection});
                 @columnUpdated="(msg) => updateColumnName(subsection, msg)"
                 @columnsReordered="(msg) => sectionsRefreshKey+= 1"
                 @delete="deleteSubSection(section.subsections, i)"
+                @refreshSection="refreshSection()"
                 ref="errSecTableRefs"
               />
             </div>

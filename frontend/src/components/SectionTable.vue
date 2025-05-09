@@ -18,7 +18,8 @@ const emits = defineEmits([
   'delete',
   'deleteRow',
   'deleteOrg',
-  'createOrg'
+  'createOrg',
+  'refreshSection'
 ]);
 
 const thisSection = ref(props.rows);
@@ -131,9 +132,14 @@ const addRow = (event) => {
 const deleteRow = async (index) => {
   if (parentDisplayType.value === 'readonly') return;
   theseRows.value.splice(index, 1);
-  sectionsRefreshKey.value += 1;
-  await nextTick();
-  emits('deleteRow', index);
+
+  if (theseRows.value.length === 0) {
+    emits('refreshSection');  // Let Section.vue handle cleanup
+  }else{
+    sectionsRefreshKey.value += 1;
+    await nextTick();
+    emits('deleteRow', index);
+  }
 };
 
 const deleteColumn = (index) => {
