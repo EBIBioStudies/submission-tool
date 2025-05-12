@@ -51,7 +51,7 @@ export const fillTemplate = (section, tmpl) => {
       if (field?.controlType?.values?.filter((value) => value?.valqual != null).length) {
         attr.valqual = field?.controlType?.values?.find((v) => v.value === attr.value)?.valqual;
       }
-    } else if (field?.controlType?.name === 'select') attr.value = ''; else if (field?.controlType?.name === 'reference') attr.reference = true;
+    } else if (field?.controlType?.name === 'select') attr.value = '';
     section.attributes.push(attr);
   };
 

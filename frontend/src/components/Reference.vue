@@ -13,7 +13,7 @@ if (props.fieldType?.controlType?.type === 'section') {
     if (props.fieldType?.controlType?.section_type === section?.type) {
       const att = section?.attributes?.find((a) =>a.name.toLowerCase() === props.fieldType?.controlType?.field_name?.toLowerCase())
       options.value.push({
-        value: section.accno,
+        value: att?.value ?? section?.accno,
         label: att?.value ?? section.type
       })
     }
