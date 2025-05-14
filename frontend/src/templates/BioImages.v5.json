@@ -1,7 +1,7 @@
 {
   "name": "BioImages.v5",
   "title": "BioImages",
-  "description": "BioImage Archive Study",
+  "description": "BioImage Archive Submission",
   "DOI" : true,
   "sectionType": {
     "display": "required",
