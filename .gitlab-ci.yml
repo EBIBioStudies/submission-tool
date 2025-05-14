@@ -35,14 +35,14 @@ build:
         ssh -oStrictHostKeyChecking=no "$user"@"$host" "bash $deployDirectory/restart.sh"
       done
 
-deploy:
+deploy-beta:
   <<: *deploy-template
   environment: beta
   only:
     - master
   when: manual
 
-prod:
+deploy-prod:
   <<: *deploy-template
   environment: prod
   only:
