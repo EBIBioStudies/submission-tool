@@ -106,10 +106,9 @@ const filePath = ref(attr.path)
           <dd class="pt-2">
             <p>
               You can click on the <strong>New Submissions</strong> button to start a new study draft. You will be asked
-              to select the collection that you are submitting to. Please select <strong>Default</strong> for
-              general submissions to BioStudies. For submissions to BioImage Archive, please <a
-              href="https://www.ebi.ac.uk/bioimage-archive/submit/">read the guide here</a> before proceeding. After
-              clicking
+              to select the collection that you are submitting to. For submissions to BioImage Archive, please <a
+              href="https://www.ebi.ac.uk/bioimage-archive/submit/">read the guide here</a> before proceeding. Please select <strong>Default</strong> for general submissions to BioStudies.
+              After clicking
               <button type="button" class="btn btn-primary btn-sm">Add</button>
               you will be presented with a collection specific form for <router-link :to="{ path: '/help', hash: '#help-edit' }">editing your study.</router-link>
             </p>
