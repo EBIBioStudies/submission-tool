@@ -14,7 +14,7 @@ build:
   script:
     - mvn clean package
 
-deploy:
+.deploy-template: &deploy-template
   stage: deploy
   script:
     - apt update
@@ -34,3 +34,17 @@ deploy:
       for host in $host; do
         ssh -oStrictHostKeyChecking=no "$user"@"$host" "bash $deployDirectory/restart.sh"
       done
+
+deploy-beta:
+  <<: *deploy-template
+  environment: beta
+  only:
+    - master
+  when: manual
+
+deploy-prod:
+  <<: *deploy-template
+  environment: prod
+  only:
+    - master
+  when: manual
