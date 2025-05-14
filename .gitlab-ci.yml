@@ -39,12 +39,12 @@ deploy-beta:
   <<: *deploy-template
   environment: beta
   only:
-    - master
+    - main
   when: manual
 
 deploy-prod:
   <<: *deploy-template
   environment: prod
   only:
-    - master
+    - main
   when: manual
