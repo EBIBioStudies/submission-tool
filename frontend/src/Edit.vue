@@ -174,7 +174,6 @@ const submissionComponent = ref({})
 let offCanvasErrors = null;
 let offCanvasJson = null;
 let validationErrors = ref([]);
-let saveResolver = null;
 
 
 const submitDraftPopUp = ()=>{
@@ -184,36 +183,31 @@ const submitDraftPopUp = ()=>{
     finalSubmitDraft("");
 }
 
-const waitForPendingSave = () =>
-  new Promise((resolve) => {
-    if (pendingSave) {
-      clearTimeout(pendingSave);
-      saveResolver = resolve;
-      pendingSave = setTimeout(async () => {
-        isSaving.value = true;
-        await axios({
-          url: `/api/submissions/drafts/${props.accession}`,
-          headers: {'content-type': 'application/json'},
-          method: 'PUT',
-          data: JSON.stringify(JSON.parse(updatedSubmission.value))
-        });
-        isSaving.value = false;
-        saveResolver?.();
-        saveResolver = null;
-      }, 1002);
-    } else {
-      resolve();
-    }
-  });
 
 function cleanAndReorderSubsectionsRecursive(section) {
-  if (!section || !Array.isArray(section.subsections)) return section;
+  if (!section || typeof section !== 'object') return section;
 
+  // Clean section.attributes: only keep attributes with non-empty string values
+  section.attributes = Array.isArray(section.attributes)
+    ? section.attributes.filter(attr =>
+      attr &&
+      typeof attr === 'object' &&
+      typeof attr.value === 'string' &&
+      attr.value.trim() !== ''
+    )
+    : [];
+
+  // If there are no subsections, we are done
+  if (!Array.isArray(section.subsections)) {
+    return section;
+  }
+
+  // Clean each subsection
   const cleaned = section.subsections
     .map(sub => {
       if (!sub || typeof sub !== 'object') return null;
 
-      // Filter attributes: must have non-empty string value
+      // Clean attributes
       const attrs = Array.isArray(sub.attributes)
         ? sub.attributes.filter(attr =>
           attr &&
@@ -223,34 +217,29 @@ function cleanAndReorderSubsectionsRecursive(section) {
         )
         : [];
 
-      // Recursively clean nested subsections (if present)
+      // Recursively clean nested subsections
       let cleanedSubsections = null;
       if (Array.isArray(sub.subsections)) {
         const result = cleanAndReorderSubsectionsRecursive(sub); // modifies in place
-        if (result && Array.isArray(result.subsections) && result.subsections.length > 0) {
+        if (result?.subsections?.length > 0) {
           cleanedSubsections = result.subsections;
         }
       }
 
-      // If nothing is left, skip this sub
-      if (attrs.length === 0 && !cleanedSubsections) {
-        return null;
-      }
+      // If no useful content, remove this subsection
+      if (attrs.length === 0 && !cleanedSubsections) return null;
 
-      // Return cleaned subsection
       const result = {
         ...sub,
         type: sub.type || '__unknown__',
         attributes: attrs,
       };
-      if (cleanedSubsections) {
-        result.subsections = cleanedSubsections;
-      }
+      if (cleanedSubsections) result.subsections = cleanedSubsections;
       return result;
     })
     .filter(sub => sub !== null);
 
-  // Group subsections by type and maintain first-seen order
+  // Group by type, keeping the first-seen order
   const typeToGroup = new Map();
   cleaned.forEach((sub, idx) => {
     const type = sub.type || '__unknown__';
@@ -260,13 +249,14 @@ function cleanAndReorderSubsectionsRecursive(section) {
     typeToGroup.get(type).list.push(sub);
   });
 
-  // Reorder based on first appearance
+  // Flatten ordered groups back into array
   section.subsections = Array.from(typeToGroup.entries())
     .sort((a, b) => a[1].index - b[1].index)
     .flatMap(entry => entry[1].list);
 
   return section;
 }
+
 
 const finalSubmitDraft = async (option) => {
   showModal.value = false;
@@ -279,31 +269,22 @@ const finalSubmitDraft = async (option) => {
   }
 
   offCanvasErrors.hide();
+  isLoading.value = true;
 
   try {
-    isLoading.value = true;
+    // 1. Clean and reorder the section in-place
+    submission.value.section = cleanAndReorderSubsectionsRecursive(submission.value.section);
 
-    // 1. Clean and reorder submission.section before submitting
-    const cleanedSection = cleanAndReorderSubsectionsRecursive(submission.value.section);
-
-    // 2. Check if section actually changed (shallow ref check or deep compare if needed)
-    const wasMutated = cleanedSection !== submission.value.section;
-    submission.value.section = cleanedSection;
-
-    // 3. Force the watcher or resolve manually
-    await new Promise((resolve) => {
-      if (wasMutated) {
-        saveResolver = resolve;
-      } else {
-        // Nothing changed; manually resolve to avoid stalling
-        resolve();
-      }
+    // 2. Save the updated draft synchronously
+    await axios({
+      url: `/api/submissions/drafts/${props.accession}`,
+      headers: { 'content-type': 'application/json' },
+      method: 'PUT',
+      data: JSON.stringify(submission.value),
     });
 
-    // 4. Now submit
-    const headers = {
-      "Submission_Type": "application/json"
-    };
+    // 3. Submit the final version
+    const headers = { "Submission_Type": "application/json" };
     const params = option === "noFilesUpdated" ? { preferredSources: "SUBMISSION" } : {};
 
     const response = await axios.post(
@@ -321,12 +302,13 @@ const finalSubmitDraft = async (option) => {
 
   } catch (error) {
     success.value = false;
-    serverErrorMessage.value = error?.response?.data?.log?.message || 'Unknown Error';
-
+    serverErrorMessage.value =
+      error?.response?.data?.log?.message || error?.message || 'Unknown Error';
   } finally {
     isLoading.value = false;
   }
 };
+
 
 
 
@@ -440,8 +422,6 @@ watch(updatedSubmission, async (sub) => {
       console.error("Draft save failed:", err);
     } finally {
       isSaving.value = false;
-      saveResolver?.(); //  resolve only after save
-      saveResolver = null; // cleanup
     }
   }, 1002);
   lastUpdated = Date.now();
