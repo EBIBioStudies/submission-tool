@@ -329,6 +329,20 @@ onMounted(() => {
   offCanvasJson = Offcanvas.getOrCreateInstance('#offcanvasJson', {'backdrop': false});
 })
 
+function deduplicateReleaseDate(submissionJson) {
+  const seen = new Set();
+  const keepFirst = (attrs = []) =>
+    attrs.filter(attr => {
+      if (attr?.name !== 'ReleaseDate') return true;
+      if (seen.has('ReleaseDate')) return false;
+      seen.add('ReleaseDate');
+      return true;
+    });
+
+  submissionJson.attributes = keepFirst(submissionJson.attributes);
+  submissionJson.section.attributes = keepFirst(submissionJson.section.attributes);
+}
+
 watchEffect(async () => {
   if (props.accession) {
     // load from existing data
@@ -339,17 +353,27 @@ watchEffect(async () => {
 
 
     // insert the release date as needed
-    const submissionReleaseDate = submissionJson?.attributes?.find((attr) => attr.name === 'ReleaseDate');
-    const studySectionReleaseDate = submissionJson?.section?.attributes?.find((attr) => attr.name === 'ReleaseDate');
-    if (!submissionReleaseDate && studySectionReleaseDate) {
-      submissionJson?.attributes.splice(2, 0, studySectionReleaseDate);
-    } else if (submissionReleaseDate && !studySectionReleaseDate) {
-      submissionJson?.section?.attributes.splice(1, 0, submissionReleaseDate);
-    } else {
-      const releaseDate = {'name': 'ReleaseDate'};
-      submissionJson?.attributes.splice(2, 0, releaseDate);
-      submissionJson?.section?.attributes.splice(1, 0, releaseDate);
+    deduplicateReleaseDate(submissionJson);
+
+// Now optionally insert if still missing in one place
+    const submissionHas = submissionJson.attributes.some(attr => attr?.name === 'ReleaseDate');
+    const sectionHas = submissionJson.section.attributes.some(attr => attr?.name === 'ReleaseDate');
+
+    if (!submissionHas && sectionHas) {
+      const releaseDate = submissionJson.section.attributes.find(attr => attr.name === 'ReleaseDate');
+      if (releaseDate) submissionJson.attributes.splice(2, 0, releaseDate);
+    } else if (submissionHas && !sectionHas) {
+      const releaseDate = submissionJson.attributes.find(attr => attr.name === 'ReleaseDate');
+      if (releaseDate) submissionJson.section.attributes.splice(1, 0, releaseDate);
+    } else if (!submissionHas && !sectionHas) {
+      const releaseDate = { name: 'ReleaseDate' };
+      submissionJson.attributes.splice(2, 0, releaseDate);
+      submissionJson.section.attributes.splice(1, 0, releaseDate);
+    }else if (submissionHas && sectionHas){
+      const sectionDate = submissionJson.section.attributes.find(attr => attr.name === 'ReleaseDate');
+      submissionJson.attributes.splice(2, 1, sectionDate);
     }
+
 
     // insert the title as needed
     const submissionTitle = submissionJson?.attributes?.find((attr) => attr.name === 'Title');
