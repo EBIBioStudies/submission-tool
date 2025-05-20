@@ -10,6 +10,9 @@ const props = defineProps(['file', 'class', 'allowFolder', 'isFileList', 'row'])
 const emits = defineEmits(['select'])
 const thisFile = ref(props.file);
 const isFileList = ref(props.isFileList);
+if (isFileList.value === undefined && thisFile.value?.name === 'File List') {
+    isFileList.value = true;
+}
 const allowFolder = ref(props.allowFolder);
 const axiosAbortController = new AbortController();
 const currentUpload = ref({ name: '', progress: 0 });
