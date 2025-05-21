@@ -8,7 +8,7 @@
     "tableGroups": [],
     "name": "Study",
     "banner": {
-      "src": "images/logo_bia.svg",
+      "src": "/images/logo_bia.svg",
       "alt": "BioImage Archive logo",
       "backgroundColor": "#038392",
       "contactUs": {
@@ -33,13 +33,6 @@
             "Large-scale electron microscopy database for human type 1 diabetes"
           ]
         }
-      },
-      {
-        "name": "#2 Req. & not in pagetab",
-        "display": "required"
-      },
-      {
-        "name": "Not in pagetab and not required at position 3"
       },
       {
         "name": "ReleaseDate",
@@ -847,7 +840,7 @@
             "name": "File List",
             "icon": "fa-file",
             "controlType": {
-              "name": "file",
+              "name": "filelist",
               "allowFolders": false
             },
             "display": "required",
@@ -866,78 +859,58 @@
             "display": "required",
             "columnTypes": [
               {
-                "dependency": {
-                  "field_name": "Title",
-                  "section_type": "Biosample",
-                  "type": "section"
-                },
                 "display": "required",
                 "name": "Biosample",
                 "uniqueValues": false,
                 "controlType": {
-                  "name": "select",
-                  "values": [],
-                  "enableValueAdd": false
+                  "name": "reference",
+                  "field_name": "Title",
+                  "section_type": "Biosample",
+                  "type": "section"
                 }
               },
               {
-                "dependency": {
-                  "field_name": "Title",
-                  "section_type": "Specimen",
-                  "type": "section"
-                },
                 "display": "required",
                 "name": "Specimen",
                 "uniqueValues": false,
                 "controlType": {
-                  "name": "select",
-                  "values": [],
-                  "enableValueAdd": false
+                  "name": "reference",
+                  "field_name": "Title",
+                  "section_type": "Specimen",
+                  "type": "section"
                 }
               },
               {
-                "dependency": {
-                  "field_name": "Title",
-                  "section_type": "Image acquisition",
-                  "type": "section"
-                },
                 "display": "required",
                 "name": "Image acquisition",
                 "uniqueValues": false,
                 "controlType": {
-                  "name": "select",
-                  "values": [],
-                  "enableValueAdd": false
+                  "name": "reference",
+                  "field_name": "Title",
+                  "section_type": "Image acquisition",
+                  "type": "section"
                 }
               },
               {
-                "dependency": {
-                  "field_name": "Title",
-                  "section_type": "Image correlation",
-                  "type": "section"
-                },
                 "display": "desirable",
                 "name": "Image correlation",
                 "uniqueValues": false,
                 "controlType": {
-                  "name": "select",
-                  "values": [],
-                  "enableValueAdd": false
+                  "field_name": "Title",
+                  "section_type": "Image correlation",
+                  "type": "section",
+                  "name": "reference"
                 }
               },
               {
-                "dependency": {
-                  "field_name": "Title",
-                  "section_type": "Image analysis",
-                  "type": "section"
-                },
                 "display": "desirable",
                 "name": "Image analysis",
                 "uniqueValues": false,
                 "controlType": {
-                  "name": "select",
-                  "values": [],
-                  "enableValueAdd": false
+                  "name": "reference",
+                  "type": "section",
+                  "section_type": "Image analysis",
+                  "field_name": "Title"
                 }
               }
             ]
