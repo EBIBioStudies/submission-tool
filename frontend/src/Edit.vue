@@ -257,6 +257,23 @@ function cleanAndReorderSubsectionsRecursive(section) {
   return section;
 }
 
+function collectMessages(node) {
+  if (!node) return [];
+
+  const messages = [];
+
+  if (node.message != null && node.message !== "") {
+    messages.push(node.message);
+  }
+
+  if (Array.isArray(node.subnodes)) {
+    node.subnodes.forEach(sub => {
+      messages.push(...collectMessages(sub));
+    });
+  }
+
+  return messages;
+}
 
 const finalSubmitDraft = async (option) => {
   showModal.value = false;
@@ -302,8 +319,9 @@ const finalSubmitDraft = async (option) => {
 
   } catch (error) {
     success.value = false;
+    const allMessages = collectMessages(error?.response?.data?.log).join(" -- ");
     serverErrorMessage.value =
-      error?.response?.data?.log?.message || error?.message || 'Unknown Error';
+      allMessages || error?.message || 'Unknown Error';
   } finally {
     isLoading.value = false;
   }
