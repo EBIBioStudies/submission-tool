@@ -32,6 +32,7 @@
 
           <template v-else>
             <font-awesome-icon :icon="['fas', 'spinner']" class="spinner-border spinner-border-sm status-spinner fa-spin" />
+            {{ submission.accno }}
           </template>
         </td>
 
