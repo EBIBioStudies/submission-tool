@@ -42,7 +42,7 @@
             </div>
             <div class="form-check">
               <input type="checkbox" id="terms" v-model="form.terms" required class="form-check-input">
-              <label for="terms"> I have read and agree to the <a target="_blank" href="https://www.ebi.ac.uk/data-protection/privacy-notice/biostudies-database">Privacy Notice</a> and <a target="_blank" href="https://www.ebi.ac.uk/about/terms-of-use">Terms of Use</a>, including the limited processing of personal data.</label>
+              <label for="terms"> I have read and agree to the <a target="_blank" href="https://www.ebi.ac.uk/data-protection/privacy-notice/embl-ebi-public-website/">Privacy Notice</a> and <a target="_blank" href="https://www.ebi.ac.uk/about/terms-of-use">Terms of Use</a>, including the limited processing of personal data.</label>
             </div>
             <button type="submit" :class="{disabled: !formValid}" class="btn btn-primary"> Register </button>
             <vue-recaptcha v-if="!isCaptchaVerified" required="" class="captcha-root" :sitekey="captchaPublicKey" @verify="onCaptchaVerified"></vue-recaptcha>
