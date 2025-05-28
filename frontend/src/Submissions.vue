@@ -4,6 +4,11 @@
     <div class="d-flex justify-content-center">
       <span class="ps-1" :class="{invisible: !isLoading}" ><font-awesome-icon class="fa-spin" icon="fa-solid fa-spinner" /></span>
     </div>
+    <div v-if="serverListingSubsErrorMessage" class="alert alert-danger" role="alert">
+      <div class="card-body">
+        {{serverListingSubsErrorMessage}}
+      </div>
+    </div>
     <table class="table table-responsive table-striped table-hover">
       <thead>
       <tr>
@@ -100,6 +105,7 @@ const pageLength = ref(15)
 const showNext = ref(false)
 const isLoading = ref(true)
 const keywords = ref('');
+const serverListingSubsErrorMessage = ref('')
 
 const showModal = ref(false)
 const currentErrors = ref([])
@@ -131,14 +137,20 @@ const deleteSubmission = async (accno) => {
 
 watchEffect(async () => {
   if (!AuthService.isAuthenticated()) return
-  isLoading.value = true;
   const keywordsParameter = keywords.value==='' ? '' : `&keywords=${keywords.value}`
-  await axios(`/api/submissions?offset=${offset.value}&limit=${pageLength.value+1}${keywordsParameter}`)
-    .then(response =>  {
-      submissions.value = response.data.slice(0,pageLength.value);
-      showNext.value = response.data.length === pageLength.value+1;
-      isLoading.value = false;
-    });
+  try {
+    isLoading.value = true;
+    serverListingSubsErrorMessage.value = null;
+    const response = await axios(`/api/submissions?offset=${offset.value}&limit=${pageLength.value + 1}${keywordsParameter}`);
+
+    submissions.value = response.data.slice(0, pageLength.value);
+    showNext.value = response.data.length === pageLength.value + 1;
+  } catch (error) {
+    serverListingSubsErrorMessage.value = error?.log?.message || error?.message || "Problem in listing submissions";
+  } finally {
+    isLoading.value = false;
+  }
+
 })
 
 const edit = (accno) => {
