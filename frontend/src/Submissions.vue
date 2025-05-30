@@ -97,7 +97,7 @@ import axios from "axios";
 import NewSubmission from "@/components/NewSubmission.vue";
 import SubmissionErrorsModal from "@/components/SubmissionErrorsModal.vue";
 import utils from '@/utils';
-//init
+//init ci/cd test
 const accession = ref('');
 const submissions = ref([])
 const offset = ref(0)
