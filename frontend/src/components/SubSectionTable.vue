@@ -265,7 +265,8 @@ defineExpose({ errors, thisSection });
               data-bs-html="true"><font-awesome-icon v-if="sectionType?.icon" :icon="sectionType?.icon"
                                                      class="icon" />{{ tableType }}</span>
         <span v-else>
-          <input v-model="tableType" class="ms-2" placeholder="Enter table name" type="text" @click.stop="" />
+          <input v-model="tableType" class="ms-2" placeholder="Enter table name" type="text" @click.stop=""
+          :disabled="parentDisplayType==='readonly'"/>
           <font-awesome-icon v-if="parentDisplayType!=='readonly'" class="icon ps-2" icon="fa-trash" role="button" size="sm" @click="$emit('delete')"
                              @click.stop=""></font-awesome-icon>
         </span>

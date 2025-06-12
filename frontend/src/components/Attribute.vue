@@ -32,6 +32,7 @@ const thisMultiValuedAttribute = ref(
     })?.filter( a  =>  a.name === thisAttribute.value.name && a?.value )
 )
 const parentDisplayType = inject('parentDisplayType')
+const editDateMode = inject('readOnlyEditDateMode')
 const display = computed(() => {
   return props?.fieldType?.display || parentDisplayType?.value || 'optional';
 });
@@ -303,7 +304,7 @@ const showHelp = () => {
       valueType="format"
       placeholder="Select date"
       format="YYYY-MM-DD"
-      :disabled="parentDisplayType==='readonly' || display==='readonly'"
+      :disabled="(parentDisplayType==='readonly' || display==='readonly') && !editDateMode"
       :disabledDate="withinThreeYears"
       :class="{'is-invalid':errors && hasValidated}"
     />

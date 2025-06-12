@@ -33,6 +33,7 @@
             <button class="btn btn-outline-danger btn-sm" @click="showErrors(submission.errors)">
               View Errors
             </button>
+            <div>{{ submission.accno }}</div>
           </template>
 
           <template v-else>

@@ -71,7 +71,7 @@
     <div class="row">
       <div class="col text-end pb-4">
         <font-awesome-icon v-if="isSaving" :icon="['far','floppy-disk']" beat-fade class="pe-2"/>
-        <button v-if="!displayType" class="btn btn-primary btn-top-margin" type="button" @click="submitDraftPopUp()">Submit</button>
+        <button  class="btn btn-primary btn-top-margin" type="button" @click="submitDraftPopUp()">Submit</button>
         <button v-if="isSubmittedSubmission" class="btn btn-outline-danger ms-2 btn-top-margin" type="button" @click="revertDraft()">Revert</button>
       </div>
     </div>
@@ -161,10 +161,12 @@ const hasValidated = ref(false);
 const success = ref(false)
 const serverErrorMessage = ref('')
 const displayType = ref('')
+const editDateMode = ref(false);
 const isLoading = ref(false);
 provide('hasValidated', hasValidated)
 provide('submission', submission)
 provide('parentDisplayType', displayType)
+provide('readOnlyEditDateMode', editDateMode)
 
 const isSubmittedSubmission = displayType?.value!=='readonly' && !props?.accession?.startsWith('TMP_');
 const showModal = ref(false);
@@ -427,6 +429,10 @@ watchEffect(async () => {
       );
     }
     template.value = tmpl ?? Default;
+    if(template.value?.display === 'readonly') {
+      displayType.value = 'readonly';
+      editDateMode.value = true;
+    }
   } else {
     //TODO: display error
     console.log('No such submission')
