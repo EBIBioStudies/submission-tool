@@ -3,7 +3,7 @@
 import AuthService from '../services/AuthService';
 import { computed, ref } from 'vue';
 
-const secret = computed(() => location.hostname.startsWith('www.ebi.ac.uk') ? '/' : '/.beta/' + AuthService.user.value.secret);
+const secret = computed(() => (location.hostname.startsWith('www.ebi.ac.uk') ? '/' : '/.beta/') + AuthService.user.value.secret);
 const selectedOS = ref('Windows');
 
 </script>
