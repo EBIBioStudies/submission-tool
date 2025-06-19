@@ -60,13 +60,18 @@ const stopPropagation = (event) => {
 }
 
 /* Modal box */
+/* Modal box */
 .modal-content {
   background: white;
   padding: 20px;
   border-radius: 10px;
-  width: 400px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh; /* Set a max height */
+  overflow-y: auto;  /* Enable scrolling inside modal */
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
 }
+
 
 /* Header */
 .modal-header {
@@ -95,4 +100,16 @@ const stopPropagation = (event) => {
   margin-top: 15px;
   text-align: right;
 }
+
+.modal-body ul {
+  padding-left: 20px;
+  max-width: 100%;
+  word-wrap: break-word;
+}
+
+.modal-body li {
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
 </style>
