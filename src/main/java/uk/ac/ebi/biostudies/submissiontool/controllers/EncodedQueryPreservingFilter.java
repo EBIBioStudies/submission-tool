@@ -15,7 +15,7 @@ import java.util.Enumeration;
 
 @Component
 @Order(1)
-@WebFilter(urlPatterns = "/api/*")
+@WebFilter(urlPatterns = "/api/files/*") // only files path needs encoded support
 public class EncodedQueryPreservingFilter implements Filter {
 
     @Value("${backend.url}")
@@ -28,10 +28,13 @@ public class EncodedQueryPreservingFilter implements Filter {
         HttpServletRequest req = (HttpServletRequest) servletRequest;
         HttpServletResponse res = (HttpServletResponse) servletResponse;
 
-        String encodedQuery = req.getQueryString();
-        String path = req.getRequestURI().replaceFirst("/api", "");  // Strip /api prefix
+        // Remove only `/api` prefix → keep /files/xyz path intact
+        String path = req.getRequestURI().replaceFirst("^/api", "");
+        String encodedQuery = req.getQueryString(); // still encoded
+
         String fullUrl = backendUrl + path + (encodedQuery != null ? "?" + encodedQuery : "");
 
+        // Proxy GET only
         if ("GET".equalsIgnoreCase(req.getMethod())) {
             HttpURLConnection connection = (HttpURLConnection) new URL(fullUrl).openConnection();
             connection.setRequestMethod("GET");
@@ -40,9 +43,12 @@ public class EncodedQueryPreservingFilter implements Filter {
             Enumeration<String> headerNames = req.getHeaderNames();
             while (headerNames.hasMoreElements()) {
                 String headerName = headerNames.nextElement();
-                connection.setRequestProperty(headerName, req.getHeader(headerName));
+                if (!"host".equalsIgnoreCase(headerName)) {
+                    connection.setRequestProperty(headerName, req.getHeader(headerName));
+                }
             }
 
+            // Forward response
             res.setStatus(connection.getResponseCode());
             connection.getInputStream().transferTo(res.getOutputStream());
         } else {
