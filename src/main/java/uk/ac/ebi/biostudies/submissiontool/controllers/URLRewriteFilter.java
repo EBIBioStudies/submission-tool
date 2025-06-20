@@ -1,9 +1,7 @@
 package uk.ac.ebi.biostudies.submissiontool.controllers;
-import jakarta.servlet.Filter;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,14 +20,16 @@ public class URLRewriteFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String requestURI = request.getRequestURI();
+        String rawRequestURI = request.getRequestURI(); // decoded path (OK)
+        String rawQueryString = request.getQueryString(); // raw (encoded) query string
 
-        if (requestURI.startsWith(externalPath)) {
-            // Rewrite the request path by removing the externalPath
-            String newURI = requestURI.replaceFirst(externalPath, "");
+        if (rawRequestURI.startsWith(externalPath)) {
+            String internalPath = rawRequestURI.replaceFirst(externalPath, "");
+            if (rawQueryString != null) {
+                internalPath += "?" + rawQueryString;
+            }
 
-            // Forward the request internally
-            request.getRequestDispatcher(newURI).forward(request, response);
+            request.getRequestDispatcher(internalPath).forward(request, response);
             return;
         }
 
