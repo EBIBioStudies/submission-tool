@@ -102,14 +102,17 @@ const platform = computed(()=>selectedOS.value==='Windows'?'Windows': (selectedO
                       </ul>
                     </div>
                     <div v-else id="eg-els">
-                      <markdown  class="code-block"><p><code>ascp -k 1 -QT -l 400M -P33001 &lt;directory to upload&gt; bs-upload@fasp.ebi.ac.uk:&lt;secret directory&gt;</code> </p>
-                      </markdown><markdown ><p>where</p>
+                      <div class="code-block">
+                        <p><code>ascp -k 1 -QT -l 400M -P33001 &lt;directory to upload&gt; bs-upload@fasp.ebi.ac.uk:&lt;secret directory&gt;</code></p>
+                      </div>
+
+                      <p>where</p>
                       <ul>
                         <li><code>&lt;directory to upload&gt;</code> is the path of the local directory to be uploaded.</li>
                         <li><code>&lt;secret directory&gt;</code> looks like <code>xx/xxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx-xxxx</code> and is shown above.</li>
                         <li>Password: <code>vsr5nW7Y</code></li>
                       </ul>
-                    </markdown>
+
                     </div>
                   </div>
                 </div>
