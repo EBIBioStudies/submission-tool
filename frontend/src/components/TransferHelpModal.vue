@@ -4,7 +4,10 @@ import AuthService from '../services/AuthService';
 import { computed, ref } from 'vue';
 
 const secret = computed(() => (location.hostname.startsWith('www.ebi.ac.uk') ? '/' : '/.beta/') + AuthService.user.value.secret);
+let uploadType = AuthService.user.value?.uploadType || '';
+let asperaVersion = uploadType === 'ftp' ? '4.2.12' : '3.11.2';
 const selectedOS = ref('Windows');
+const platform = computed(()=>selectedOS.value==='Windows'?'Windows': (selectedOS.value==='Linux'?'Linux':'Mac+OSX'));
 
 </script>
 
@@ -38,8 +41,11 @@ const selectedOS = ref('Windows');
                   <p>The FTP credentials are:</p>
                   <ul>
                     <li>Host: <code>ftp-private.ebi.ac.uk</code></li>
-                    <li>Username: <code>bsftp</code></li>
-                    <li>Password: <code>bsftp1</code></li>
+                    <li>
+                      Username: <code>{{ uploadType === 'ftp' ? 'bs-upload' : 'bsftp' }}</code>
+                    </li>
+
+                    <li>Password: <code>{{uploadType === 'ftp' ? 'vsr5nW7Y' : 'bsftp1'}}</code></li>
                     <li>Secret directory: <code>{{ secret }}</code></li>
                   </ul>
                   <p>Please use the credentials above to connect to the FTP server, and then upload your submission
@@ -65,45 +71,55 @@ const selectedOS = ref('Windows');
 
                     <p class="pt-3"> The <strong>Aspera</strong>&nbsp;<em>ascp</em> command line client is distributed
                       as part of <a
-                        href="https://www.ibm.com/support/fixcentral/swg/selectFixes?parent=ibm%7EOther%20software&product=ibm/Other+software/IBM+Aspera+Connect&release=3.11.2&platform=Windows&function=all"
-                        target="_blank"> <strong>IBM Aspera Connect (3.11.2)</strong></a>. You might need to create a
+                        :href="`https://www.ibm.com/support/fixcentral/swg/selectFixes?parent=ibm%7EOther%20software&product=ibm/Other+software/IBM+Aspera+Connect&release=${asperaVersion}&platform=${platform}&function=all`"
+                        target="_blank"> <strong>IBM Aspera Connect ({{asperaVersion}})</strong></a>. You might need to create a
                       new IBMid for downloading. After installation, you can use the <em>ascp</em> tool, e.g.,</p>
-
-                    <div v-if="selectedOS === 'Mac OS'">
-                      <code>$ ~/Applications/Aspera\ Connect.app/Contents/Resources/ascp -P33001 -i
-                        ~/Applications/Aspera\ Connect.app/Contents/Resources/asperaweb_id_dsa.openssh -d &lt;directory
-                        to upload&gt; bsaspera_w@hx-fasp-1.ebi.ac.uk:&lt;secret directory></code>
+                    <div v-if="uploadType==='nfs'" id="eg">
+                      <div v-if="selectedOS === 'Mac OS'">
+                        <code>$ ~/Applications/Aspera\ Connect.app/Contents/Resources/ascp -P33001 -i
+                          ~/Applications/Aspera\ Connect.app/Contents/Resources/asperaweb_id_dsa.openssh -d &lt;directory
+                          to upload&gt; bsaspera_w@hx-fasp-1.ebi.ac.uk:&lt;secret directory></code>
+                      </div>
+                      <div v-if="selectedOS === 'Linux'">
+                        <code>$ tar -zxvf ibm-aspera-connect-3.11.2.63-linux-g2.12-64.tar.gz<br/>
+                          $ ./ibm-aspera-connect-3.11.2.63-linux-g2.12-64.sh<br/>
+                          $ ~/.aspera/connect/bin/ascp -P33001 -i ~/.aspera/connect/etc/asperaweb_id_dsa.openssh -d &lt;directory to upload&gt; bsaspera_w@hx-fasp-1.ebi.ac.uk:&lt;secret directory></code>
+                      </div>
+                      <div v-if="selectedOS === 'Windows'">
+                        <code>C:\>"C:\Users\alice\AppData\Local\Programs\Aspera\Aspera Connect\bin\ascp.exe"
+                          -P33001 -i "C:\Users\alice\AppData\Local\Programs\Aspera\Aspera Connect\etc\asperaweb_id_dsa.openssh"
+                          -d &lt;directory to upload&gt; bsaspera_w@hx-fasp-1.ebi.ac.uk:&lt;secret directory&gt;</code>
+                      </div>
+                      <p class="mt-2">where</p>
+                      <ul>
+                        <li><code>-P33001</code> and <code>bsaspera_w@hx-fasp-1.ebi.ac.uk</code> defines port, user and
+                          server for the Aspera connection.
+                        </li>
+                        <li><code>&lt;directory to upload&gt;</code> is the path of the directory to be uploaded.</li>
+                        <li><code>&lt;secret directory&gt;</code> looks like <code>xx/xxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx-xxxx</code>
+                          and is shown above.
+                        </li>
+                      </ul>
                     </div>
-                    <div v-if="selectedOS === 'Linux'">
-                      <code>$ tar -zxvf ibm-aspera-connect-3.11.2.63-linux-g2.12-64.tar.gz<br/>
-                        $ ./ibm-aspera-connect-3.11.2.63-linux-g2.12-64.sh<br/>
-                        $ ~/.aspera/connect/bin/ascp -P33001 -i ~/.aspera/connect/etc/asperaweb_id_dsa.openssh -d &lt;directory to upload&gt; bsaspera_w@hx-fasp-1.ebi.ac.uk:&lt;secret directory></code>
+                    <div v-else id="eg-els">
+                      <markdown  class="code-block"><p><code>ascp -k 1 -QT -l 400M -P33001 &lt;directory to upload&gt; bs-upload@fasp.ebi.ac.uk:&lt;secret directory&gt;</code> </p>
+                      </markdown><markdown ><p>where</p>
+                      <ul>
+                        <li><code>&lt;directory to upload&gt;</code> is the path of the local directory to be uploaded.</li>
+                        <li><code>&lt;secret directory&gt;</code> looks like <code>xx/xxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx-xxxx</code> and is shown above.</li>
+                        <li>Password: <code>vsr5nW7Y</code></li>
+                      </ul>
+                    </markdown>
                     </div>
-                    <div v-if="selectedOS === 'Windows'">
-                      <code>C:\>"C:\Users\alice\AppData\Local\Programs\Aspera\Aspera Connect\bin\ascp.exe"
-                        -P33001 -i "C:\Users\alice\AppData\Local\Programs\Aspera\Aspera Connect\etc\asperaweb_id_dsa.openssh"
-                        -d &lt;directory to upload&gt; bsaspera_w@hx-fasp-1.ebi.ac.uk:&lt;secret directory&gt;</code>
-                    </div>
-                    <p class="mt-2">where</p>
-                    <ul>
-                      <li><code>-P33001</code> and <code>bsaspera_w@hx-fasp-1.ebi.ac.uk</code> defines port, user and
-                        server for the Aspera connection.
-                      </li>
-                      <li><code>&lt;directory to upload&gt;</code> is the path of the directory to be uploaded.</li>
-                      <li><code>&lt;secret directory&gt;</code> looks like <code>xx/xxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx-xxxx</code>
-                        and is shown above.
-                      </li>
-                    </ul>
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
         </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
-        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
       </div>
     </div>
   </div>
