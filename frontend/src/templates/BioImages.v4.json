@@ -510,6 +510,154 @@
         "helpContextual": {}
       },
       {
+        "displayAnnotations": false,
+        "tableGroups": [],
+        "name": "Annotations",
+        "display": "desirable",
+        "tableTypes": [],
+        "sectionTypes": [],
+        "helpContextual": {},
+        "fieldTypes": [
+          {
+            "name": "Title",
+            "controlType": {
+              "name": "text"
+            },
+            "description": "A concise label for the metadata in this section.",
+            "display": "required",
+            "helpContextual": {
+              "description": "A concise label for the metadata in this section.",
+              "examples": ["Segmentation masks"]
+            }
+          },
+          {
+            "name": "Annotation Overview",
+            "controlType": {
+              "name": "text"
+            },
+            "description": "Short descriptive summary indicating the type of annotation and how it was generated",
+            "display": "required",
+            "helpContextual": {
+              "description": "Short descriptive summary indicating the type of annotation and how it was generated"
+            }
+          },
+          {
+            "name": "Annotation Type",
+            "controlType": {
+              "name": "select",
+              "defaultValue": "",
+              "values": [
+                {
+                  "value": "class_labels"
+                },
+                {
+                  "value": "bounding_boxes"
+                },
+                {
+                  "value": "counts"
+                },
+                {
+                  "value": "derived_annotations"
+                },
+                {
+                  "value": "geometrical_annotations"
+                },
+                {
+                  "value": "graphs"
+                },
+                {
+                  "value": "point_annotations"
+                },
+                {
+                  "value": "segmentation_mask"
+                },
+                {
+                  "value": "tracks"
+                },
+                {
+                  "value": "weak_annotations"
+                },
+                {
+                  "value": "other"
+                }]
+            },
+            "description": "Short descriptive summary indicating the type of annotation and how it was generated",
+            "display": "required",
+            "helpContextual": {
+              "description": "<b>class_labels</b>: tags that identify specific features, patterns or classes in images<br><br> <b>bounding_boxes</b>: rectangles completely enclosing a structure of interest within an image <br><br> <b>counts:</b> number of objects, such as cells, found in an image</br></br> <b>derived_annotations:</b> additional analytical data extracted from the images. For example, the image point spread function,the signal to noise ratio, focus information...<br><br> <b>geometrical_annotations:</b> polygons and shapes that outline a region of interest in the image. These can be geometrical primitives, 2D polygons, 3D meshes<br><br> <b>graphs:</b> graphical representations of the morphology, connectivity, or spatial arrangement of biological structures in an image. Graphs, such as skeletons or connectivity diagrams, typically consist of nodes and edges, where nodes represent individual elements or regions and edges represent the connections or interactions between them <br> <br> <b>point_annotations:</b> X, Y, and Z coordinates of a point of interest in an image (for example an object's centroid or landmarks) <br><br> <b>segmentation_mask:</b> an image, the same size as the source image, with the value of each pixel representing some biological identity or background region<br> <br> <b>tracks:</b> annotations marking the movement or trajectory of objects within a sequence of bioimages<br><br> <b>weak_annotations:</b> rough imprecise annotations that are fast to generate. These annotations are used, for example, to detect an object without providing accurate boundaries<br><br> <b>other:</b> other types of annotations, please specify in the annotation overview section"
+
+            }
+          },
+          {
+            "name": "Annotation Method",
+            "controlType": {
+              "name": "text"
+            },
+            "display": "required",
+            "helpContextual": {
+              "description": "Description of how the annotations where created.",
+              "examples": [
+                "crowdsourced",
+                "expertly annotated",
+                "produced by software - Which software",
+                "when were the annotations created",
+                "protocols used for consensus and quality assurance"
+              ]
+            }
+          },
+          {
+            "name": "Annotation Confidence Level",
+            "controlType": {
+              "name": "text"
+            },
+            "display": "desirable",
+            "helpContextual": {
+              "description": "Confidence on annotation accuracy",
+              "examples": [
+                "self-reported confidence",
+                "variance among several annotators",
+                "number of years of experience of the annotator"
+              ]
+            }
+          },
+          {
+            "name": "Annotation Criteria",
+            "controlType": {
+              "name": "text"
+            },
+            "display": "desirable",
+            "helpContextual": {
+              "description": "Rules used to generate annotations",
+              "examples": [
+                "only nuclei in focus were segmented"
+              ]
+            }
+          },
+          {
+            "name": "Annotation Coverage",
+            "controlType": {
+              "name": "text"
+            },
+            "display": "desirable",
+            "helpContextual": {
+              "description": "If the dataset is not completely annotated, which images from the dataset were annotated, and what percentage of the data has been annotated from what is available?"
+            }
+          },
+          {
+            "name": "File List",
+            "icon": "fa-file",
+            "controlType": {
+              "name": "filelist",
+              "allowFolders": false
+            },
+            "display": "required",
+            "helpText": "Examples",
+            "helpLink": "/bioimage-archive/help-file-list/",
+            "asyncValueValidatorName": "forFileList"
+          }
+        ]
+      },
+      {
         "name": "Specimen",
         "displayAnnotations": false,
         "fieldTypes": [

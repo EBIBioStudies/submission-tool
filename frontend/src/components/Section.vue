@@ -10,6 +10,7 @@ import SubSectionTable from "@/components/SubSectionTable.vue";
 import EditableLabel from "@/components/EditableLabel.vue";
 import Authors from "@/components/Authors.vue";
 import { Tooltip } from 'bootstrap';
+import logger from "@fortawesome/vue-fontawesome/src/logger.js";
 
 
 
@@ -25,6 +26,7 @@ const sectionTablesRef = ref(null)
 const sectionFilesRef = ref(null)
 const sectionLinksRef = ref(null)
 const parentDisplayType = inject('parentDisplayType')
+const isPublicSubmission = inject('isPublicSubmission')
 const errSecRefs = ref([])
 const errSecTableRefs = ref([])
 const errSpecialSecTableRefs = ref([])
@@ -306,6 +308,10 @@ const errors = computed(() => {
 
   return _errors
 });
+// const log = (...args) => {
+//   console.log(...args);
+//   return '';
+// };
 
 defineExpose({errors, thisSection});
 </script>
@@ -340,7 +346,7 @@ defineExpose({errors, thisSection});
             :data="thisSection"/>
         </span>
       </span>
-      <span v-if="(sectionType?.display!=='required' || thisSection?.accno?.includes('-removable')) && parentDisplayType!=='readonly' && sectionType?.name!=='Study'" class="mt-2 btn btn-sm btn-delete" role="button">
+      <span v-if="(sectionType?.display!=='required' || thisSection?.accno?.includes('-removable')) && parentDisplayType!=='readonly' && sectionType?.name!=='Study' && !isPublicSubmission?.value" class="mt-2 btn btn-sm btn-delete" role="button">
         <font-awesome-icon
           role="button"
           @click="$emit('delete')"
