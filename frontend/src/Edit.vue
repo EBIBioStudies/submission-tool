@@ -185,6 +185,23 @@ const submitDraftPopUp = ()=>{
     finalSubmitDraft("");
 }
 
+const publicSubmission = computed(() => {
+  if(!isSubmittedSubmission)
+    return false;
+  const releaseAttr = submission.value.attributes.find(attr => attr?.name === 'ReleaseDate');
+  if (!releaseAttr || !releaseAttr.value) return false;
+
+  const releaseDate = new Date(releaseAttr.value);
+  if (isNaN(releaseDate)) {
+    console.warn('Invalid release date:', releaseAttr.value);
+    return false;
+  }
+  return Date.now() > releaseDate.getTime();
+});
+provide('isPublicSubmission', publicSubmission);
+
+
+
 
 function cleanAndReorderSubsectionsRecursive(section) {
   if (!section || typeof section !== 'object') return section;
