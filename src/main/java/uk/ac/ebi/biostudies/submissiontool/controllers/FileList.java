@@ -51,7 +51,7 @@ public class FileList {
     private void getFiles(String path, String token,
                           PrintWriter writer) throws Exception {
         RestTemplate restTemplate = new RestTemplate();
-        String url = "%s/files/%s".formatted(environments.getProperty("backend.url"), path);
+        String url = "%s/files/%s".formatted(environments.getProperty("backend.url"), "user"+path);
         HttpHeaders headers = new HttpHeaders();
         headers.set(SESSION_HEADER, token);
         HttpEntity<HttpHeaders> httpEntity = new HttpEntity<>(headers);

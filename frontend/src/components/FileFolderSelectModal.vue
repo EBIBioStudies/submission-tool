@@ -158,7 +158,7 @@ const loadTree = () => {
           <h5>Select file{{allowFolder ? ' / folder' : ''}}</h5>
           <div class="card bg-light mb-3">
             <div class="card-body overflow-auto" style="max-height: 400px;">
-              <FileTree path="/user" ref="filetree"
+              <FileTree path="" ref="filetree"
                                   @select="(node) => select(node)"/>
             </div>
           </div>
