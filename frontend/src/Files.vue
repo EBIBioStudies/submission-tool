@@ -5,8 +5,8 @@
         <div v-for="(folder, index) in currentPath" class="d-inline-block">
           <font-awesome-icon v-if="index!==0" class="fa-2xs text-black-50 opacity-25 ps-2 pe-2 align-middle"
                              icon="fa-angle-right"></font-awesome-icon>
-          <router-link :to="`/files/${currentPath.slice(0,index+1).join('/')}`" class="text-decoration-none">
-            <font-awesome-icon v-if="index===0" class="pe-1" icon="fa-home"></font-awesome-icon>
+          <router-link :to="index === 0 ? '/files' : `/files/${currentPath.slice(0, index + 1).filter(Boolean).join('/')}`" class="text-decoration-none">
+          <font-awesome-icon v-if="index===0" class="pe-1" icon="fa-home"></font-awesome-icon>
             <span v-if="index===0">Home</span><span v-else>{{ folder }}</span>
           </router-link>
         </div>
@@ -127,7 +127,7 @@ const axiosAbortController = new AbortController();
 const MAX_UPLOAD_SIZE = 1024;// in MBs;
 const MAX_UPLOAD_FILE_COUNT = 1000;
 
-const currentPath = computed(() => props.paths === '' ? ['user'] : props.paths);
+const currentPath = computed(() => props.paths === '' ? [''] : props.paths);
 const sortedFiles = computed(() => files.value?.sort((a, b) => // sort on type before name
   sortDirection.value * (sortKey.value === 'name' ? `${a?.type}-${a?.name}`.localeCompare(`${b?.type}-${b?.name}`)
     : (a?.type === 'DIR' ? -1 : a?.size) - (b?.type === 'DIR' ? -1 : b?.size)),
@@ -146,32 +146,52 @@ const flipSort = (key) => {
 
 watchEffect(async () => {
   if (!AuthService.isAuthenticated()) return;
-  const path = props.paths && props.paths !== '' ? props.paths.map(path => encodeURIComponent(path)).join('/') : 'user/';
-  const response = await axios.get(`/api/files/${path}`)
-    .then(response => files.value = response.data);
+  const path = props.paths && props.paths !== '' ? props.paths.join('/') : '';
+  axios.post('/api/files/user/query', { path: path })
+    .then(response => {
+      files.value = response.data.map(file => ({
+        ...file,
+        path: file.path === 'user' ? '' : file.path.replace(/^user\/?/, '')
+      }));
+    })
+    .catch(error => {
+      console.error("Failed to fetch files:", error);
+    });
 });
 
 const navigate = async (path, name) => {
-  path = path.split('/').map(path => encodeURIComponent(path)).join('/');
-  if (`${path}/${name}` === currentPath.value.join('/') + '/') {
+  path = path.split('/').map(encodeURIComponent).filter(Boolean).join('/');
+  const fullPath = ['/files', path, name].filter(Boolean).join('/');
+  const currentPathStr = ['/files', ...currentPath.value].filter(Boolean).join('/');
+
+  if (fullPath === currentPathStr) {
     location.reload();
   } else {
-    await router.push(`/files/${path}/${name}`);
+    await router.push(fullPath);
   }
 };
 
+
+
 const downloadFile = (file) => {
-  const downloadPath = `/api/files/${file.path}?fileName=${file.name}`;
-  axios({ url: downloadPath, responseType: 'blob' }).then((response) => {
+  axios.post('/api/files/user/download', {
+    path: file.path,
+    fileName: file.name
+  }, {
+    responseType: 'blob'
+  }).then((response) => {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(response.data);
     a.setAttribute('download', file.name);
     a.click();
+  }).catch((error) => {
+    console.error('Download failed:', error);
   });
 };
 
+
 const downloadFileList = (file) => {
-  const downloadPath = `/filelist/${file.path}/${file.name}`;
+  const downloadPath = ['/filelist', file.path, file.name].filter(Boolean).join('/');
   axios({ url: downloadPath, responseType: 'blob' }).then((response) => {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(response.data);
@@ -182,25 +202,41 @@ const downloadFileList = (file) => {
 
 const deleteFile = async (file) => {
   if (!await utils.confirm('Delete File', `Do you want to delete ${file.name}?`, 'Delete')) return;
-  const downloadPath = `/api/files/${file.path}?fileName=${file.name}`;
-  axios.delete(downloadPath).then(async () => await navigate(file.path, ''));
+
+  const body = {
+    path: file.path,
+    fileName: file.name,
+  };
+
+  axios.post('/api/files/user/delete', body)
+    .then(async () => await navigate(file.path))
+    .catch(error => console.error('Failed to delete file:', error));
+
+  location.reload();
 };
+
 
 const uploadFile = (file) => {
   const formData = new FormData();
+
+  // Attach the file
   formData.append('files', file);
-  return axios.post(`/api/files/${currentPath.value.join('/')}`,
-    formData,
-    {
-      signal: axiosAbortController.signal,
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-      onUploadProgress: function(progressEvent) {
-        currentUpload.value.progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
-      }.bind(this),
-    });
+
+  // Attach JSON as a string under key 'filePath'
+  formData.append('filePath', currentPath.value.map(a => decodeURIComponent(a)).join('/'));
+
+
+  return axios.post(`/api/files/user/upload`, formData, {
+    signal: axiosAbortController.signal,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    onUploadProgress: function (progressEvent) {
+      currentUpload.value.progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+    }.bind(this),
+  });
 };
+
 
 const uploadFiles = async (uploads, isFolderUpload) => {
 

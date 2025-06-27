@@ -45,15 +45,19 @@ const isLoading = ref(true);
 const tree = ref([]);
 
 const show = async () => {
-  try {
-    if (!AuthService.isAuthenticated()) return;
-    const response = await axios.get(`/api/files/${props.path}`);
-    tree.value = response.data;
-  } catch (error) {
-    console.error('Error fetching tree data:', error);
-  } finally {
-    isLoading.value = false;
-  }
+  if (!AuthService.isAuthenticated()) return;
+  const normalizedPath = props.path?.replace(/^user\/?/, '') || '';
+
+  axios.post('/api/files/user/query', {path: normalizedPath})
+      .then(response => {
+        tree.value = response.data;
+      })
+      .catch(error => {
+        console.error('Error fetching tree data:', error);
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
 };
 
 onMounted(show);
