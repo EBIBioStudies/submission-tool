@@ -39,7 +39,7 @@ public class FileList {
             response.setHeader("Content-Type", "text/tab-separated-values");
             response.setHeader("Content-Disposition", "attachment; filename=\"" + path.substring(path.lastIndexOf("/")+1) +".tsv\"");
             writer.println("Files");
-            getFiles(path, token, writer);
+            getFiles("user"+path, token, writer);
         } catch (Exception e) {
             writer.println("Error generating filelist");
             e.printStackTrace();
@@ -51,7 +51,7 @@ public class FileList {
     private void getFiles(String path, String token,
                           PrintWriter writer) throws Exception {
         RestTemplate restTemplate = new RestTemplate();
-        String url = "%s/files/%s".formatted(environments.getProperty("backend.url"), "user"+path);
+        String url = "%s/files/%s".formatted(environments.getProperty("backend.url"), path);
         HttpHeaders headers = new HttpHeaders();
         headers.set(SESSION_HEADER, token);
         HttpEntity<HttpHeaders> httpEntity = new HttpEntity<>(headers);
