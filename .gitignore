@@ -2,6 +2,7 @@ target/
 .mvn/
 frontend/node
 .idea/
+node_modules
 application.yml
 ### Mac OS ###
 .DS_Store
