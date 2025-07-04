@@ -464,8 +464,14 @@ let pendingSave = null;
 
 watch(updatedSubmission, async (sub) => {
   const draft = JSON.parse(updatedSubmission.value);
-  // Remove ReleaseDate from Study. It remains in the Submission
-  draft?.section?.attributes.splice(draft?.section?.attributes.findIndex((a) => a.name === 'ReleaseDate'), 1);
+  // Sync ReleaseDate from section to submission.attributes if both exist
+  const sectionDateAttr = draft?.section?.attributes.find(a => a.name === 'ReleaseDate');
+  const submissionDateIdx = draft?.attributes.findIndex(a => a.name === 'ReleaseDate');
+
+  if (sectionDateAttr && sectionDateAttr.value && submissionDateIdx !== -1) {
+    draft.attributes[submissionDateIdx] = { ...sectionDateAttr };  // ensure latest value is copied
+  }
+
 
   const delta = Date.now() - lastUpdated
   if (delta < 1000) {
