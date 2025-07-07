@@ -27,6 +27,7 @@ const sectionFilesRef = ref(null)
 const sectionLinksRef = ref(null)
 const parentDisplayType = inject('parentDisplayType')
 const isPublicSubmission = inject('isPublicSubmission')
+const readOnlyEditDateMode = inject('readOnlyEditDateMode')
 const errSecRefs = ref([])
 const errSecTableRefs = ref([])
 const errSpecialSecTableRefs = ref([])
@@ -376,93 +377,97 @@ defineExpose({errors, thisSection});
 
 
 
+          <div v-if="readOnlyEditDateMode">
 
-          <div class="p-0" :key="sectionsRefreshKey">
-            <!-- Files -->
-            <SectionTable
-              v-if="section.files && section.files?.length > 0"
-              :rows="section.files"
-              :depth="props.depth+1"
-              :sectionType="subSectionTypeMap.get('file')"
-              sectionSubType="File"
-              @rowsReordered="(e) => rowsReordered(e, section.files)"
-              @columnUpdated="(msg) => updateColumnName(section.files, msg)"
-              @columnsReordered="(msg) => sectionsRefreshKey+= 1"
-              @delete="deleteSubSection(section.files, 0)"
-              @refreshSection="refreshSection()"
-              ref="sectionFilesRef"
-            />
-
-            <!-- Links -->
-            <SectionTable
-              v-if="section.links && section.links?.length>0"
-              :rows="section.links"
-              :depth="props.depth+1"
-              :sectionType="subSectionTypeMap.get('link')"
-              sectionSubType="Link"
-              @rowsReordered="(e) => rowsReordered(e, section.links)"
-              @columnUpdated="(msg) => updateColumnName(section.links, msg)"
-              @columnsReordered="(msg) => sectionsRefreshKey+= 1"
-              @delete="deleteSubSection(section.links, 0)"
-              @refreshSection="refreshSection()"
-              ref="sectionLinksRef"
-            />
-<!--            render special sections in the computed specialSectionMap -->
-            <div v-for="(item, index) in specialSectionMap" :key="index" ref="sectionTablesRef">
-              <SubSectionTable
-                v-if="Array.isArray(item[1]) && item[1]?.length > 0"
-                :rows="item[1]"
-                :depth="props.depth+1"
-                :sectionType="subSectionTypeMap.get(item[0].toLowerCase())"
-                :sectionSubType="item[0]"
-                :parent=section
-                @rowsReordered="(e) => rowsReordered(e, item[1])"
-                @columnUpdated="(msg) => updateColumnName(item[1], msg)"
-                @columnsReordered="(msg) => sectionsRefreshKey+= 1"
-                @delete="deleteSubSection(section.subsections, index)"
-                @refreshSection="refreshSection()"
-                ref="errSpecialSecTableRefs"
-              />
-            </div>
-
-            <!-- render general Sections and general Tables -->
-            <div v-for="(subsection, i) in section.subsections" :key="i" ref="subsectionsRef">
-              <!-- general section -->
-              <Section
-                v-if="!Array.isArray(subsection) && !subSectionTypeMap.get(subsection?.type?.toLowerCase())?.rowAsSection"
-                :section="subsection"
-                :sectionType="subSectionTypeMap.get(subsection?.type?.toLowerCase()) || subsection?.type?.toLowerCase()"
-                :depth="props.depth + 1"
-                :sectionTypeMap="subSectionTypeMap"
-                @delete="deleteSubSection(section.subsections, i)"
-                @addTable="(msg)=>addTable(msg.section, msg.instance)"
-                ref="errSecRefs"
-              />
-
-              <!-- general Table -->
+          </div>
+          <div v-else>
+            <div class="p-0" :key="sectionsRefreshKey">
+              <!-- Files -->
               <SectionTable
-                v-if="Array.isArray(subsection) && subsection?.length > 0"
-                :rows="subsection"
+                v-if="section.files && section.files?.length > 0"
+                :rows="section.files"
                 :depth="props.depth+1"
-                :sectionType="subSectionTypeMap.get(subsection?.name?.toLowerCase())"
-                :sectionSubType="subSectionTypeMap.get(subsection?.name?.toLowerCase())?.name"
-                :parent=section
-                @rowsReordered="(e) => rowsReordered(e, subsection)"
-                @columnUpdated="(msg) => updateColumnName(subsection, msg)"
+                :sectionType="subSectionTypeMap.get('file')"
+                sectionSubType="File"
+                @rowsReordered="(e) => rowsReordered(e, section.files)"
+                @columnUpdated="(msg) => updateColumnName(section.files, msg)"
                 @columnsReordered="(msg) => sectionsRefreshKey+= 1"
-                @delete="deleteSubSection(section.subsections, i)"
+                @delete="deleteSubSection(section.files, 0)"
                 @refreshSection="refreshSection()"
-                ref="errSecTableRefs"
+                ref="sectionFilesRef"
               />
+
+              <!-- Links -->
+              <SectionTable
+                v-if="section.links && section.links?.length>0"
+                :rows="section.links"
+                :depth="props.depth+1"
+                :sectionType="subSectionTypeMap.get('link')"
+                sectionSubType="Link"
+                @rowsReordered="(e) => rowsReordered(e, section.links)"
+                @columnUpdated="(msg) => updateColumnName(section.links, msg)"
+                @columnsReordered="(msg) => sectionsRefreshKey+= 1"
+                @delete="deleteSubSection(section.links, 0)"
+                @refreshSection="refreshSection()"
+                ref="sectionLinksRef"
+              />
+  <!--            render special sections in the computed specialSectionMap -->
+              <div v-for="(item, index) in specialSectionMap" :key="index" ref="sectionTablesRef">
+                <SubSectionTable
+                  v-if="Array.isArray(item[1]) && item[1]?.length > 0"
+                  :rows="item[1]"
+                  :depth="props.depth+1"
+                  :sectionType="subSectionTypeMap.get(item[0].toLowerCase())"
+                  :sectionSubType="item[0]"
+                  :parent=section
+                  @rowsReordered="(e) => rowsReordered(e, item[1])"
+                  @columnUpdated="(msg) => updateColumnName(item[1], msg)"
+                  @columnsReordered="(msg) => sectionsRefreshKey+= 1"
+                  @delete="deleteSubSection(section.subsections, index)"
+                  @refreshSection="refreshSection()"
+                  ref="errSpecialSecTableRefs"
+                />
+              </div>
+
+              <!-- render general Sections and general Tables -->
+              <div v-for="(subsection, i) in section.subsections" :key="i" ref="subsectionsRef">
+                <!-- general section -->
+                <Section
+                  v-if="!Array.isArray(subsection) && !subSectionTypeMap.get(subsection?.type?.toLowerCase())?.rowAsSection"
+                  :section="subsection"
+                  :sectionType="subSectionTypeMap.get(subsection?.type?.toLowerCase()) || subsection?.type?.toLowerCase()"
+                  :depth="props.depth + 1"
+                  :sectionTypeMap="subSectionTypeMap"
+                  @delete="deleteSubSection(section.subsections, i)"
+                  @addTable="(msg)=>addTable(msg.section, msg.instance)"
+                  ref="errSecRefs"
+                />
+
+                <!-- general Table -->
+                <SectionTable
+                  v-if="Array.isArray(subsection) && subsection?.length > 0"
+                  :rows="subsection"
+                  :depth="props.depth+1"
+                  :sectionType="subSectionTypeMap.get(subsection?.name?.toLowerCase())"
+                  :sectionSubType="subSectionTypeMap.get(subsection?.name?.toLowerCase())?.name"
+                  :parent=section
+                  @rowsReordered="(e) => rowsReordered(e, subsection)"
+                  @columnUpdated="(msg) => updateColumnName(subsection, msg)"
+                  @columnsReordered="(msg) => sectionsRefreshKey+= 1"
+                  @delete="deleteSubSection(section.subsections, i)"
+                  @refreshSection="refreshSection()"
+                  ref="errSecTableRefs"
+                />
+              </div>
+              <SubsectionMenu
+                              :sectionType="sectionType"
+                              @newSection="(type)=> addSubsection(section,1, type)"
+                              @newTable="(type)=> addTable(section,1, type)"
+              ></SubsectionMenu>
+
+
+              <!-- Subsections end -->
             </div>
-            <SubsectionMenu
-                            :sectionType="sectionType"
-                            @newSection="(type)=> addSubsection(section,1, type)"
-                            @newTable="(type)=> addTable(section,1, type)"
-            ></SubsectionMenu>
-
-
-            <!-- Subsections end -->
           </div>
         </div>
       </div>
