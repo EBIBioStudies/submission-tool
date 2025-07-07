@@ -71,8 +71,8 @@
     <div class="row">
       <div class="col text-end pb-4">
         <font-awesome-icon v-if="isSaving" :icon="['far','floppy-disk']" beat-fade class="pe-2"/>
-        <button  class="btn btn-primary btn-top-margin" type="button" @click="submitDraftPopUp()">Submit</button>
-        <button v-if="isSubmittedSubmission" class="btn btn-outline-danger ms-2 btn-top-margin" type="button" @click="revertDraft()">Revert</button>
+        <button v-if="!isAe"  class="btn btn-primary btn-top-margin" type="button" @click="submitDraftPopUp()">Submit</button>
+        <button v-if="isSubmittedSubmission && !isAe" class="btn btn-outline-danger ms-2 btn-top-margin" type="button" @click="revertDraft()">Revert</button>
       </div>
     </div>
     <div v-if="showModal" class="modal-overlay">
@@ -170,6 +170,7 @@ provide('readOnlyEditDateMode', editDateMode)
 
 const isSubmittedSubmission = displayType?.value!=='readonly' && !props?.accession?.startsWith('TMP_');
 const showModal = ref(false);
+const isAe = props?.accession?.startsWith('E-MTAB');
 
 const submissionComponent = ref({})
 
