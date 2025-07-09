@@ -27,7 +27,6 @@ const sectionFilesRef = ref(null)
 const sectionLinksRef = ref(null)
 const parentDisplayType = inject('parentDisplayType')
 const isPublicSubmission = inject('isPublicSubmission')
-const readOnlyEditDateMode = inject('readOnlyEditDateMode')
 const errSecRefs = ref([])
 const errSecTableRefs = ref([])
 const errSpecialSecTableRefs = ref([])
@@ -377,10 +376,6 @@ defineExpose({errors, thisSection});
 
 
 
-          <div v-if="readOnlyEditDateMode">
-
-          </div>
-          <div v-else>
             <div class="p-0" :key="sectionsRefreshKey">
               <!-- Files -->
               <SectionTable
@@ -467,7 +462,6 @@ defineExpose({errors, thisSection});
 
 
               <!-- Subsections end -->
-            </div>
           </div>
         </div>
       </div>

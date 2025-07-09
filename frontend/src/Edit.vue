@@ -204,78 +204,96 @@ provide('isPublicSubmission', publicSubmission);
 
 
 
+function cleanSubsectionObjectShallow(obj) {
+  if (!obj || typeof obj !== 'object') return {};
+
+  const cleaned = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (typeof value === 'string' && value.trim() === '') continue;
+    if (typeof value === 'object' && !Array.isArray(value) && Object.keys(value || {}).length === 0) continue;
+    cleaned[key] = value;
+  }
+  return cleaned;
+}
+
 function cleanAndReorderSubsectionsRecursive(section) {
   if (!section || typeof section !== 'object') return section;
 
-  // Clean section.attributes: only keep attributes with non-empty string values
-  section.attributes = Array.isArray(section.attributes)
-    ? section.attributes.filter(attr =>
-      attr &&
-      typeof attr === 'object' &&
-      typeof attr.value === 'string' &&
-      attr.value.trim() !== ''
-    )
-    : [];
+  try {
+    // Clean top-level attributes (defensively)
+    section.attributes = Array.isArray(section.attributes)
+      ? section.attributes.filter(attr =>
+        attr &&
+        typeof attr === 'object' &&
+        typeof attr.value === 'string' &&
+        attr.value.trim() !== ''
+      )
+      : [];
 
-  // If there are no subsections, we are done
-  if (!Array.isArray(section.subsections)) {
-    return section;
-  }
+    // Process subsections
+    if (Array.isArray(section.subsections)) {
+      const cleaned = [];
 
-  // Clean each subsection
-  const cleaned = section.subsections
-    .map(sub => {
-      if (!sub || typeof sub !== 'object') return null;
+      for (const sub of section.subsections) {
+        if (!sub || typeof sub !== 'object') continue;
 
-      // Clean attributes
-      const attrs = Array.isArray(sub.attributes)
-        ? sub.attributes.filter(attr =>
-          attr &&
-          typeof attr === 'object' &&
-          typeof attr.value === 'string' &&
-          attr.value.trim() !== ''
-        )
-        : [];
-
-      // Recursively clean nested subsections
-      let cleanedSubsections = null;
-      if (Array.isArray(sub.subsections)) {
-        const result = cleanAndReorderSubsectionsRecursive(sub); // modifies in place
-        if (result?.subsections?.length > 0) {
-          cleanedSubsections = result.subsections;
+        let attrs = [];
+        try {
+          attrs = Array.isArray(sub.attributes)
+            ? sub.attributes.filter(attr =>
+              attr &&
+              typeof attr === 'object' &&
+              typeof attr.value === 'string' &&
+              attr.value.trim() !== ''
+            )
+            : [];
+        } catch (_) {
+          attrs = [];
         }
+
+        let cleanedSub = sub;
+        try {
+          cleanedSub = cleanAndReorderSubsectionsRecursive(sub);
+        } catch (_) {
+          // Keep original structure if recursion fails
+        }
+
+        let shallowCleaned;
+        try {
+          shallowCleaned = cleanSubsectionObjectShallow({
+            ...cleanedSub,
+            attributes: attrs,
+            type: sub.type || '__unknown__',
+          });
+        } catch (_) {
+          shallowCleaned = { ...sub, attributes: attrs, type: sub.type || '__unknown__' };
+        }
+
+        cleaned.push(shallowCleaned);
       }
 
-      // If no useful content, remove this subsection
-      if (attrs.length === 0 && !cleanedSubsections) return null;
+      // Group by type and preserve order
+      const typeToGroup = new Map();
+      cleaned.forEach((sub, idx) => {
+        const type = (typeof sub.type === 'string' && sub.type.trim()) || '__unknown__';
+        if (!typeToGroup.has(type)) {
+          typeToGroup.set(type, { index: idx, list: [] });
+        }
+        typeToGroup.get(type).list.push(sub);
+      });
 
-      const result = {
-        ...sub,
-        type: sub.type || '__unknown__',
-        attributes: attrs,
-      };
-      if (cleanedSubsections) result.subsections = cleanedSubsections;
-      return result;
-    })
-    .filter(sub => sub !== null);
-
-  // Group by type, keeping the first-seen order
-  const typeToGroup = new Map();
-  cleaned.forEach((sub, idx) => {
-    const type = sub.type || '__unknown__';
-    if (!typeToGroup.has(type)) {
-      typeToGroup.set(type, { index: idx, list: [] });
+      section.subsections = Array.from(typeToGroup.entries())
+        .sort((a, b) => a[1].index - b[1].index)
+        .flatMap(entry => entry[1].list);
     }
-    typeToGroup.get(type).list.push(sub);
-  });
-
-  // Flatten ordered groups back into array
-  section.subsections = Array.from(typeToGroup.entries())
-    .sort((a, b) => a[1].index - b[1].index)
-    .flatMap(entry => entry[1].list);
+  } catch (err) {
+    console.error('Failed during cleanAndReorderSubsectionsRecursive:', err);
+  }
 
   return section;
 }
+
+
 
 function collectMessages(node) {
   if (!node) return [];
