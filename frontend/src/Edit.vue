@@ -333,7 +333,7 @@ const finalSubmitDraft = async (option) => {
 
   try {
     // 1. Clean and reorder the section in-place
-    submission.value.section = cleanAndReorderSubsectionsRecursive(submission.value.section);
+    // submission.value.section = cleanAndReorderSubsectionsRecursive(submission.value.section);
 
     // 2. Save the updated draft synchronously
     await axios({
