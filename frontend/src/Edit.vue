@@ -152,6 +152,7 @@ import {Offcanvas} from "bootstrap";
 import axios from "axios";
 import utils from "@/utils";
 import router from "./router.js";
+import AuthService from './services/AuthService';
 
 const props = defineProps(['accession']);
 const submission = ref({});
@@ -163,14 +164,18 @@ const serverErrorMessage = ref('')
 const displayType = ref('')
 const editDateMode = ref(false);
 const isLoading = ref(false);
+const isManagerUser = ref(false);
+
 provide('hasValidated', hasValidated)
 provide('submission', submission)
 provide('parentDisplayType', displayType)
 provide('readOnlyEditDateMode', editDateMode)
+provide('isManagerUser', isManagerUser)
+
 
 const isSubmittedSubmission = displayType?.value!=='readonly' && !props?.accession?.startsWith('TMP_');
 const showModal = ref(false);
-const isAe = props?.accession?.startsWith('E-MTAB');
+isManagerUser.value = AuthService?.user?.value?.superuser == true;
 
 const submissionComponent = ref({})
 
