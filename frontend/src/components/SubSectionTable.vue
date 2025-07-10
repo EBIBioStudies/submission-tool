@@ -67,6 +67,8 @@ const getFieldType = (attribute) => {
 
 // Add all column to the first row. We will use it to control column dragging
 const getCell = (row, col) => {
+  if(!row.attributes)
+    row.attributes=[]
   let attribute = row?.attributes?.find(
     (att) => att?.name?.toLowerCase() === col?.toLowerCase(),
   );
