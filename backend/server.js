@@ -2,6 +2,8 @@ const express = require('express');
 const morgan = require('morgan');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
+const fileListRouter = require('./routes/file-list');
+
 require('dotenv').config();
 
 const app = express();
@@ -9,9 +11,10 @@ const app = express();
 const path = require('path');
 const rfs = require('rotating-file-stream');
 
-const CONTEXT_PATH = '/biostudies/submissions';
+// const CONTEXT_PATH = '/biostudies/submissions';
 const PORT = process.env.PORT || 8080;
 const BACKEND_URL = process.env.BACKEND_URL;
+const CONTEXT_PATH = process.env.CONTEXT_PATH;
 
 // Create a rotating write stream for access logs
 const accessLogStream = rfs.createStream('access.log', {
@@ -19,7 +22,6 @@ const accessLogStream = rfs.createStream('access.log', {
   path: path.join(__dirname, 'logs')
 });
 
-//app.use(morgan('combined'));
 // Use morgan with combined format & file stream
 app.use(morgan('combined', { stream: accessLogStream }));
 
@@ -27,6 +29,9 @@ app.use(morgan('combined', { stream: accessLogStream }));
 if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('dev'));
 }
+
+// Mount the file-list router before the proxy middleware
+app.use(CONTEXT_PATH, fileListRouter);
 
 // Proxy API requests
 app.use(`${CONTEXT_PATH}/api`, createProxyMiddleware({
