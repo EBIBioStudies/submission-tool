@@ -1,0 +1,82 @@
+image: node:16
+
+cache:
+  paths:
+    - node_modules/
+    - frontend/node_modules/
+
+stages:
+  - build
+  - deploy
+
+variables:
+  NODE_ENV: production
+
+build:
+  stage: build
+  before_script:
+    - npm ci
+    - cd frontend && npm ci
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - frontend/dist/
+      - node_modules/
+      - package*.json
+      - server.js
+      - ecosystem.config.js
+    expire_in: 1 hour
+
+.deploy-template: &deploy-template
+  stage: deploy
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq openssh-client rsync
+    - mkdir -p ~/.ssh
+    - cp "$ssh_key" ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-keyscan -H $(echo $host | cut -d' ' -f1) >> ~/.ssh/known_hosts
+  script:
+    - host0=$(echo $host | cut -d' ' -f1)
+    # Create deployment directory
+    - ssh "$user@$host0" "mkdir -p $deployDirectory"
+    # Copy application files
+    - rsync -avz --exclude='*.log' --exclude='logs/' ./ "$user@$host0:$deployDirectory/"
+    # Copy environment configuration
+    - scp "$application_env" "$user@$host0:$deployDirectory/.env"
+    # Add version to environment
+    - ssh "$user@$host0" "echo 'VERSION=$CI_COMMIT_SHORT_SHA' >> $deployDirectory/.env"
+    # Install production dependencies (if needed)
+    - ssh "$user@$host0" "cd $deployDirectory && npm ci --only=production"
+    # Deploy with PM2
+    - ssh "$user@$host0" "cd $deployDirectory && pm2 startOrReload ecosystem.config.js --env $NODE_ENV"
+    # Health check
+    - ssh "$user@$host0" "sleep 5 && curl -f http://localhost:8080/health || exit 1"
+
+deploy-dev:
+  <<: *deploy-template
+  environment: dev
+  variables:
+    NODE_ENV: development
+  only:
+    - main
+    - feature/node-migration
+  when: manual
+
+deploy-beta:
+  <<: *deploy-template
+  environment: beta
+  variables:
+    NODE_ENV: beta
+  only:
+    - main
+  when: manual
+
+deploy-prod:
+  <<: *deploy-template
+  environment: prod
+  variables:
+    NODE_ENV: production
+  only:
+    - main
+  when: manual
