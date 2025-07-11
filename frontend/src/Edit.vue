@@ -153,6 +153,8 @@ import axios from "axios";
 import utils from "@/utils";
 import router from "./router.js";
 import AuthService from './services/AuthService';
+import { cleanAndReorderSubsections } from './templates/cleanUtils.js';
+
 
 const props = defineProps(['accession']);
 const submission = ref({});
@@ -207,99 +209,6 @@ const publicSubmission = computed(() => {
 provide('isPublicSubmission', publicSubmission);
 
 
-
-
-function cleanSubsectionObjectShallow(obj) {
-  if (!obj || typeof obj !== 'object') return {};
-
-  const cleaned = {};
-  for (const [key, value] of Object.entries(obj)) {
-    if (typeof value === 'string' && value.trim() === '') continue;
-    if (typeof value === 'object' && !Array.isArray(value) && Object.keys(value || {}).length === 0) continue;
-    cleaned[key] = value;
-  }
-  return cleaned;
-}
-
-function cleanAndReorderSubsectionsRecursive(section) {
-  if (!section || typeof section !== 'object') return section;
-
-  try {
-    // Clean top-level attributes (defensively)
-    section.attributes = Array.isArray(section.attributes)
-      ? section.attributes.filter(attr =>
-        attr &&
-        typeof attr === 'object' &&
-        typeof attr.value === 'string' &&
-        attr.value.trim() !== ''
-      )
-      : [];
-
-    // Process subsections
-    if (Array.isArray(section.subsections)) {
-      const cleaned = [];
-
-      for (const sub of section.subsections) {
-        if (!sub || typeof sub !== 'object') continue;
-
-        let attrs = [];
-        try {
-          attrs = Array.isArray(sub.attributes)
-            ? sub.attributes.filter(attr =>
-              attr &&
-              typeof attr === 'object' &&
-              typeof attr.value === 'string' &&
-              attr.value.trim() !== ''
-            )
-            : [];
-        } catch (_) {
-          attrs = [];
-        }
-
-        let cleanedSub = sub;
-        try {
-          cleanedSub = cleanAndReorderSubsectionsRecursive(sub);
-        } catch (_) {
-          // Keep original structure if recursion fails
-        }
-
-        let shallowCleaned;
-        try {
-          shallowCleaned = cleanSubsectionObjectShallow({
-            ...cleanedSub,
-            attributes: attrs,
-            type: sub.type || '__unknown__',
-          });
-        } catch (_) {
-          shallowCleaned = { ...sub, attributes: attrs, type: sub.type || '__unknown__' };
-        }
-
-        cleaned.push(shallowCleaned);
-      }
-
-      // Group by type and preserve order
-      const typeToGroup = new Map();
-      cleaned.forEach((sub, idx) => {
-        const type = (typeof sub.type === 'string' && sub.type.trim()) || '__unknown__';
-        if (!typeToGroup.has(type)) {
-          typeToGroup.set(type, { index: idx, list: [] });
-        }
-        typeToGroup.get(type).list.push(sub);
-      });
-
-      section.subsections = Array.from(typeToGroup.entries())
-        .sort((a, b) => a[1].index - b[1].index)
-        .flatMap(entry => entry[1].list);
-    }
-  } catch (err) {
-    console.error('Failed during cleanAndReorderSubsectionsRecursive:', err);
-  }
-
-  return section;
-}
-
-
-
 function collectMessages(node) {
   if (!node) return [];
 
@@ -333,7 +242,9 @@ const finalSubmitDraft = async (option) => {
 
   try {
     // 1. Clean and reorder the section in-place
-    // submission.value.section = cleanAndReorderSubsectionsRecursive(submission.value.section);
+    if(props?.accession?.startsWith('TMP_')) {
+      submission.value.section = cleanAndReorderSubsections(submission.value.section);
+    }
 
     // 2. Save the updated draft synchronously
     await axios({
