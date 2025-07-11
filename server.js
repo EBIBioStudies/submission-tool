@@ -62,13 +62,13 @@ app.get('/', (req, res) => {
   res.redirect(CONTEXT_PATH);
 });
 
-const pathToDist = path.join(__dirname, '../frontend/dist');
+const pathToDist = path.join(__dirname, './frontend/dist');
 
 // Serve static files
 app.use(CONTEXT_PATH, express.static(pathToDist));
 
 // SPA fallback
-app.get(`${CONTEXT_PATH}/*path`, (req, res) => {
+app.get(`${CONTEXT_PATH}/*`, (req, res) => {
   res.sendFile(path.join(pathToDist, 'index.html'));
 });
 
