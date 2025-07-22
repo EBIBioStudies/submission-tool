@@ -18,6 +18,25 @@ export const allTemplates = [
   Default,
 ];
 
+function getRandomSuffix(length = 4) {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+function normalizeAccno(name) {
+  return (name || 'n')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')         // spaces → dashes
+    .replace(/[^a-z0-9\-]/g, '')  // remove punctuation & _
+    .replace(/\-+/g, '-')         // collapse multiple dashes
+    .replace(/^-+|-+$/g, '');     // trim dashes
+}
+
 export const activeTemplates = [
   // Keep the same order that we want these templates to appear in the new submission dialogue
   // Higher versions should be kept on top
@@ -32,7 +51,9 @@ let id = 0;
 // fill attributes and subsections of a given section according to the given template
 export const fillTemplate = (section, tmpl) => {
   section.type = tmpl.name;
-  section.accno = `${tmpl.name}-${id}`.replace(' ', '-').toLowerCase();
+  const normalized = normalizeAccno(tmpl.name);
+  const prefix = normalized.length <= 5 ? normalized : normalized.substring(0, 4);
+  section.accno = `${prefix}-${id}-${getRandomSuffix(4)}`;
   id += 1;
   if(section.type === 'Link'){
     section.url = ''
