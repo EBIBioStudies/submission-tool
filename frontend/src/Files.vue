@@ -29,6 +29,10 @@
     </div> <!-- header end-->
 
     <div class="table-responsive-sm">
+      <div v-if="showToast" class="alert alert-success toast-notification" role="alert">
+        {{ toastMessage }}
+      </div>
+
       <table v-if="files?.length" class="table table-sm align-middle  table-hover">
         <thead>
         <tr>
@@ -133,6 +137,16 @@ const sortedFiles = computed(() => files.value?.sort((a, b) => // sort on type b
     : (a?.type === 'DIR' ? -1 : a?.size) - (b?.type === 'DIR' ? -1 : b?.size)),
 ));
 
+const toastMessage = ref('');
+const showToast = ref(false);
+
+const triggerToast = (message) => {
+  toastMessage.value = message;
+  showToast.value = true;
+  setTimeout(() => showToast.value = false, 3000);  // auto-hide after 3 seconds
+};
+
+
 
 const sorterIcon = (key) => sortKey.value === key ? sortDirection.value === 1 ? 'fa-sort-up' : 'fa-sort-down' : 'fa-sort';
 const flipSort = (key) => {
@@ -144,20 +158,23 @@ const flipSort = (key) => {
   }
 };
 
-watchEffect(async () => {
+const fetchFiles = async () => {
   if (!AuthService.isAuthenticated()) return;
+
   const path = props.paths && props.paths !== '' ? props.paths.join('/') : '';
-  axios.post('/api/files/user/query', { path: path })
-    .then(response => {
-      files.value = response.data.map(file => ({
-        ...file,
-        path: file.path === 'user' ? '' : file.path.replace(/^user\/?/, '')
-      }));
-    })
-    .catch(error => {
-      console.error("Failed to fetch files:", error);
-    });
-});
+  try {
+    const response = await axios.post('/api/files/user/query', { path });
+    files.value = response.data.map(file => ({
+      ...file,
+      path: file.path === 'user' ? '' : file.path.replace(/^user\/?/, '')
+    }));
+  } catch (error) {
+    console.error("Failed to fetch files:", error);
+  }
+};
+
+
+watchEffect(fetchFiles);
 
 const navigate = async (path, name) => {
   path = path.split('/').map(encodeURIComponent).filter(Boolean).join('/');
@@ -202,18 +219,19 @@ const downloadFileList = (file) => {
 
 const deleteFile = async (file) => {
   if (!await utils.confirm('Delete File', `Do you want to delete ${file.name}?`, 'Delete')) return;
-
   const body = {
     path: file.path,
     fileName: file.name,
   };
-
-  axios.post('/api/files/user/delete', body)
-    .then(async () => await navigate(file.path))
-    .catch(error => console.error('Failed to delete file:', error));
-
-  location.reload();
+  try {
+    await axios.post('/api/files/user/delete', body);
+    await fetchFiles(); // refresh file list
+    triggerToast(`✅ "${file.name}" deleted successfully.`);
+  } catch (error) {
+    console.error('Failed to delete file:', error);
+  }
 };
+
 
 
 const uploadFile = (file) => {
@@ -299,4 +317,22 @@ const uploadFiles = async (uploads, isFolderUpload) => {
 .grayed {
   color: #cccccc;
 }
+
+.toast-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1055;
+  transition: opacity 0.3s ease-in-out;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.toast-notification {
+  transition: opacity 0.5s ease-in-out;
+  opacity: 1;
+}
+.toast-notification[style*="display: none"] {
+  opacity: 0;
+}
+
 </style>
