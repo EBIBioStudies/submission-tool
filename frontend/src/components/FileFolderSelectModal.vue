@@ -13,7 +13,7 @@ const isFileList = ref(props.isFileList);
 if (isFileList.value === undefined && thisFile.value?.name === 'File List') {
     isFileList.value = true;
 }
-const allowFolder = ref(props.allowFolder);
+const allowFolder = !isFileList.value;
 const axiosAbortController = new AbortController();
 const currentUpload = ref({ name: '', progress: 0 });
 const showProgressbar= ref(false);
@@ -68,7 +68,7 @@ const uploadFile = async (file) => {
         }
       },
     });
-    thisComponent.refs.filetree.show(); // Assuming refreshTree is a method in FileTree
+    filetree.value.show(); // Assuming refreshTree is a method in FileTree
     //We are reusing this component for file and file list selection. File is using path in pagetab but FileList use value
     //this line is trying to set correct pageTab variable based on component usage
     isFileList.value ? thisFile.value.value = file.name : thisFile.value.path = file.name; // Update the input box with the file name
@@ -102,13 +102,23 @@ const validateFileListFile = async (fileName) => {
 
 const select = async (node) => {
   modal.hide();
-  const path = (node.path + '/' + node.name).substring(5);
-  isFileList.value ? thisFile.value.value = path : thisFile.value.path = path ;
-  emits('select', thisFile.value);
-  if(isFileList.value){
-    await validateFileListFile(isFileList.value ? thisFile.value.value : thisFile.value.path);
+
+  // ✅ Use pre-computed normalized path from FileTree
+  const path = node.selectedPath ?? (node.path + '/' + node.name);
+
+  if (isFileList.value) {
+    thisFile.value.value = path;
+  } else {
+    thisFile.value.path = path;
   }
-}
+
+  emits('select', thisFile.value);
+
+  if (isFileList.value) {
+    await validateFileListFile(path);
+  }
+};
+
 
 const fileModalModel = computed({
   get: () => {
@@ -124,7 +134,7 @@ const fileModalModel = computed({
 });
 
 const loadTree = () => {
-  thisComponent.refs.filetree.show();
+  filetree.value.show();
 }
 </script>
 
@@ -158,7 +168,7 @@ const loadTree = () => {
           <h5>Select file{{allowFolder ? ' / folder' : ''}}</h5>
           <div class="card bg-light mb-3">
             <div class="card-body overflow-auto" style="max-height: 400px;">
-              <FileTree path="" ref="filetree"
+              <FileTree path="" ref="filetree" :allowFolders="allowFolder"
                                   @select="(node) => select(node)"/>
             </div>
           </div>

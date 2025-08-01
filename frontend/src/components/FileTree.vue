@@ -6,7 +6,7 @@
             v-if="node.type.toLowerCase() === 'dir'"
             class="pe-1"
             :icon="'fa-regular ' + (!node.expanded ? 'fa-square-plus':'fa-square-minus')"
-            @click="node.expanded = !node.expanded"
+            @click.stop="node.expanded = !node.expanded"
             role="button"
           ></font-awesome-icon>
           <span
@@ -65,12 +65,19 @@ defineExpose({ show});
 
 
 const onSelected = (node) => {
-  if (node.type.toLowerCase() === 'dir' && !props.allowFolders) {
+  const isDir = node.type.toLowerCase() === 'dir';
+  const normalizedPath = [node.path, node.name].filter(Boolean).join('/');
+  const selectedPath = normalizedPath.replace(/^user\/?/, '');
+
+  if (isDir && !props.allowFolders) {
     node.expanded = !node.expanded;
     return;
   }
-  emit('select', node);
+
+  emit('select', { ...node, selectedPath });
 };
+
+
 
 const onChildSelected = (selectedChild) => {
   emit('select', selectedChild);
@@ -80,9 +87,11 @@ const onChildSelected = (selectedChild) => {
 <style scoped>
 ul.folder {
   list-style: none;
+  padding-left: 1rem;
 }
 
 .file:not(.text-muted):hover {
   background-color: var(--bs-secondary-bg);
+  cursor: pointer;
 }
 </style>
