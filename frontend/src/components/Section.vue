@@ -212,11 +212,20 @@ const deleteSubSection = async (someSubSections, index) => {
     return;
   if (!await utils.confirm("Delete Section", `Do you want to delete the section ${someSubSections[index].type}?`, "Delete")) return
   thisSection.value.subsections = someSubSections.filter((v, i) => i !== index);
+  thisSection.value.subsections = thisSection.value.subsections.filter(
+    (sub) => !(Array.isArray(sub) && sub.length === 0)
+  );
   sectionsRefreshKey.value += 1;
 };
+
 const refreshSection = async () => {
+  const secArray = thisSection.value.subsections || [];
+
+  // Remove empty subsection arrays in the other case they will create exception in backend
+  thisSection.value.subsections = secArray.filter((sub) => !(Array.isArray(sub) && sub.length === 0));
+
   sectionsRefreshKey.value += 1;
-}
+};
 
 const addAttribute = async () => {
   if(parentDisplayType.value === 'readonly')
