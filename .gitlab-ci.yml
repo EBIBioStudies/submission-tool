@@ -12,6 +12,11 @@ build:
     paths:
       - target/*.jar
   script:
+    # Copy VITE_CONFIG file variable into frontend/.env
+    - cp "$VITE_CONFIG" frontend/.env
+    - echo "Using VITE config:"
+    - cat frontend/.env
+
     - mvn clean package
 
 .deploy-template: &deploy-template
