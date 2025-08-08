@@ -32,6 +32,7 @@
         <div class="card-footer text-muted"> Don't have an account? <router-link to="/signup">Register <font-awesome-icon :icon="['fas', 'chevron-circle-right']" /></router-link>
         </div>
       </div>
+      <div><AnnouncementBanner /></div>
     </div>
     <div class="col"></div>
   </div>
@@ -41,6 +42,7 @@
 import {ref} from "vue";
 import AuthService from "./services/AuthService";
 import {useRouter} from "vue-router";
+import AnnouncementBanner from '@/components/AnnouncementBanner.vue'
 
 const router = useRouter();
 const username = ref('');

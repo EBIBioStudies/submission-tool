@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+    <div><AnnouncementBanner /></div>
     <NewSubmission @select="(e)=>console.log(e)" ></NewSubmission>
     <div class="d-flex justify-content-center">
       <span class="ps-1" :class="{invisible: !isLoading}" ><font-awesome-icon class="fa-spin" icon="fa-solid fa-spinner" /></span>
@@ -98,6 +99,7 @@ import axios from "axios";
 import NewSubmission from "@/components/NewSubmission.vue";
 import SubmissionErrorsModal from "@/components/SubmissionErrorsModal.vue";
 import utils from '@/utils';
+import AnnouncementBanner from '@/components/AnnouncementBanner.vue'
 //init ci/cd test
 const accession = ref('');
 const submissions = ref([])
