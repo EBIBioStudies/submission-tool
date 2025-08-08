@@ -67,12 +67,14 @@
       </div>
     </div>
   </div>
+  <div><AnnouncementBanner /></div>
   <div class="container">
     <div class="row">
       <div class="col text-end pb-4">
+
         <font-awesome-icon v-if="isSaving" :icon="['far','floppy-disk']" beat-fade class="pe-2"/>
-        <button  class="btn btn-primary btn-top-margin" type="button" @click="submitDraftPopUp()">Submit</button>
-        <button v-if="isSubmittedSubmission" class="btn btn-outline-danger ms-2 btn-top-margin" type="button" @click="revertDraft()">Revert</button>
+        <button :disabled="!enableSubmission" class="btn btn-primary btn-top-margin" type="button" @click="submitDraftPopUp()">Submit</button>
+        <button v-if="isSubmittedSubmission && enableSubmission" class="btn btn-outline-danger ms-2 btn-top-margin" type="button" @click="revertDraft()">Revert</button>
       </div>
     </div>
     <div v-if="showModal" class="modal-overlay">
@@ -153,6 +155,8 @@ import axios from "axios";
 import utils from "@/utils";
 import router from "./router.js";
 import AuthService from './services/AuthService';
+import { useFeatureFlags } from '@/composables/useFeatureFlags'
+import AnnouncementBanner from '@/components/AnnouncementBanner.vue'
 import { cleanAndReorderSubsections } from './templates/cleanUtils.js';
 
 
@@ -176,6 +180,7 @@ provide('isManagerUser', isManagerUser)
 
 
 const isSubmittedSubmission = displayType?.value!=='readonly' && !props?.accession?.startsWith('TMP_');
+const { enableSubmission } = useFeatureFlags()
 const showModal = ref(false);
 isManagerUser.value = AuthService?.user?.value?.superuser == true;
 
