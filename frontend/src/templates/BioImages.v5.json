@@ -720,7 +720,7 @@
         "fieldTypes": [
           {
             "name": "Title",
-            "display": "desirable",
+            "display": "required",
             "controlType": {
               "name": "text"
             },
@@ -747,7 +747,7 @@
             "controlType": {
               "name": "largetext"
             },
-            "display": "desirable",
+            "display": "required",
             "helpContextual": {
               "description": "Method used to correlate images from different modalities",
               "examples": [
@@ -780,7 +780,7 @@
         "fieldTypes": [
           {
             "name": "Title",
-            "display": "desirable",
+            "display": "required",
             "controlType": {
               "name": "text"
             },
@@ -797,7 +797,7 @@
             "controlType": {
               "name": "largetext"
             },
-            "display": "desirable",
+            "display": "required",
             "helpContextual": {
               "description": "How image analysis was carried out.",
               "examples": [
