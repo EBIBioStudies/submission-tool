@@ -19,6 +19,8 @@ const createNewSubmission = async ()=> {
   // create new
   let thisTemplate = activeTemplates.find((tmpl) => tmpl.name===selectedTemplate.value);
 
+  let collectionName = null
+
   const draft = {
     type: 'submission',
     attributes: [
@@ -26,11 +28,13 @@ const createNewSubmission = async ()=> {
     ],
   };
   if (!thisTemplate.name.toLowerCase().startsWith("default")) {
-    draft.attributes.push({name: 'AttachTo', value: thisTemplate.title })
+    collectionName = thisTemplate.title
+    draft.attributes.push({name: 'AttachTo', value: collectionName })
   }
   if (thisTemplate.DOI) {
     draft.attributes.push({name: 'DOI', value: "true" })
   }
+  
   const tmpl = thisTemplate.sectionType;
   draft.section = { type: tmpl.name };
   fillTemplate(draft.section, tmpl);
@@ -54,9 +58,11 @@ const createNewSubmission = async ()=> {
     author.attributes.push({name:"ORCID", value:AuthService.user?.value?.orcid})
   }
   draft.section.subsections.push(author);
-  const response = await axios.post (
-    `/api/submissions/drafts`,
-    draft
+
+  const response = await axios.post(
+    '/api/submissions/drafts',
+    draft,
+    collectionName ? { params: { attachTo: collectionName } } : undefined
   );
   await router.push(`/edit/${response.data.key}`)
 }
