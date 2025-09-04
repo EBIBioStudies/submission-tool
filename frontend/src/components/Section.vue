@@ -40,12 +40,6 @@ const attributesRefreshKey = ref(0);
 const sectionsRefreshKey = ref(0);
 
 const subSectionTypeMap = props.sectionTypeMap ? props.sectionTypeMap : new Map();
-props?.sectionType?.tableTypes?.forEach(
-  (tbType) => {
-    if (tbType && tbType.name)
-      subSectionTypeMap.set(tbType?.name?.toLowerCase(), tbType)
-  }
-);
 
 onMounted(() => {
   nextTick(() => {
@@ -79,18 +73,38 @@ const specialSectionMap = computed(() => {
   return curMap;
 })
 
-props.section?.subsections?.forEach((s) => {
-  const subsection = Array.isArray(s) ? s[0] : s;
-  const typeName = subsection?.type?.toLowerCase() === 'author' ? 'contact' : subsection?.type?.toLowerCase();
-  const subsections = [
-    ...(props.sectionType?.sectionTypes ?? []),
-    ...(props.sectionType?.tableTypes ?? []),
-  ];
-  const type = subsections.find(
-    (f) => f?.name?.toLowerCase() === typeName,
-  );
-  subSectionTypeMap.set(s?.type?.toLowerCase(), type)
-});
+/**
+ * Updates the subSectionTypeMap by matching subsections in props.section.subsections
+ * with their corresponding type objects from sectionTypes and tableTypes.
+ * 
+ * This method reads from component props and populates the subSectionTypeMap accordingly.
+ * It normalizes subsection types, replacing 'author' with 'contact' for mapping.
+ * 
+ * The map keys are the lowercase subsection types, and values are the matching type objects.
+ * 
+ * Does not return a value; updates the map as a side effect.
+ */
+const updateSubSectionTypeMap = () => {
+
+  const subsections = props.section?.subsections ?? [];
+  const sectionTypes = props.sectionType?.sectionTypes ?? [];
+  const tableTypes = props.sectionType?.tableTypes ?? [];
+
+  const allTypes = [...sectionTypes, ...tableTypes];
+
+  subsections.forEach((s) => {
+    const subsection = Array.isArray(s) ? s[0] : s;
+
+    const typeName = subsection?.type?.toLowerCase() === 'author' ? 'contact' : subsection?.type?.toLowerCase();
+
+    const type = allTypes.find(f => f?.name?.toLowerCase() === typeName);
+
+    subSectionTypeMap.set(subsection?.type?.toLowerCase(), type);
+  });
+};
+
+updateSubSectionTypeMap()
+
 
 const isCollapsed = ref((props?.depth ?? 0) >= 2);
 
@@ -106,12 +120,13 @@ const addSubsection = async (aSection, i, type) => {
   else {
     obj.accno = (props.section.accno ?? Date.now()) + '-' + (props.section.subsections.length + 1);
     obj.type = '';
-    // obj.attributes = [{name: '', value: ''}];
   }
   obj.accno = String(obj.accno) + "-removable";
 
-  // aSection.subsections.splice(i, 0, obj);
   aSection.subsections.push(obj)
+
+  // Make sure the map with subsections is updated
+  updateSubSectionTypeMap()
 
   sectionsRefreshKey.value += 1
 
@@ -204,12 +219,18 @@ const addTable = async (aSection, i, type) => {
 const deleteSubSection = async (someSubSections, index) => {
   if (parentDisplayType.value === 'readonly')
     return;
+
   if (!await utils.confirm("Delete Section", `Do you want to delete the section ${someSubSections[index].type}?`, "Delete")) return
+
+  const subsectionTypeMapKey = someSubSections[index].type?.toLowerCase()
   thisSection.value.subsections = someSubSections.filter((v, i) => i !== index);
   thisSection.value.subsections = thisSection.value.subsections.filter(
     (sub) => !(Array.isArray(sub) && sub.length === 0)
   );
   sectionsRefreshKey.value += 1;
+  // Update the map so it does not contain the subsection that was just deleted
+  subSectionTypeMap.delete(subsectionTypeMapKey)
+
 };
 
 const refreshSection = async () => {
