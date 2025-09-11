@@ -1,6 +1,6 @@
 <script setup>
-import {computed, onMounted, ref} from "vue";
-import SectionTable from "@/components/SectionTable.vue";
+import { computed, onMounted, ref } from 'vue';
+import SectionTable from '@/components/SectionTable.vue';
 
 const props = defineProps(['section', 'sectionType']);
 const hideNonRequiredColumns = props.sectionType.hideColumns || false;
@@ -8,36 +8,49 @@ const hideNonRequiredColumns = props.sectionType.hideColumns || false;
 const thisSection = ref(props.section);
 const startCollapsed = ref(false); //TODO: change to true
 const authors = computed(() => {
-  let authors = thisSection?.value?.subsections?.filter((s) => s?.type?.toLowerCase() === 'author') ?? [];
+  let authors =
+    thisSection?.value?.subsections?.filter(
+      (s) => s?.type?.toLowerCase() === 'author',
+    ) ?? [];
   if (authors[0] && authors[0]?.accno?.includes('-init')) {
-    authors[0].accno = authors[0].accno.replace('-init', "")
-    let contact = props.sectionType?.name?.toLowerCase() === 'contact' ? props.sectionType : props.sectionType?.tableTypes?.filter(s => s?.type?.toLowerCase() === 'contact');
-    if(!hideNonRequiredColumns) {
-      let existingAttributeNames = authors[0].attributes.map(attr => attr.name);
-      contact.columnTypes.forEach(column => {
-        if (!existingAttributeNames.includes(column.name) && column?.name?.toLowerCase() !== 'organisation') {
-          authors[0].attributes.push({name: column.name, value: ""});
+    authors[0].accno = authors[0].accno.replace('-init', '');
+    let contact =
+      props.sectionType?.name?.toLowerCase() === 'contact'
+        ? props.sectionType
+        : props.sectionType?.tableTypes?.filter(
+            (s) => s?.type?.toLowerCase() === 'contact',
+          );
+    if (!hideNonRequiredColumns) {
+      let existingAttributeNames = authors[0].attributes.map(
+        (attr) => attr.name,
+      );
+      contact.columnTypes.forEach((column) => {
+        if (
+          !existingAttributeNames.includes(column.name) &&
+          column?.name?.toLowerCase() !== 'organisation'
+        ) {
+          authors[0].attributes.push({ name: column.name, value: '' });
         }
       });
     }
   }
-  return (authors??[])
-
+  return authors ?? [];
 });
-const authorTableRef = ref()
+const authorTableRef = ref();
 const authorRefreshKey = ref(0);
 const OnDeleteOrg = (o) => {
-  if (o?.accno==='') return;
+  if (o?.accno === '') return;
   // unlink the affiliation from author
-  let affiliationIndex = -1, totalAffiliations =0;
-  authors.value[o.authorIndex].attributes.forEach ((attr,i) => {
+  let affiliationIndex = -1,
+    totalAffiliations = 0;
+  authors.value[o.authorIndex].attributes.forEach((attr, i) => {
     if (attr.name?.toLowerCase() !== 'affiliation') return;
     if (attr.value === o.accno) affiliationIndex = i;
     totalAffiliations++;
   });
 
   // always keep an empty affiliation
-  if (totalAffiliations===1) {
+  if (totalAffiliations === 1) {
     authors.value[o.authorIndex].attributes[affiliationIndex].value = '';
     delete authors.value[o.authorIndex].attributes[affiliationIndex].reference;
   } else {
@@ -48,9 +61,13 @@ const OnDeleteOrg = (o) => {
   return refresh();
 };
 
-const orgWithAcc = (accno) => thisSection?.value?.subsections?.find(s =>
-  (s?.type?.toLowerCase() === 'organisation' || s?.type?.toLowerCase() === 'organization')
-  && s?.attributes?.some(a=> a.value===accno));
+const orgWithAcc = (accno) =>
+  thisSection?.value?.subsections?.find(
+    (s) =>
+      (s?.type?.toLowerCase() === 'organisation' ||
+        s?.type?.toLowerCase() === 'organization') &&
+      s?.attributes?.some((a) => a.value === accno),
+  );
 
 const OnCreateOrg = (o) => {
   let org = orgWithAcc(o.label);
@@ -59,13 +76,18 @@ const OnCreateOrg = (o) => {
   if (!org) {
     // find the highest existing organisation number
     const existingOrgNumbers = thisSection?.value?.subsections
-      ?.filter(s => (s?.type?.toLowerCase() === 'organisation' || s?.type?.toLowerCase() === 'organization'))
-      .map(s => {
+      ?.filter(
+        (s) =>
+          s?.type?.toLowerCase() === 'organisation' ||
+          s?.type?.toLowerCase() === 'organization',
+      )
+      .map((s) => {
         const match = s.accno?.match(/^o(\d+)$/);
         return match ? parseInt(match[1], 10) : 0;
       });
 
-    const maxOrgNumber = existingOrgNumbers.length > 0 ? Math.max(...existingOrgNumbers) : 0;
+    const maxOrgNumber =
+      existingOrgNumbers.length > 0 ? Math.max(...existingOrgNumbers) : 0;
     let nextOrgNumber = maxOrgNumber + 1;
 
     // double-check that accno is truly unique
@@ -75,11 +97,11 @@ const OnCreateOrg = (o) => {
       accno: `o${nextOrgNumber}`,
       attributes: [
         {
-          name: "Name",
-          value: o.label
-        }
+          name: 'Name',
+          value: o.label,
+        },
       ],
-      type: "organisation"
+      type: 'organisation',
     };
 
     if (o.label !== o.value) {
@@ -87,18 +109,24 @@ const OnCreateOrg = (o) => {
     }
 
     thisSection?.value?.subsections?.push(newOrg);
-    org = thisSection?.value?.subsections[thisSection?.value?.subsections?.length - 1];
+    org =
+      thisSection?.value?.subsections[
+        thisSection?.value?.subsections?.length - 1
+      ];
   }
 
   // delete empty org
-  const emptyIndex = authors.value[o.authorIndex].attributes.findIndex(attr => attr.name.toLowerCase() === 'affiliation' && attr.value === '');
-  if (emptyIndex !== -1) authors.value[o.authorIndex].attributes.splice(emptyIndex, 1);
+  const emptyIndex = authors.value[o.authorIndex].attributes.findIndex(
+    (attr) => attr.name.toLowerCase() === 'affiliation' && attr.value === '',
+  );
+  if (emptyIndex !== -1)
+    authors.value[o.authorIndex].attributes.splice(emptyIndex, 1);
 
   // assign it to the author
   authors.value[o.authorIndex].attributes.push({
-    name: "affiliation",
+    name: 'affiliation',
     value: org.accno,
-    reference: true
+    reference: true,
   });
 
   return refresh();
@@ -111,14 +139,20 @@ const reorderAuthors = (event) => {
     if (section?.type?.toLowerCase() === 'author') {
       authorIndexMap[authIndex++] = i;
     }
-  })
-  thisSection?.value?.subsections?.splice( // insert in new index
-    authorIndexMap[event.newIndex], 0,
-    thisSection?.value?.subsections?.splice( // after removing from old index
-      authorIndexMap[event.oldIndex], 1)[0]);
+  });
+  thisSection?.value?.subsections?.splice(
+    // insert in new index
+    authorIndexMap[event.newIndex],
+    0,
+    thisSection?.value?.subsections?.splice(
+      // after removing from old index
+      authorIndexMap[event.oldIndex],
+      1,
+    )[0],
+  );
 
   return refresh();
-}
+};
 
 const OnDeleteRow = (index) => {
   const authorIndexMap = {}; // lookup for index in authors to index in subsections
@@ -127,60 +161,63 @@ const OnDeleteRow = (index) => {
     if (section?.type?.toLowerCase() === 'author') {
       authorIndexMap[authIndex++] = i;
     }
-  })
+  });
 
   //delete author section
   thisSection?.value?.subsections?.splice(authorIndexMap[index], 1);
 
   deleteUnusedOrganisations();
   return refresh();
-}
+};
 
-const OnRowAdded = row => {
+const OnRowAdded = (row) => {
   thisSection?.value?.subsections?.push(row);
   return refresh();
-}
+};
 
-const OnColumnUpdated = row => {
-  thisSection?.value?.subsections?.forEach(section => {
+const OnColumnUpdated = (row) => {
+  thisSection?.value?.subsections?.forEach((section) => {
     if (section?.type?.toLowerCase() !== 'author') return;
     section.attributes.find((att) => att.name === row.old).name = row.new;
-  })
+  });
   return refresh();
-}
-
+};
 
 const deleteUnusedOrganisations = () => {
   const usedAffiliation = new Set();
-  authors.value.forEach(author => {
-    author.attributes.forEach(attr => {
+  authors.value.forEach((author) => {
+    author.attributes.forEach((attr) => {
       if (attr.name?.toLowerCase() === 'affiliation' && attr.value !== '') {
-        usedAffiliation.add(attr.value)
+        usedAffiliation.add(attr.value);
       }
-    })
-  })
+    });
+  });
 
-  const indicesToRemove = []
+  const indicesToRemove = [];
   thisSection?.value?.subsections?.forEach((s, i) => {
-    if ((s.type?.toLowerCase() === 'organisation' || s.type?.toLowerCase() === 'organization') && !usedAffiliation.has(s.accno)) {
+    if (
+      (s.type?.toLowerCase() === 'organisation' ||
+        s.type?.toLowerCase() === 'organization') &&
+      !usedAffiliation.has(s.accno)
+    ) {
       indicesToRemove.push(i);
     }
-  })
+  });
   indicesToRemove.sort((a, b) => b - a);
-  indicesToRemove.forEach(orgIndex => thisSection?.value?.subsections?.splice(orgIndex, 1));
-
-}
+  indicesToRemove.forEach((orgIndex) =>
+    thisSection?.value?.subsections?.splice(orgIndex, 1),
+  );
+};
 
 const refresh = () => {
   startCollapsed.value = false;
   authorRefreshKey.value += 1;
   return false;
-}
+};
 
 const errors = computed(() => authorTableRef?.value?.errors);
 
-defineExpose({errors});
-
+defineExpose({ errors });
 </script>
 
 <template>
