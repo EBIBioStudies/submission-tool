@@ -846,6 +846,7 @@
             "name": "Annotation Type",
             "controlType": {
               "name": "select",
+              "multiple": true,
               "defaultValue": "",
               "values": [
                 {
