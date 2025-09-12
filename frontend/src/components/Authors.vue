@@ -1,27 +1,43 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import SectionTable from '@/components/SectionTable.vue';
+import { addMissingAttributesGeneral } from '@/composables/useAttributesHelper';
 
 const props = defineProps(['section', 'sectionType']);
 const hideNonRequiredColumns = props.sectionType.hideColumns || false;
 
 const thisSection = ref(props.section);
 const startCollapsed = ref(false); //TODO: change to true
-const authors = computed(() => {
-  let authors =
-    thisSection?.value?.subsections?.filter(
-      (s) => s?.type?.toLowerCase() === 'author',
-    ) ?? [];
-  if (authors[0] && authors[0]?.accno?.includes('-init')) {
-    authors[0].accno = authors[0].accno.replace('-init', '');
+
+onMounted(() => {
+  if (!thisSection?.value?.subsections) return;
+
+  thisSection.value.subsections
+    .filter((s) => s.type?.toLowerCase() === 'author')
+    .forEach((author) => {
+      if (author.attributes && props.sectionType?.columnTypes) {
+        const attributesRef = ref(author.attributes);
+        addMissingAttributesGeneral(
+          attributesRef,
+          props.sectionType.columnTypes,
+        );
+        author.attributes = attributesRef.value; // update attributes with missing ones
+      }
+    });
+
+  const authorsList = thisSection.value.subsections.filter(
+    (s) => s.type?.toLowerCase() === 'author',
+  );
+  if (authorsList[0] && authorsList[0].accno?.includes('-init')) {
+    authorsList[0].accno = authorsList[0].accno.replace('-init', '');
     let contact =
       props.sectionType?.name?.toLowerCase() === 'contact'
         ? props.sectionType
-        : props.sectionType?.tableTypes?.filter(
+        : props.sectionType?.tableTypes?.find(
             (s) => s?.type?.toLowerCase() === 'contact',
           );
     if (!hideNonRequiredColumns) {
-      let existingAttributeNames = authors[0].attributes.map(
+      const existingAttributeNames = authorsList[0].attributes.map(
         (attr) => attr.name,
       );
       contact.columnTypes.forEach((column) => {
@@ -29,13 +45,24 @@ const authors = computed(() => {
           !existingAttributeNames.includes(column.name) &&
           column?.name?.toLowerCase() !== 'organisation'
         ) {
-          authors[0].attributes.push({ name: column.name, value: '' });
+          authorsList[0].attributes.push({ name: column.name, value: '' });
         }
       });
     }
   }
-  return authors ?? [];
+
+  refresh(); // Trigger UI update if needed
 });
+
+const authors = computed(() => {
+  // Just return filtered authors without mutation
+  return (
+    thisSection?.value?.subsections?.filter(
+      (s) => s?.type?.toLowerCase() === 'author',
+    ) ?? []
+  );
+});
+
 const authorTableRef = ref();
 const authorRefreshKey = ref(0);
 const OnDeleteOrg = (o) => {
@@ -119,6 +146,7 @@ const OnCreateOrg = (o) => {
   const emptyIndex = authors.value[o.authorIndex].attributes.findIndex(
     (attr) => attr.name.toLowerCase() === 'affiliation' && attr.value === '',
   );
+
   if (emptyIndex !== -1)
     authors.value[o.authorIndex].attributes.splice(emptyIndex, 1);
 
