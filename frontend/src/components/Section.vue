@@ -569,10 +569,10 @@ defineExpose({ errors, thisSection });
                 :rows="subsection"
                 :depth="props.depth + 1"
                 :sectionType="
-                  subSectionTypeMap.get(subsection?.name?.toLowerCase())
+                  subSectionTypeMap.get(subsection[0]?.type?.toLowerCase())
                 "
                 :sectionSubType="
-                  subSectionTypeMap.get(subsection?.name?.toLowerCase())?.name
+                  subSectionTypeMap.get(subsection[0]?.type?.toLowerCase())?.name
                 "
                 :parent="section"
                 @rowsReordered="(e) => rowsReordered(e, subsection)"
