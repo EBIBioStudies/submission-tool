@@ -57,6 +57,11 @@ const subSectionTypeMap = props.sectionTypeMap
   ? props.sectionTypeMap
   : new Map();
 
+props?.sectionType?.tableTypes?.forEach((tbType) => {
+  if (tbType && tbType.name)
+    subSectionTypeMap.set(tbType?.name?.toLowerCase(), tbType);
+});
+
 onMounted(() => {
   nextTick(() => {
     const tooltipElements = document.querySelectorAll(
@@ -572,7 +577,8 @@ defineExpose({ errors, thisSection });
                   subSectionTypeMap.get(subsection[0]?.type?.toLowerCase())
                 "
                 :sectionSubType="
-                  subSectionTypeMap.get(subsection[0]?.type?.toLowerCase())?.name
+                  subSectionTypeMap.get(subsection[0]?.type?.toLowerCase())
+                    ?.name
                 "
                 :parent="section"
                 @rowsReordered="(e) => rowsReordered(e, subsection)"
