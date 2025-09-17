@@ -1,85 +1,142 @@
 <template>
   <div class="container">
     <div><AnnouncementBanner /></div>
-    <NewSubmission @select="(e)=>console.log(e)" ></NewSubmission>
+    <NewSubmission @select="(e) => console.log(e)"></NewSubmission>
     <div class="d-flex justify-content-center">
-      <span class="ps-1" :class="{invisible: !isLoading}" ><font-awesome-icon class="fa-spin" icon="fa-solid fa-spinner" /></span>
+      <span class="ps-1" :class="{ invisible: !isLoading }"
+        ><font-awesome-icon class="fa-spin" icon="fa-solid fa-spinner"
+      /></span>
     </div>
-    <div v-if="serverListingSubsErrorMessage" class="alert alert-danger" role="alert">
+    <div
+      v-if="serverListingSubsErrorMessage"
+      class="alert alert-danger"
+      role="alert"
+    >
       <div class="card-body">
-        {{serverListingSubsErrorMessage}}
+        {{ serverListingSubsErrorMessage }}
       </div>
     </div>
     <table class="table table-responsive table-striped table-hover">
       <thead>
-      <tr>
-        <th style="min-width: 120px">Accession</th>
-        <th>Title
-          <font-awesome-icon style="margin-left: 1em" role="button" @click="searchTitle" icon="fa-solid fa-filter" size="xs"></font-awesome-icon>
-          <span v-if="keywords" role="button" @click="keywords=''" class="badge text-bg-secondary filter">{{keywords}} <font-awesome-icon icon="fa-solid fa-xmark" size="xs" /> </span>
-        </th>
-        <th style="min-width: 120px">Release Date</th>
-        <th style="min-width: 120px">Last Modified</th>
-        <th style="min-width: 140px">Actions</th>
-      </tr>
+        <tr>
+          <th style="min-width: 120px">Accession</th>
+          <th>
+            Title
+            <font-awesome-icon
+              style="margin-left: 1em"
+              role="button"
+              @click="searchTitle"
+              icon="fa-solid fa-filter"
+              size="xs"
+            ></font-awesome-icon>
+            <span
+              v-if="keywords"
+              role="button"
+              @click="keywords = ''"
+              class="badge text-bg-secondary filter"
+              >{{ keywords }}
+              <font-awesome-icon icon="fa-solid fa-xmark" size="xs" />
+            </span>
+          </th>
+          <th style="min-width: 120px">Release Date</th>
+          <th style="min-width: 120px">Last Modified</th>
+          <th style="min-width: 140px">Actions</th>
+        </tr>
       </thead>
       <tbody>
-      <tr v-for="submission in submissions">
-        <td>
-          <template v-if="submission?.status === 'PROCESSED'">
-            {{ submission.accno }}
-          </template>
+        <tr v-for="submission in submissions">
+          <td>
+            <template v-if="submission?.status === 'PROCESSED'">
+              {{ submission.accno }}
+            </template>
 
-          <template v-else-if="submission?.status === 'INVALID'">
-            <button class="btn btn-outline-danger btn-sm" @click="showErrors(submission.errors)">
-              View Errors
+            <template v-else-if="submission?.status === 'INVALID'">
+              <button
+                class="btn btn-outline-danger btn-sm"
+                @click="showErrors(submission.errors)"
+              >
+                View Errors
+              </button>
+              <div>{{ submission.accno }}</div>
+            </template>
+
+            <template v-else>
+              <font-awesome-icon
+                :icon="['fas', 'spinner']"
+                class="spinner-border spinner-border-sm status-spinner fa-spin"
+              />
+              {{ submission.accno }}
+            </template>
+          </td>
+
+          <td>{{ submission.title }}</td>
+          <td>{{ moment(submission.rtime).format('DD MMM YYYY') }}</td>
+          <td>{{ moment(submission.mtime).format('DD MMM YYYY') }}</td>
+          <td>
+            <button
+              v-if="submission.status === 'PROCESSED'"
+              class="btn btn-link text-primary"
+              @click.stop="open(submission.accno)"
+            >
+              <font-awesome-icon
+                icon="fa-solid fa-arrow-up-right-from-square"
+              ></font-awesome-icon>
             </button>
-            <div>{{ submission.accno }}</div>
-          </template>
-
-          <template v-else>
-            <font-awesome-icon :icon="['fas', 'spinner']" class="spinner-border spinner-border-sm status-spinner fa-spin" />
-            {{ submission.accno }}
-          </template>
-        </td>
-
-        <td>{{ submission.title }}</td>
-        <td>{{ moment(submission.rtime).format("DD MMM YYYY") }}</td>
-        <td>{{ moment(submission.mtime).format("DD MMM YYYY") }}</td>
-        <td>
-          <button v-if="submission.status==='PROCESSED'" class="btn btn-link text-primary" @click.stop="open(submission.accno)">
-            <font-awesome-icon icon="fa-solid fa-arrow-up-right-from-square"></font-awesome-icon>
-          </button>
-          <button v-if="submission.status==='PROCESSED' || submission.status==='INVALID'" class="btn btn-link text-primary" @click.stop="edit(submission.accno)">
-            <font-awesome-icon icon="fa-edit"></font-awesome-icon>
-          </button>
-          <button v-if="canDelete(submission)" class="btn btn-link text-primary" @click.stop="deleteSubmission(submission.accno)">
-            <font-awesome-icon icon="fa-regular fa-trash-alt"></font-awesome-icon>
-          </button>
-        </td>
-      </tr>
+            <button
+              v-if="
+                submission.status === 'PROCESSED' ||
+                submission.status === 'INVALID'
+              "
+              class="btn btn-link text-primary"
+              @click.stop="edit(submission.accno)"
+            >
+              <font-awesome-icon icon="fa-edit"></font-awesome-icon>
+            </button>
+            <button
+              v-if="canDelete(submission)"
+              class="btn btn-link text-primary"
+              @click.stop="deleteSubmission(submission.accno)"
+            >
+              <font-awesome-icon
+                icon="fa-regular fa-trash-alt"
+              ></font-awesome-icon>
+            </button>
+          </td>
+        </tr>
       </tbody>
       <tfoot>
-      <tr class="border-white">
-        <td colspan="5" class="text-end">
-          <button v-if="offset>0" class="btn btn-outline-primary btn-sm m-2" @click="offset -= pageLength">
-            <font-awesome-icon icon="fa-chevron-left"></font-awesome-icon>
-            Previous
-          </button>
-          <button v-if="showNext" class="btn btn-outline-primary btn-sm m-2"
-                  @click="offset += pageLength">
-            <font-awesome-icon icon="fa-chevron-right"></font-awesome-icon>
-            Next
-          </button>
-        </td>
-      </tr>
+        <tr class="border-white">
+          <td colspan="5" class="text-end">
+            <button
+              v-if="offset > 0"
+              class="btn btn-outline-primary btn-sm m-2"
+              @click="offset -= pageLength"
+            >
+              <font-awesome-icon icon="fa-chevron-left"></font-awesome-icon>
+              Previous
+            </button>
+            <button
+              v-if="showNext"
+              class="btn btn-outline-primary btn-sm m-2"
+              @click="offset += pageLength"
+            >
+              <font-awesome-icon icon="fa-chevron-right"></font-awesome-icon>
+              Next
+            </button>
+          </td>
+        </tr>
       </tfoot>
     </table>
-    <div v-if="!submissions.length" class="alert alert-secondary text-center">No submissions. You can click the <b>New Submissions</b> button to start a new study draft.
+    <div v-if="!submissions.length" class="alert alert-secondary text-center">
+      No submissions. You can click the <b>New Submissions</b> button to start a
+      new study draft.
     </div>
   </div>
-  <a href="https://www.ebi.ac.uk/biostudies/studies/" target="_blank"> Search published submissions
-    <font-awesome-icon icon="fa-solid fa-external-link-square"></font-awesome-icon>
+  <a href="https://www.ebi.ac.uk/biostudies/studies/" target="_blank">
+    Search published submissions
+    <font-awesome-icon
+      icon="fa-solid fa-external-link-square"
+    ></font-awesome-icon>
   </a>
   <!-- Error Modal, shown only if showModal is true -->
   <SubmissionErrorsModal
@@ -90,83 +147,95 @@
 </template>
 
 <script setup>
-import {ref, watchEffect} from 'vue';
-import AuthService from "./services/AuthService";
-import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
-import moment from "moment";
-import router from "./router";
-import axios from "axios";
-import NewSubmission from "@/components/NewSubmission.vue";
-import SubmissionErrorsModal from "@/components/SubmissionErrorsModal.vue";
+import { ref, watchEffect } from 'vue';
+import AuthService from './services/AuthService';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import moment from 'moment';
+import router from './router';
+import axios from 'axios';
+import NewSubmission from '@/components/NewSubmission.vue';
+import SubmissionErrorsModal from '@/components/SubmissionErrorsModal.vue';
 import utils from '@/utils';
-import AnnouncementBanner from '@/components/AnnouncementBanner.vue'
+import AnnouncementBanner from '@/components/AnnouncementBanner.vue';
 //init ci/cd test
 const accession = ref('');
-const submissions = ref([])
-const offset = ref(0)
-const pageLength = ref(15)
-const showNext = ref(false)
-const isLoading = ref(true)
+const submissions = ref([]);
+const offset = ref(0);
+const pageLength = ref(15);
+const showNext = ref(false);
+const isLoading = ref(true);
 const keywords = ref('');
-const serverListingSubsErrorMessage = ref('')
+const serverListingSubsErrorMessage = ref('');
 
-const showModal = ref(false)
-const currentErrors = ref([])
+const showModal = ref(false);
+const currentErrors = ref([]);
 
 const showErrors = (errors) => {
-  currentErrors.value = errors
-  showModal.value = true
-}
+  currentErrors.value = errors;
+  showModal.value = true;
+};
 
-const canDelete = (submission)=> {
-  return (['S-', 'TMP_'].some((prefix) => submission.accno.indexOf(prefix) >= 0)
-    && new Date(submission?.rtime).getTime() > Date.now()
-    && submission.status==='PROCESSED')
-    || AuthService.user?.value?.superuser
-}
-const deleteSubmission = async (accno) => {
-  if (!await utils.confirm("Delete draft",
-    `The submission with accession number ${accno} may have un-submitted changes. If you proceed, both the submission and any changes will be permanently lost.`,
-    "Delete")) return;
-  isLoading.value = true;
-  const response = await axios.delete(
-    `/api/submissions/${accno}`,
+const canDelete = (submission) => {
+  return (
+    (['S-', 'TMP_'].some((prefix) => submission.accno.indexOf(prefix) >= 0) &&
+      new Date(submission?.rtime).getTime() > Date.now() &&
+      submission.status === 'PROCESSED') ||
+    AuthService.user?.value?.superuser
   );
-  isLoading.value=false;
+};
+const deleteSubmission = async (accno) => {
+  if (
+    !(await utils.confirm(
+      'Delete draft',
+      `The submission with accession number ${accno} may have un-submitted changes. If you proceed, both the submission and any changes will be permanently lost.`,
+      'Delete',
+    ))
+  )
+    return;
+  isLoading.value = true;
+  const response = await axios.delete(`/api/submissions/${accno}`);
+  isLoading.value = false;
   if (response.status === 200) {
     location.reload();
   }
-}
+};
 
 watchEffect(async () => {
-  if (!AuthService.isAuthenticated()) return
-  const keywordsParameter = keywords.value==='' ? '' : `&keywords=${keywords.value}`
+  if (!AuthService.isAuthenticated()) return;
+  const keywordsParameter =
+    keywords.value === '' ? '' : `&keywords=${keywords.value}`;
   try {
     isLoading.value = true;
     serverListingSubsErrorMessage.value = null;
-    const response = await axios(`/api/submissions?offset=${offset.value}&limit=${pageLength.value + 1}${keywordsParameter}`);
+    const response = await axios(
+      `/api/submissions?offset=${offset.value}&limit=${pageLength.value + 1}${keywordsParameter}`,
+    );
 
     submissions.value = response.data.slice(0, pageLength.value);
     showNext.value = response.data.length === pageLength.value + 1;
   } catch (error) {
-    serverListingSubsErrorMessage.value = error?.log?.message || error?.message || "Problem in listing submissions";
+    serverListingSubsErrorMessage.value =
+      error?.log?.message || error?.message || 'Problem in listing submissions';
   } finally {
     isLoading.value = false;
   }
-
-})
+});
 
 const edit = (accno) => {
-  router.push(`/edit/${accno}`)
-}
+  router.push(`/edit/${accno}`);
+};
 
 const open = (accno) => {
-  window.open(`${window.config.frontendUrl}/studies/${accno}`)
-}
+  window.open(`${window.config.frontendUrl}/studies/${accno}`);
+};
 
 const searchTitle = async () => {
-  keywords.value = await utils.prompt("Search title",`Please enter part of the title to search`, "Search")
-}
+  keywords.value = await utils.prompt(
+    'Search title',
+    `Please enter part of the title to search`,
+    'Search',
+  );
+};
 </script>
 
 <style scoped>
