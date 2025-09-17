@@ -19,7 +19,25 @@
     <table class="table table-responsive table-striped table-hover">
       <thead>
         <tr>
-          <th style="min-width: 120px">Accession</th>
+          <th style="min-width: 120px">
+            Accession
+            <font-awesome-icon
+              style="margin-left: 1em"
+              role="button"
+              @click="searchAccession"
+              icon="fa-solid fa-filter"
+              size="xs"
+            ></font-awesome-icon>
+            <span
+              v-if="accessionToSearch"
+              role="button"
+              @click="accessionToSearch = ''"
+              class="badge text-bg-secondary filter"
+              >{{ accessionToSearch }}
+              <font-awesome-icon icon="fa-solid fa-xmark" size="xs" />
+            </span>
+          </th>
+
           <th>
             Title
             <font-awesome-icon
@@ -165,6 +183,7 @@ const pageLength = ref(15);
 const showNext = ref(false);
 const isLoading = ref(true);
 const keywords = ref('');
+const accessionToSearch = ref('');
 const serverListingSubsErrorMessage = ref('');
 
 const showModal = ref(false);
@@ -202,13 +221,15 @@ const deleteSubmission = async (accno) => {
 
 watchEffect(async () => {
   if (!AuthService.isAuthenticated()) return;
+  const accessionParameter =
+    accessionToSearch.value === '' ? '' : `&accNo=${accessionToSearch.value}`;
   const keywordsParameter =
     keywords.value === '' ? '' : `&keywords=${keywords.value}`;
   try {
     isLoading.value = true;
     serverListingSubsErrorMessage.value = null;
     const response = await axios(
-      `/api/submissions?offset=${offset.value}&limit=${pageLength.value + 1}${keywordsParameter}`,
+      `/api/submissions?offset=${offset.value}&limit=${pageLength.value + 1}${accessionParameter}${keywordsParameter}`,
     );
 
     submissions.value = response.data.slice(0, pageLength.value);
@@ -227,6 +248,14 @@ const edit = (accno) => {
 
 const open = (accno) => {
   window.open(`${window.config.frontendUrl}/studies/${accno}`);
+};
+
+const searchAccession = async () => {
+  accessionToSearch.value = await utils.prompt(
+    'Search accession',
+    `Please enter the accession to search`,
+    'Search',
+  );
 };
 
 const searchTitle = async () => {
