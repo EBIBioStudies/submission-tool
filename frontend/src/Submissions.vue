@@ -219,18 +219,42 @@ const deleteSubmission = async (accno) => {
   }
 };
 
+/**
+ * Watches relevant reactive state for search criteria changes and user authentication.
+ *
+ * When the user is authenticated, this watcher triggers data fetching from the server
+ * whenever the search inputs (accession or keywords), pagination offset, or page length change.
+ *
+ * Search behavior:
+ * - If there is an accession search term, the query will exclusively search by accession,
+ *   ignoring pagination and keywords.
+ * - If searching by keywords, pagination parameters (offset, limit) are included.
+ * - Spaces in keywords are replaced with '+' to accommodate Spring proxy query param restrictions.
+ *
+ * Sets loading and error state during the async request, and updates the submissions list,
+ * also sets a flag if there are more submissions for pagination.
+ */
 watchEffect(async () => {
   if (!AuthService.isAuthenticated()) return;
-  const accessionParameter =
-    accessionToSearch.value === '' ? '' : `&accNo=${accessionToSearch.value}`;
-  const keywordsParameter =
-    keywords.value === '' ? '' : `&keywords=${keywords.value}`;
+
+  const encodedKeywords = keywords.value.trim().replace(/ /g, '+');
+
+  const hasAccession = accessionToSearch.value.trim() !== '';
+  const hasKeywords = encodedKeywords.trim() !== '';
+
   try {
     isLoading.value = true;
     serverListingSubsErrorMessage.value = null;
-    const response = await axios(
-      `/api/submissions?offset=${offset.value}&limit=${pageLength.value + 1}${accessionParameter}${keywordsParameter}`,
-    );
+
+    const response = await axios.get('/api/submissions', {
+      params: hasAccession
+        ? { accNo: accessionToSearch.value.trim() }
+        : {
+            offset: offset.value,
+            limit: pageLength.value + 1,
+            ...(hasKeywords && { keywords: encodedKeywords }),
+          },
+    });
 
     submissions.value = response.data.slice(0, pageLength.value);
     showNext.value = response.data.length === pageLength.value + 1;
@@ -250,20 +274,32 @@ const open = (accno) => {
   window.open(`${window.config.frontendUrl}/studies/${accno}`);
 };
 
+/**
+ * Prompts the user to search for an accession.
+ * Note: Performing accession search will clear any active title search
+ *       (searchAccession and searchTitle are mutually exclusive).
+ */
 const searchAccession = async () => {
   accessionToSearch.value = await utils.prompt(
     'Search accession',
     `Please enter the accession to search`,
     'Search',
   );
+  keywords.value = '';
 };
 
+/**
+ * Prompts the user to search by title keywords.
+ * Note: Performing title search will clear any active accession search.
+ *       These search modes are mutually exclusive.
+ */
 const searchTitle = async () => {
   keywords.value = await utils.prompt(
     'Search title',
     `Please enter part of the title to search`,
     'Search',
   );
+  accessionToSearch.value = '';
 };
 </script>
 
