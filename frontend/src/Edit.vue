@@ -171,12 +171,14 @@ const displayType = ref('')
 const editDateMode = ref(false);
 const isLoading = ref(false);
 const isManagerUser = ref(false);
+const collectionName = ref("")
 
 provide('hasValidated', hasValidated)
 provide('submission', submission)
 provide('parentDisplayType', displayType)
 provide('readOnlyEditDateMode', editDateMode)
 provide('isManagerUser', isManagerUser)
+provide('collectionName', collectionName)
 
 
 const isSubmittedSubmission = displayType?.value!=='readonly' && !props?.accession?.startsWith('TMP_');
@@ -328,6 +330,9 @@ watchEffect(async () => {
     );
     const submissionJson = await response.data;
 
+    collectionName.value = submissionJson.attributes?.find(
+        (n) => n?.name?.toLowerCase() === 'attachto',
+      )?.value
 
     // insert the release date as needed
     deduplicateReleaseDate(submissionJson);

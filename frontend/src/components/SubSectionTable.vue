@@ -32,6 +32,7 @@ const tableType = ref(props.title || props.sectionSubType || rowSectionType);
 const theseRows = ref(Array.isArray(props.rows) ? props.rows : props.rows[0]);
 const headerMap = new Map();
 const parentDisplayType = inject('parentDisplayType');
+const collectionName = inject('collectionName');
 const subSections = ref(props?.parent?.subsections);
 
 if (tableType.value === 'File') {
@@ -129,8 +130,20 @@ const areObjectsEqual = (obj1, obj2) => {
   return true;
 };
 
+const readOnly = () => {
+  return (
+    parentDisplayType.value === 'readonly' &&
+    !(
+      collectionName.value === 'ArrayExpress' &&
+      rowSectionType.toLowerCase() === 'publication'
+    )
+  );
+};
+
 const addColumn = (event) => {
-  if (parentDisplayType.value === 'readonly') return;
+  if (readOnly()) {
+    return;
+  }
   const columnName = 'Column ' + (headers.value.length - 1);
   headers.value.splice(-1, 0, columnName);
   const rows = subSections.value.filter(
@@ -144,7 +157,9 @@ const addColumn = (event) => {
 };
 
 const addRow = (event) => {
-  if (parentDisplayType.value === 'readonly') return;
+  if (readOnly()) {
+    return;
+  }
   const row = {};
   row.type = rowSectionType;
   if (tableType.value === 'File') {
@@ -174,7 +189,9 @@ const addRow = (event) => {
 };
 
 const deleteRow = async (index) => {
-  if (parentDisplayType.value === 'readonly') return;
+  if (readOnly()) {
+    return;
+  }
   const removedItem = theseRows.value[index];
   const delIndex = subSections.value.findIndex((item) =>
     areObjectsEqual(item, removedItem),
@@ -197,7 +214,9 @@ const deleteRow = async (index) => {
 };
 
 const deleteColumn = (index) => {
-  if (parentDisplayType.value === 'readonly') return;
+  if (readOnly()) {
+    return;
+  }
   theseRows.value.forEach((row) => {
     row.attributes.splice(
       row.attributes.findIndex((attr) => attr.name === headers.value[index]),
@@ -230,7 +249,9 @@ const deleteColumn = (index) => {
 // };
 
 const updateColumnName = (event, index) => {
-  if (parentDisplayType.value === 'readonly') return;
+  if (readOnly()) {
+    return;
+  }
   if (index === headers.value.length - 1) return;
   const oldValue = headers.value[index];
   const newValue = event.target.value;
@@ -380,7 +401,7 @@ defineExpose({ errors, thisSection });
                         :value="header"
                         class="form-control"
                         :disabled="
-                          parentDisplayType === 'readonly' ||
+                          readOnly() ||
                           getFieldType(header)?.display
                         "
                         type="text"
@@ -444,7 +465,7 @@ defineExpose({ errors, thisSection });
                   <font-awesome-icon
                     v-if="
                       !(index === 0 && sectionType?.display === 'required') &&
-                      parentDisplayType !== 'readonly'
+                      !readOnly()
                     "
                     class="fa-sm"
                     icon="fa-trash"
@@ -457,7 +478,7 @@ defineExpose({ errors, thisSection });
           </draggable>
         </table>
       </div>
-      <div v-if="parentDisplayType !== 'readonly'">
+      <div v-if="!readOnly()">
         <button class="btn btn-outline-secondary btn-sm" @click="addRow">
           Add Row
         </button>

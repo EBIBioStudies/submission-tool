@@ -38,6 +38,7 @@ const sectionFilesRef = ref(null);
 const sectionLinksRef = ref(null);
 const parentDisplayType = inject('parentDisplayType');
 const isPublicSubmission = inject('isPublicSubmission');
+const collectionName = inject('collectionName');
 const errSecRefs = ref([]);
 const errSecTableRefs = ref([]);
 const errSpecialSecTableRefs = ref([]);
@@ -334,8 +335,26 @@ const rowsReordered = (event, rows) => {
   sectionsRefreshKey.value += 1;
 };
 
+const canUpdateColumnName = (subsection) => {
+  const subsectionType = Array.isArray(subsection)
+    ? subsection[0]?.type
+    : subsection?.type;
+
+  return (
+    parentDisplayType.value !== 'readonly' ||
+    (
+      subsectionType.toLowerCase() == 'publication' &&
+      collectionName.value == 'ArrayExpress'
+    )
+  )
+}
+
 const updateColumnName = (subsection, update) => {
-  if (parentDisplayType.value === 'readonly') return;
+
+  if (!canUpdateColumnName(subsection)) {
+    return;
+  }
+
   subsection.forEach(
     (row) =>
       (row.attributes.find((att) => att.name === update.old).name = update.new),

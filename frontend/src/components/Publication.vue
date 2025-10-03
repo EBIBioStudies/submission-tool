@@ -1,8 +1,8 @@
 <template>
   <div class="form-control">
     <div class="input-group input-group-sm">
-    <input :disabled="parentDisplayType==='readonly'" v-model="pmidQuery.value" class="form-control" placeholder="Enter PMID for searching" @click="openPopupAndSearch" @input="openPopupAndSearch"/>
-      <button :disabled="parentDisplayType==='readonly'" type="button" attr.aria-label="Search PubMed ID" class="btn btn-outline-secondary" @click="openPopupAndSearch">
+    <input v-model="pmidQuery.value" class="form-control" placeholder="Enter PMID for searching" @click="openPopupAndSearch" @input="openPopupAndSearch"/>
+      <button type="button" attr.aria-label="Search PubMed ID" class="btn btn-outline-secondary" @click="openPopupAndSearch">
         <font-awesome-icon :icon="faSearch" class="fa-fw fa-lg" />
       </button>
     </div>
