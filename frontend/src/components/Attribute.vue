@@ -35,6 +35,8 @@ const parentDisplayType = inject('parentDisplayType')
 const editDateMode = inject('readOnlyEditDateMode')
 const isManagerUser = inject('isManagerUser')
 const isPublicSubmission = inject('isPublicSubmission')
+const collectionName = inject('collectionName')
+
 const display = computed(() => {
   return props?.fieldType?.display || parentDisplayType?.value || 'optional';
 });
@@ -363,9 +365,24 @@ const showHelp = () => {
       ref="attributeControl"
       :row="props.parent"
       :pmid="thisAttribute"
-      :disabled="parentDisplayType==='readonly' || display==='readonly'"
+      :disabled="(parentDisplayType==='readonly' || display==='readonly') && collectionName != 'ArrayExpress'"
       :class="{'is-invalid':errors && hasValidated}"
       :placeholder="fieldType?.controlType?.placeholder"
+    />
+
+      <!-- A cell (text) in a publication section from ArrayExpress: allways editable -->
+    <input
+      v-else-if="row?.type == 'Publication' && collectionName==='ArrayExpress'"
+      type="text"
+      class="form-control"
+      :class="{
+        'is-invalid': errors && hasValidated,
+        'min-width-inp': isTableAttribute
+      }"
+      :disabled="false"
+      :placeholder="fieldType?.controlType?.placeholder"
+      v-model="thisAttribute.value"
+      :required="fieldType?.display==='required' || fieldType?.controlType?.minlength >0"
     />
 
 
