@@ -1,6 +1,4 @@
-image:
-    name: maven:3.9.5
-    pull_policy: if-not-present
+image: maven:3.9.5
 cache:
   paths:
     - target/
