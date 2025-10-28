@@ -1,7 +1,21 @@
 server:
+  port: 8080
   servlet:
-    context-path: /biostudies/submissions
+    context-path: /biostudies/submissions/
+  tomcat:
+    accesslog:
+      enabled: true
+      buffered: false
+      directory: logs
+      file-date-format: .yyyy-MM-dd
+      pattern: combined
+      rotate: true
+    basedir: ./
 spring:
+  servlet:
+    multipart:
+      max-file-size: -1
+      max-request-size: -1
   cloud:
     gateway:
       mvc:
@@ -9,28 +23,39 @@ spring:
           - id: auth
             uri: {BACKEND_URL}
             predicates:
-              - Path=/api/auth/*
+              - Path=/api/auth/**
             filters:
-              - StripPrefix=1
+              - StripPrefix=3
+          - id: auth-reset
+            uri: {BACKEND_URL}
+            predicates:
+              - Path=/api/auth/password/**
+            filters:
+              - StripPrefix=3
+          - id: auth-activate
+            uri: {BACKEND_URL}
+            predicates:
+              - Path=/api/auth/activate/**
+            filters:
+              - StripPrefix=3
           - id: submission
             uri: {BACKEND_URL}
             predicates:
               - Path=/api/submissions/**
             filters:
-              - StripPrefix=1
+              - StripPrefix=3
           - id: files
             uri: {BACKEND_URL}
             predicates:
               - Path=/api/files/**
             filters:
-              - StripPrefix=1
+              - StripPrefix=3
           - id: collections
             uri: {BACKEND_URL}
             predicates:
               - Path=/api/collections
             filters:
-              - StripPrefix=1
-
+              - StripPrefix=3
 backend:
   url: {BACKEND_URL}
   instance-key: {INSTANCE_KEY}
