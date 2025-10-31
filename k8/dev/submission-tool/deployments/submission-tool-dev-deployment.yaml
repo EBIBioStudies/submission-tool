@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: submission-tool-dev
+  namespace: submission-tool-dev
+  labels:
+    app: submission-tool-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: submission-tool-dev
+  template:
+    metadata:
+      name: submission-tool-dev
+      labels:
+        app: submission-tool-dev
+    spec:
+      containers:
+        - name: submission-tool-dev
+          image: biostudies/submission-tool:dev
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: BACKEND_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: submission-tool-config
+                  key: BACKEND_URL
+            - name: FRONTEND_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: submission-tool-config
+                  key: FRONTEND_URL
+            - name: INSTANCE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: submission-tool-secrets
+                  key: instance-key
+            - name: RECAPTCHA_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: submission-tool-secrets
+                  key: recaptcha-key
+            - name: HTTP_PROXY
+              value: "http://hx-wwwcache.ebi.ac.uk:3128"
+            - name: HTTPS_PROXY
+              value: "http://hx-wwwcache.ebi.ac.uk:3128"
+            - name: http_proxy
+              value: "http://hx-wwwcache.ebi.ac.uk:3128"
+            - name: https_proxy
+              value: "http://hx-wwwcache.ebi.ac.uk:3128"
+            - name: NO_PROXY
+              value: "localhost,127.0.0.1,.cluster.local,.svc"
+            - name: no_proxy
+              value: "localhost,127.0.0.1,.cluster.local,.svc"
+            - name: JAVA_TOOL_OPTIONS
+              value: >-
+                -Djdk.httpclient.allowHTTP2=false
+                -Djdk.httpclient.keepalive.timeout=0
+                -Djdk.httpclient.HttpClient.log=all
+                -Dhttp.proxyHost=hx-wwwcache.ebi.ac.uk
+                -Dhttp.proxyPort=3128
+                -Dhttps.proxyHost=hx-wwwcache.ebi.ac.uk
+                -Dhttps.proxyPort=3128
+                -Dhttp.nonProxyHosts=localhost|127.0.0.1|*.cluster.local|*.svc|hx-wwwcache.ebi.ac.uk
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+      restartPolicy: Always
+      
