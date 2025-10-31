@@ -50,7 +50,7 @@ spring:
             filters:
               - StripPrefix=3
           - id: collections
-            uri: {BACKEND_URL}
+            uri: ${BACKEND_URL}
             predicates:
               - Path=/api/collections
             filters:
