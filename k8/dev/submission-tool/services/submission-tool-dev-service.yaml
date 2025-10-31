@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: submission-tool-dev
+  namespace: submission-tool-dev
+  labels:
+    app: submission-tool-dev
+    environment: dev
+spec:
+  ports:
+    - protocol: TCP
+      port: 80              # External port (what other services/users connect to)
+      targetPort: 8080      # Container port (where the app is listening)
+      nodePort: 31294       # External node port (if accessing via NodeIP:31294)
+  selector:
+    app: submission-tool-dev
+  type: NodePort
