@@ -9,8 +9,8 @@ COPY frontend frontend
 # Copy the rest of the application
 COPY src src
 
-# Create .env file for frontend build (you'll need to pass this as build arg or copy it)
-# If you need VITE_CONFIG, uncomment and modify:
+# Create .env file for frontend build (to need to pass this as build arg or copy it)
+# If we need VITE_CONFIG, uncomment and modify:
 # ARG VITE_CONFIG
 # RUN echo "$VITE_CONFIG" > frontend/.env
 
