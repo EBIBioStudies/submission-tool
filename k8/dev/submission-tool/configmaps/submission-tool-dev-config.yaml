@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: submission-tool-config
+  namespace: submission-tool-dev
+data:
+  BACKEND_URL: "http://biostudies-dev.ebi.ac.uk:8788"
+  FRONTEND_URL: "http://ribs:8080/biostudies/"

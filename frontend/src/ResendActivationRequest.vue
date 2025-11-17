@@ -51,7 +51,7 @@ const errorMessage = ref(null);
 const success = ref(false);
 const recaptchaToken = ref('');
 const captchaPublicKey = window.config.recaptchaKey;
-const instanceKey = import.meta.env.VITE_INSTANCE_KEY; //backend needs this instanceKey
+const instanceKey =window.config.instanceKey; //backend needs this instanceKey
 
 
 const validEmail = computed(() => {

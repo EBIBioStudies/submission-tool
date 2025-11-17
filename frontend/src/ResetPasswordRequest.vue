@@ -51,7 +51,7 @@ const hasError = ref(false);
 const success = ref(false);
 const recaptchaToken = ref('');
 const captchaPublicKey = window.config.recaptchaKey;
-const instanceKey = import.meta.env.VITE_INSTANCE_KEY;
+const instanceKey = window.config.instanceKey;
 
 const validEmail = computed(() => {
   const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
