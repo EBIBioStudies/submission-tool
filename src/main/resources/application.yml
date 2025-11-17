@@ -1,63 +1,59 @@
 server:
   port: 8080
-  servlet:
-    context-path: /biostudies/submissions/
-  tomcat:
-    accesslog:
-      enabled: true
-      buffered: false
-      directory: logs
-      file-date-format: .yyyy-MM-dd
-      pattern: combined
-      rotate: true
-    basedir: ./
+
 spring:
-  servlet:
-    multipart:
-      enabled: false
+  main:
+    web-application-type: reactive
+
   cloud:
     gateway:
-      mvc:
-        routes:
-          - id: auth
-            uri: ${BACKEND_URL}
-            predicates:
-              - Path=/api/auth/**
-            filters:
-              - StripPrefix=3
-          - id: auth-reset
-            uri: ${BACKEND_URL}
-            predicates:
-              - Path=/api/auth/password/**
-            filters:
-              - StripPrefix=3
-          - id: auth-activate
-            uri: ${BACKEND_URL}
-            predicates:
-              - Path=/api/auth/activate/**
-            filters:
-              - StripPrefix=3
-          - id: submission
-            uri: ${BACKEND_URL}
-            predicates:
-              - Path=/api/submissions/**
-            filters:
-              - StripPrefix=3
-          - id: files
-            uri: ${BACKEND_URL}
-            predicates:
-              - Path=/api/files/**
-            filters:
-              - StripPrefix=3
-          - id: collections
-            uri: ${BACKEND_URL}
-            predicates:
-              - Path=/api/collections
-            filters:
-              - StripPrefix=3
+      routes:
+        # Config endpoint (if backend)
+        - id: config
+          uri: ${BACKEND_URL}
+          predicates:
+            - Path=/biostudies/submissions/config
+          filters:
+            - StripPrefix=2
+          order: 1
+
+        # API routes
+        - id: auth
+          uri: ${BACKEND_URL}
+          predicates:
+            - Path=/biostudies/submissions/api/auth,/biostudies/submissions/api/auth/**
+          filters:
+            - StripPrefix=3
+          order: 1
+
+        - id: submission
+          uri: ${BACKEND_URL}
+          predicates:
+            - Path=/biostudies/submissions/api/submissions,/biostudies/submissions/api/submissions/**
+          filters:
+            - StripPrefix=3
+          order: 1
+
+        - id: files
+          uri: ${BACKEND_URL}
+          predicates:
+            - Path=/biostudies/submissions/api/files,/biostudies/submissions/api/files/**
+          filters:
+            - StripPrefix=3
+          order: 1
+
+        - id: collections
+          uri: ${BACKEND_URL}
+          predicates:
+            - Path=/biostudies/submissions/api/collections,/biostudies/submissions/api/collections/**
+          filters:
+            - StripPrefix=3
+          order: 1
+
 backend:
   url: ${BACKEND_URL}
   instance-key: ${INSTANCE_KEY}
   recaptcha-key: ${RECAPTCHA_KEY}
+
 frontend:
   url: ${FRONTEND_URL}
