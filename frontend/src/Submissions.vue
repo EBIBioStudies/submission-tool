@@ -40,21 +40,6 @@
 
           <th>
             Title
-            <font-awesome-icon
-              style="margin-left: 1em"
-              role="button"
-              @click="searchTitle"
-              icon="fa-solid fa-filter"
-              size="xs"
-            ></font-awesome-icon>
-            <span
-              v-if="keywords"
-              role="button"
-              @click="keywords = ''"
-              class="badge text-bg-secondary filter"
-              >{{ keywords }}
-              <font-awesome-icon icon="fa-solid fa-xmark" size="xs" />
-            </span>
           </th>
           <th style="min-width: 120px">Release Date</th>
           <th style="min-width: 120px">Last Modified</th>
@@ -182,7 +167,6 @@ const offset = ref(0);
 const pageLength = ref(15);
 const showNext = ref(false);
 const isLoading = ref(true);
-const keywords = ref('');
 const accessionToSearch = ref('');
 const serverListingSubsErrorMessage = ref('');
 
@@ -223,13 +207,11 @@ const deleteSubmission = async (accno) => {
  * Watches relevant reactive state for search criteria changes and user authentication.
  *
  * When the user is authenticated, this watcher triggers data fetching from the server
- * whenever the search inputs (accession or keywords), pagination offset, or page length change.
+ * whenever the search inputs (accession), pagination offset, or page length change.
  *
  * Search behavior:
  * - If there is an accession search term, the query will exclusively search by accession,
- *   ignoring pagination and keywords.
- * - If searching by keywords, pagination parameters (offset, limit) are included.
- * - Spaces in keywords are replaced with '+' to accommodate Spring proxy query param restrictions.
+ *   ignoring pagination.
  *
  * Sets loading and error state during the async request, and updates the submissions list,
  * also sets a flag if there are more submissions for pagination.
@@ -237,10 +219,7 @@ const deleteSubmission = async (accno) => {
 watchEffect(async () => {
   if (!AuthService.isAuthenticated()) return;
 
-  const encodedKeywords = keywords.value.trim().replace(/ /g, '+');
-
   const hasAccession = accessionToSearch.value.trim() !== '';
-  const hasKeywords = encodedKeywords.trim() !== '';
 
   try {
     isLoading.value = true;
@@ -251,8 +230,7 @@ watchEffect(async () => {
         ? { accNo: accessionToSearch.value.trim() }
         : {
             offset: offset.value,
-            limit: pageLength.value + 1,
-            ...(hasKeywords && { keywords: encodedKeywords }),
+            limit: pageLength.value + 1
           },
     });
 
@@ -276,8 +254,6 @@ const open = (accno) => {
 
 /**
  * Prompts the user to search for an accession.
- * Note: Performing accession search will clear any active title search
- *       (searchAccession and searchTitle are mutually exclusive).
  */
 const searchAccession = async () => {
   accessionToSearch.value = await utils.prompt(
@@ -285,22 +261,8 @@ const searchAccession = async () => {
     `Please enter the accession to search`,
     'Search',
   );
-  keywords.value = '';
 };
 
-/**
- * Prompts the user to search by title keywords.
- * Note: Performing title search will clear any active accession search.
- *       These search modes are mutually exclusive.
- */
-const searchTitle = async () => {
-  keywords.value = await utils.prompt(
-    'Search title',
-    `Please enter part of the title to search`,
-    'Search',
-  );
-  accessionToSearch.value = '';
-};
 </script>
 
 <style scoped>
