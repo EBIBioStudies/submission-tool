@@ -2,10 +2,6 @@ package uk.ac.ebi.biostudies.submissiontool;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cloud.gateway.filter.GatewayFilterChain;
-import org.springframework.cloud.gateway.filter.GlobalFilter;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
@@ -16,6 +12,8 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
+
+import java.net.URI;
 
 @Component
 public class SpaFallbackWebFilter implements WebFilter {
@@ -30,6 +28,13 @@ public class SpaFallbackWebFilter implements WebFilter {
     // Only handle GET requests
     if (!"GET".equalsIgnoreCase(method)) {
       return chain.filter(exchange);
+    }
+
+    // Redirect /biostudies/submissions (without slash) to /biostudies/submissions/ (with slash)
+    if (path.equals("/biostudies/submissions")) {
+      exchange.getResponse().setStatusCode(HttpStatus.MOVED_PERMANENTLY);
+      exchange.getResponse().getHeaders().setLocation(URI.create("/biostudies/submissions/"));
+      return exchange.getResponse().setComplete();
     }
 
     // Only handle paths under /biostudies/submissions/
