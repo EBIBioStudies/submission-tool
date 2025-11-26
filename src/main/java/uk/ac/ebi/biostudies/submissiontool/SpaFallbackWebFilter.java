@@ -45,6 +45,7 @@ public class SpaFallbackWebFilter implements WebFilter {
     // Skip API calls, config, and static resources
     if (path.startsWith("/biostudies/submissions/api/") ||
         path.equals("/biostudies/submissions/config") ||
+        path.startsWith("/biostudies/submissions/filelist/") ||
         path.startsWith("/biostudies/submissions/assets/") ||
         path.startsWith("/biostudies/submissions/images/") ||
         path.equals("/biostudies/submissions/favicon.ico")) {
