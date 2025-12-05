@@ -44,9 +44,14 @@ public class FileListController {
 
     DataBufferFactory bufferFactory = response.bufferFactory();
 
-    return getFilesReactive("user" + path, token)
-        .map(line -> bufferFactory.wrap((line + "\n").getBytes(StandardCharsets.UTF_8)))
-        .as(bufferFlux -> response.writeWith(bufferFlux))
+    // Add header first
+    DataBuffer headerBuffer = bufferFactory.wrap("Files\n".getBytes(StandardCharsets.UTF_8));
+    Flux<DataBuffer> initialFlux = Flux.just(headerBuffer);
+
+    return Flux.concat(initialFlux,
+            getFilesReactive("user" + path, token)
+                .map(line -> bufferFactory.wrap((line + "\n").getBytes(StandardCharsets.UTF_8))))
+        .as(response::writeWith)
         .onErrorResume(e -> {
           DataBuffer errorBuffer = bufferFactory.wrap(
               "Error generating filelist\n".getBytes(StandardCharsets.UTF_8));
