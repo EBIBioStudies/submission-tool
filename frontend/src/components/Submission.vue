@@ -7,7 +7,12 @@ const studyComponent = ref(null);
 const errors = computed(() => studyComponent.value.errors);
 const doi = computed(() => props.submission?.attributes?.find(a => a.name.toLowerCase() === 'doi')?.value);
 let baseURL = import.meta.env.VITE_BASE_URL?.replace(/\/$/, '') || '';
-defineExpose({ errors });
+
+const getAccNoToDisplay = (submission) => {
+  return submission.displayKey ? submission.displayKey: submission.accno
+}
+
+defineExpose({ errors }); 
 </script>
 
 <template>
@@ -17,7 +22,7 @@ defineExpose({ errors });
       <img :src="`${baseURL}${template?.sectionType?.banner?.src}`" height="70" />
     </div>
     <h5 class="text-success">
-      {{ accession }} </h5>
+      {{ getAccNoToDisplay(submission) }}</h5>
     <h4>{{ submission?.attributes?.find(a => a.name.toLowerCase() === 'title')?.value }}&nbsp;</h4>
     <div v-if="doi" class="doi">
       <span v-if="doi.toLowerCase()==='true'">A Crossref DOI will be assigned after submission automatically.</span>

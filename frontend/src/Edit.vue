@@ -1,80 +1,92 @@
 <template xmlns="http://www.w3.org/1999/html">
   <teleport to="body">
     <div class="fixed-top text-end col">
-      <font-awesome-icon icon="fas fa-user-secret" class="p-2 link-dark" type="button" @click="offCanvasJson.show();"></font-awesome-icon>
+      <font-awesome-icon icon="fas fa-user-secret" class="p-2 link-dark" type="button"
+        @click="offCanvasJson.show();"></font-awesome-icon>
     </div>
   </teleport>
   <div v-if="isLoading" class="loading-overlay">
     <div class="spinner"></div>
   </div>
   <div v-else-if="success" className="card">
-    <div  className="card-body">
-      <h2  className="card-title ng-star-inserted">
-        <i aria-hidden="true" className="fa fa-check-circle"></i> Study <span  className="ng-star-inserted">submitted</span>
+    <div className="card-body">
+      <h2 className="card-title ng-star-inserted">
+        <i aria-hidden="true" className="fa fa-check-circle"></i> Study <span
+          className="ng-star-inserted">submitted</span>
       </h2>
-      <p className="card-text mb-1 ng-star-inserted"> The study has been submitted to the BioStudies database and is now being processed. </p>
-      <div  className="mt-3 ng-star-inserted">
-        <h5>Please note <i  className="far fa-hand-point-down"></i></h5>
+      <p className="card-text mb-1 ng-star-inserted"> The study has been submitted to the BioStudies database and is now
+        being processed. </p>
+      <div className="mt-3 ng-star-inserted">
+        <h5>Please note <i className="far fa-hand-point-down"></i></h5>
         <ul>
           <li className="mb-3">
             <mark>Data processing time depends on the number and size of your files.</mark>
           </li>
           <li className="mb-3">
-            <mark>If there are any further validation errors, they will be available from the Submissions list page</mark>
+            <mark>If there are any further validation errors, they will be available from the Submissions list
+              page</mark>
           </li>
           <li className="mb-3">
             <mark>On successful processing you will receive the study accession number by e-mail.</mark>
           </li>
           <li className="mb-3">
-            <mark>The study will remain private and accessible only via login until the release date in the Western European Time Zone.</mark>
+            <mark>The study will remain private and accessible only via login until the release date in the Western
+              European Time Zone.</mark>
           </li>
         </ul>
       </div>
       <div className="mt-3 ng-star-inserted">
         <strong>
-          <a target="_blank" href="http://europepmc.org/abstract/MED/26700850"> Citing the BioStudies database <i className="fa fa-fw fa-external-link-square"></i></a>
+          <a target="_blank" href="http://europepmc.org/abstract/MED/26700850"> Citing the BioStudies database <i
+              className="fa fa-fw fa-external-link-square"></i></a>
         </strong>
-        <p>Sarkans U, Gostev M, Athar A, et al. <a href="http://doi.org/10.1093/nar/gkx965">The BioStudies database-one stop shop for all data supporting a life sciences study. </a><i>Nucleic Acids Res.</i> 2018;46(D1):D1266-D1270. doi:10.1093/nar/gkx965
+        <p>Sarkans U, Gostev M, Athar A, et al. <a href="http://doi.org/10.1093/nar/gkx965">The BioStudies database-one
+            stop shop for all data supporting a life sciences study. </a><i>Nucleic Acids Res.</i>
+          2018;46(D1):D1266-D1270. doi:10.1093/nar/gkx965
         </p>
       </div>
-      <RouterLink
-        to="/"
-        class="btn btn-primary ng-star-inserted"
-        tooltip="'List all other submitted studies'"
-      >
+      <RouterLink to="/" class="btn btn-primary ng-star-inserted" tooltip="'List all other submitted studies'">
         Show all submitted
       </RouterLink>
     </div>
   </div>
-  <div v-else >
+  <div v-else>
     <div v-if="serverErrorMessage" class="alert alert-danger" role="alert">
       <div class="card-body">
-        {{serverErrorMessage}}
+        {{ serverErrorMessage }}
       </div>
     </div>
     <div v-else>
-      <div  class="card ng-star-inserted">
-        <div  class="card-body st-edit-status-message">
-          <h2 v-if="displayType!=='readonly' && !accession.startsWith('TMP_')"  class="card-title ng-star-inserted">Edit submission</h2>
-          <h2 v-else  class="card-title ng-star-inserted">New submission</h2>
-          <p  class="card-text ng-star-inserted"> Please fill in the form below. The
-            <span  class="font-weight-bold">Validation</span> tab on the right-hand side lists those fields still incomplete or incorrect. Use the
-            <strong>Add or <font-awesome-icon :icon="['fas','plus']" class="icon fa-fw"></font-awesome-icon></strong> buttons to quickly add new rows or tables. </p>
-          <div  role="alert" class="alert alert-warning mb-0 ng-star-inserted">
-            <strong >Please note:</strong> all fields with * are required
+      <div class="card ng-star-inserted">
+        <div class="card-body st-edit-status-message">
+          <h2 v-if="displayType !== 'readonly' && !accession.startsWith('TMP_')" class="card-title ng-star-inserted">Edit
+            submission</h2>
+          <h2 v-else class="card-title ng-star-inserted">New submission</h2>
+          <p class="card-text ng-star-inserted"> Please fill in the form below. The
+            <span class="font-weight-bold">Validation</span> tab on the right-hand side lists those fields still
+            incomplete or incorrect. Use the
+            <strong>Add or <font-awesome-icon :icon="['fas', 'plus']" class="icon fa-fw"></font-awesome-icon></strong>
+            buttons to quickly add new rows or tables.
+          </p>
+          <div role="alert" class="alert alert-warning mb-0 ng-star-inserted">
+            <strong>Please note:</strong> all fields with * are required
           </div>
         </div>
       </div>
     </div>
   </div>
-  <div><AnnouncementBanner /></div>
+  <div>
+    <AnnouncementBanner />
+  </div>
   <div class="container">
     <div class="row">
       <div class="col text-end pb-4">
 
-        <font-awesome-icon v-if="isSaving" :icon="['far','floppy-disk']" beat-fade class="pe-2"/>
-        <button :disabled="!enableSubmission" class="btn btn-primary btn-top-margin" type="button" @click="submitDraftPopUp()">Submit</button>
-        <button v-if="isSubmittedSubmission && enableSubmission" class="btn btn-outline-danger ms-2 btn-top-margin" type="button" @click="revertDraft()">Revert</button>
+        <font-awesome-icon v-if="isSaving" :icon="['far', 'floppy-disk']" beat-fade class="pe-2" />
+        <button :disabled="!enableSubmission" class="btn btn-primary btn-top-margin" type="button"
+          @click="submitDraftPopUp()">Submit</button>
+        <button v-if="isSubmittedSubmission && enableSubmission" class="btn btn-outline-danger ms-2 btn-top-margin"
+          type="button" @click="revertDraft()">Revert</button>
       </div>
     </div>
     <div v-if="showModal" class="modal-overlay">
@@ -83,7 +95,8 @@
     <div class="row">
       <div class="col-1"></div>
       <div class="col-10">
-        <Submission :submission="submission" :template="template" :accession="props.accession" ref="submissionComponent"/>
+        <Submission :submission="submission" :template="template" :accession="props.accession"
+          ref="submissionComponent" />
       </div>
       <div class="col-1"></div>
       <!--div id="json" class="json col-3"></div-->
@@ -99,32 +112,33 @@
     </div>
 
     <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1"
-         id="offcanvasErrors" aria-labelledby="offcanvasScrollingLabel">
+      id="offcanvasErrors" aria-labelledby="offcanvasScrollingLabel">
       <div class="offcanvas-header">
         <h5 class="offcanvas-title" id="offcanvasScrollingLabel">Validation</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
       </div>
       <div class="offcanvas-body">
-        <p v-if="validationErrors?.filter((e)=>e.control.errors).length">Please fix these errors before submitting.
-          <ul class="list-group">
-            <template v-for="error in validationErrors">
-              <li v-if="error?.control?.errors?.length" role="button"
-                  class="list-group-item list-group-item-action" @click="expandAndFocus(error?.element)">
-                <strong>{{ getErrorAttName(error)}}:</strong> {{
-                  error.errorMessage
-                }}
-              </li>
-            </template>
-          </ul>
+        <p v-if="validationErrors?.filter((e) => e.control.errors).length">Please fix these errors before submitting.
+        <ul class="list-group">
+          <template v-for="error in validationErrors">
+            <li v-if="error?.control?.errors?.length" role="button" class="list-group-item list-group-item-action"
+              @click="expandAndFocus(error?.element)">
+              <strong>{{ getErrorAttName(error) }}:</strong> {{
+                error.errorMessage
+              }}
+            </li>
+          </template>
+        </ul>
         </p>
         <p v-else>
-          <div class="pb-2">
-            <font-awesome-icon icon="check" class="text-success"/>
-            All good to go!
-          </div>
-          <div class="text-center">
-            <button class="btn btn-primary text-center" type="button" @click="finalSubmitDraft()">Close and Submit</button>
-          </div>
+        <div class="pb-2">
+          <font-awesome-icon icon="check" class="text-success" />
+          All good to go!
+        </div>
+        <div class="text-center">
+          <button class="btn btn-primary text-center" type="button" @click="finalSubmitDraft()">Close and
+            Submit</button>
+        </div>
         </p>
       </div>
     </div>
@@ -143,14 +157,14 @@
 </style>
 
 <script setup>
-import {computed, onMounted, provide, ref, watch, watchEffect} from 'vue';
+import { computed, onMounted, provide, ref, watch, watchEffect } from 'vue';
 
 import Default from './templates/Default.json';
 import Submission from './components/Submission.vue';
 import ResubmitModal from "./components/ResubmitModal.vue";
-import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
-import {allTemplates} from "@/templates/templates";
-import {Offcanvas} from "bootstrap";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { allTemplates } from "@/templates/templates";
+import { Offcanvas } from "bootstrap";
 import axios from "axios";
 import utils from "@/utils";
 import router from "./router.js";
@@ -181,7 +195,7 @@ provide('isManagerUser', isManagerUser)
 provide('collectionName', collectionName)
 
 
-const isSubmittedSubmission = displayType?.value!=='readonly' && !props?.accession?.startsWith('TMP_');
+const isSubmittedSubmission = displayType?.value !== 'readonly' && !props?.accession?.startsWith('TMP_');
 const { enableSubmission } = useFeatureFlags()
 const showModal = ref(false);
 isManagerUser.value = AuthService?.user?.value?.superuser == true;
@@ -193,15 +207,15 @@ let offCanvasJson = null;
 let validationErrors = ref([]);
 
 
-const submitDraftPopUp = ()=>{
-  if(isSubmittedSubmission)
-      showModal.value = true;
+const submitDraftPopUp = () => {
+  if (isSubmittedSubmission)
+    showModal.value = true;
   else
     finalSubmitDraft("");
 }
 
 const publicSubmission = computed(() => {
-  if(!isSubmittedSubmission)
+  if (!isSubmittedSubmission)
     return false;
   const releaseAttr = submission.value.attributes.find(attr => attr?.name === 'ReleaseDate');
   if (!releaseAttr || !releaseAttr.value) return false;
@@ -249,7 +263,7 @@ const finalSubmitDraft = async (option) => {
 
   try {
     // 1. Clean and reorder the section in-place
-    if(props?.accession?.startsWith('TMP_')) {
+    if (props?.accession?.startsWith('TMP_')) {
       submission.value.section = cleanAndReorderSubsections(submission.value.section);
     }
 
@@ -304,8 +318,8 @@ const revertDraft = async () => {
 }
 
 onMounted(() => {
-  offCanvasErrors = Offcanvas.getOrCreateInstance('#offcanvasErrors', {'backdrop': false});
-  offCanvasJson = Offcanvas.getOrCreateInstance('#offcanvasJson', {'backdrop': false});
+  offCanvasErrors = Offcanvas.getOrCreateInstance('#offcanvasErrors', { 'backdrop': false });
+  offCanvasJson = Offcanvas.getOrCreateInstance('#offcanvasJson', { 'backdrop': false });
 })
 
 function deduplicateReleaseDate(submissionJson) {
@@ -326,18 +340,22 @@ watchEffect(async () => {
   if (props.accession) {
     // load from existing data
     const response = await axios.get(
-      `/api/submissions/drafts/${props.accession}/content`,
+      `/api/submissions/drafts/${props.accession}`,
     );
-    const submissionJson = await response.data;
+
+    const data = await response.data;
+    const submissionJson = data?.content;
+    submissionJson['displayKey'] = data?.displayKey
+
 
     collectionName.value = submissionJson.attributes?.find(
-        (n) => n?.name?.toLowerCase() === 'attachto',
-      )?.value
+      (n) => n?.name?.toLowerCase() === 'attachto',
+    )?.value
 
     // insert the release date as needed
     deduplicateReleaseDate(submissionJson);
 
-// Now optionally insert if still missing in one place
+    // Now optionally insert if still missing in one place
     const submissionHas = submissionJson.attributes.some(attr => attr?.name === 'ReleaseDate');
     const sectionHas = submissionJson.section.attributes.some(attr => attr?.name === 'ReleaseDate');
 
@@ -351,7 +369,7 @@ watchEffect(async () => {
       const releaseDate = { name: 'ReleaseDate' };
       submissionJson.attributes.splice(2, 0, releaseDate);
       submissionJson.section.attributes.splice(1, 0, releaseDate);
-    }else if (submissionHas && sectionHas){
+    } else if (submissionHas && sectionHas) {
       const sectionDate = submissionJson.section.attributes.find(attr => attr.name === 'ReleaseDate');
       submissionJson.attributes.splice(2, 1, sectionDate);
     }
@@ -391,7 +409,7 @@ watchEffect(async () => {
       );
     }
     template.value = tmpl ?? Default;
-    if(template.value?.display === 'readonly') {
+    if (template.value?.display === 'readonly') {
       displayType.value = 'readonly';
       editDateMode.value = true;
     }
@@ -456,20 +474,19 @@ const expandAndFocus = async (el) => {
   await el.scrollIntoView()
 }
 
-const getErrorAttName = (error) =>{
-    if(error?.errorMessage) {
-      const index = error?.errorMessage?.toLowerCase()?.indexOf("required"); // Find "required" case-insensitively
-      if (index !== -1) {
-        return error?.errorMessage?.slice(0, index)?.trim();
-      }
+const getErrorAttName = (error) => {
+  if (error?.errorMessage) {
+    const index = error?.errorMessage?.toLowerCase()?.indexOf("required"); // Find "required" case-insensitively
+    if (index !== -1) {
+      return error?.errorMessage?.slice(0, index)?.trim();
     }
-    return error?.element?.id
   }
+  return error?.element?.id
+}
 
 </script>
 
 <style class="scoped">
-
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -480,7 +497,8 @@ const getErrorAttName = (error) =>{
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000; /* High z-index to ensure it's on top */
+  z-index: 1000;
+  /* High z-index to ensure it's on top */
 }
 
 label {
@@ -489,7 +507,8 @@ label {
 }
 
 .btn-top-margin {
-  margin-top: 10px; /* Adjust the width, style, and color as needed */
+  margin-top: 10px;
+  /* Adjust the width, style, and color as needed */
 }
 
 .form-group {
@@ -519,9 +538,12 @@ label {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
-
-
 </style>
