@@ -50,7 +50,7 @@
         <tr v-for="submission in submissions">
           <td>
             <template v-if="submission?.status === 'PROCESSED'">
-              {{ submission.accno }}
+              {{ getAccNoToDisplay(submission) }}
             </template>
 
             <template v-else-if="submission?.status === 'INVALID'">
@@ -60,7 +60,7 @@
               >
                 View Errors
               </button>
-              <div>{{ submission.accno }}</div>
+              <div>{{ getAccNoToDisplay(submission) }}</div>
             </template>
 
             <template v-else>
@@ -68,7 +68,7 @@
                 :icon="['fas', 'spinner']"
                 class="spinner-border spinner-border-sm status-spinner fa-spin"
               />
-              {{ submission.accno }}
+              {{ getAccNoToDisplay(submission) }}
             </template>
           </td>
 
@@ -178,6 +178,10 @@ const showErrors = (errors) => {
   showModal.value = true;
 };
 
+const getAccNoToDisplay = (submission) => {
+  return submission.displayAccNo? submission.displayAccNo: submission.accno
+}
+
 const canDelete = (submission) => {
   return (
     (['S-', 'TMP_'].some((prefix) => submission.accno.indexOf(prefix) >= 0) &&
@@ -236,6 +240,7 @@ watchEffect(async () => {
 
     submissions.value = response.data.slice(0, pageLength.value);
     showNext.value = response.data.length === pageLength.value + 1;
+    
   } catch (error) {
     serverListingSubsErrorMessage.value =
       error?.log?.message || error?.message || 'Problem in listing submissions';

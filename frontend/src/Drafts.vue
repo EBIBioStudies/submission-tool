@@ -9,7 +9,7 @@
       </thead>
       <tbody>
       <tr v-for="draft in drafts">
-        <td>{{ draft.key }}</td>
+        <td>{{ getKeyToDisplay(draft) }}</td>
         <td>{{ getTitle(draft) }}</td>
         <td>
           <font-awesome-icon role="button" icon="fa-edit" class="text-primary fa-fw"
@@ -92,6 +92,10 @@ watchEffect(async () => {
       isLoading.value = false;
     });
 })
+
+const getKeyToDisplay = (draft) => {
+  return draft.displayKey ? draft.displayKey : draft.key
+}
 
 const getTitle = (draft) => {
   return draft.content?.section?.attributes?.find(attr => attr.name === 'Title')?.value || draft.content?.attributes?.find(attr => attr.name === 'Title')?.value
