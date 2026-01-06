@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -49,7 +50,7 @@ public class FileListController {
     Flux<DataBuffer> initialFlux = Flux.just(headerBuffer);
 
     return Flux.concat(initialFlux,
-            getFilesReactive("user" + path, token)
+            getFilesReactive(path, token)
                 .map(line -> bufferFactory.wrap((line + "\n").getBytes(StandardCharsets.UTF_8))))
         .as(response::writeWith)
         .onErrorResume(e -> {
@@ -65,22 +66,19 @@ public class FileListController {
         .defaultHeader(SESSION_HEADER, token)
         .build();
 
-    // Construct full URI with base URL to avoid localhost fallback
-    String fullPath;
-    if (path.startsWith("user/")) {
-      fullPath = path;
-    } else {
-      fullPath = "user/" + path;
-    }
-
     URI uri = UriComponentsBuilder.fromHttpUrl(environments.getProperty("backend.url"))
-        .path("/files/")
-        .path(fullPath)
+        .path("/files/user/query")
         .build(false) // disables encoding to preserve slashes
         .toUri();
 
-    return webClient.get()
+    if (path.startsWith("/")) {
+      path = path.substring(1);
+    }
+
+    return webClient.post()
         .uri(uri)
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(Collections.singletonMap("path", path))
         .retrieve()
         .bodyToMono(String.class)
         .flatMapMany(body -> {
@@ -92,15 +90,14 @@ public class FileListController {
           }
         })
         .flatMap(entry -> {
+          String sanitizedPath = entry.get("path").asText() + "/" + entry.get("name").asText();
+          if (sanitizedPath.startsWith("user/")) {
+            sanitizedPath = sanitizedPath.substring("user/".length());
+          }
           if ("FILE".equalsIgnoreCase(entry.get("type").asText())) {
-            String sanitizedPath = entry.get("path").asText() + "/" + entry.get("name").asText();
-            if (sanitizedPath.startsWith("user/")) {
-              sanitizedPath = sanitizedPath.substring(5);
-            }
             return Flux.just(sanitizedPath);
           } else if ("DIR".equalsIgnoreCase(entry.get("type").asText())) {
-            String nextPath = entry.get("path").asText() + "/" + entry.get("name").asText();
-            return getFilesReactive(nextPath, token);
+            return getFilesReactive(sanitizedPath, token);
           } else {
             return Flux.empty();
           }
