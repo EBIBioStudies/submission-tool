@@ -184,7 +184,7 @@ const getAccNoToDisplay = (submission) => {
 
 const canDelete = (submission) => {
   return (
-    (['S-', 'TMP_'].some((prefix) => submission.accno.indexOf(prefix) >= 0) &&
+    (['S-'].some((prefix) => submission.accno.indexOf(prefix) >= 0) &&
       new Date(submission?.rtime).getTime() > Date.now() &&
       submission.status === 'PROCESSED') ||
     AuthService.user?.value?.superuser

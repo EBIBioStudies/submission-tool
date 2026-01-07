@@ -52,8 +52,7 @@ const filePath = ref(attr.path)
               <li>
                 <strong><font-awesome-icon icon="clock" /> Drafts</strong>:
                 New studies which are incomplete or updates of the existing studies that have not been
-                submitted to the BioStudies database yet. New studies have a temporary identifier starting with
-                <i>TMP_</i>.
+                submitted to the BioStudies database yet. New studies have a temporary identifier.
               </li>
             </ul>
             <p>
