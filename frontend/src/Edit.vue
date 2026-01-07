@@ -5,9 +5,11 @@
         @click="offCanvasJson.show();"></font-awesome-icon>
     </div>
   </teleport>
+
   <div v-if="isLoading" class="loading-overlay">
     <div class="spinner"></div>
   </div>
+  
   <div v-else-if="success" className="card">
     <div className="card-body">
       <h2 className="card-title ng-star-inserted">
@@ -59,7 +61,7 @@
     <div v-else>
       <div class="card ng-star-inserted">
         <div class="card-body st-edit-status-message">
-          <h2 v-if="displayType !== 'readonly' && !accession.startsWith('TMP_')" class="card-title ng-star-inserted">Edit
+          <h2 v-if="displayType !== 'readonly' && !submission.newSubmission" class="card-title ng-star-inserted">Edit
             submission</h2>
           <h2 v-else class="card-title ng-star-inserted">New submission</h2>
           <p class="card-text ng-star-inserted"> Please fill in the form below. The
@@ -167,7 +169,6 @@ import { allTemplates } from "@/templates/templates";
 import { Offcanvas } from "bootstrap";
 import axios from "axios";
 import utils from "@/utils";
-import router from "./router.js";
 import AuthService from './services/AuthService';
 import { useFeatureFlags } from '@/composables/useFeatureFlags'
 import AnnouncementBanner from '@/components/AnnouncementBanner.vue'
@@ -194,8 +195,7 @@ provide('readOnlyEditDateMode', editDateMode)
 provide('isManagerUser', isManagerUser)
 provide('collectionName', collectionName)
 
-
-const isSubmittedSubmission = displayType?.value !== 'readonly' && !props?.accession?.startsWith('TMP_');
+const isSubmittedSubmission =ref(true);
 const { enableSubmission } = useFeatureFlags()
 const showModal = ref(false);
 isManagerUser.value = AuthService?.user?.value?.superuser == true;
@@ -208,14 +208,15 @@ let validationErrors = ref([]);
 
 
 const submitDraftPopUp = () => {
-  if (isSubmittedSubmission)
+  
+  if (isSubmittedSubmission.value)
     showModal.value = true;
   else
     finalSubmitDraft("");
 }
 
 const publicSubmission = computed(() => {
-  if (!isSubmittedSubmission)
+  if (!isSubmittedSubmission.value)
     return false;
   const releaseAttr = submission.value.attributes.find(attr => attr?.name === 'ReleaseDate');
   if (!releaseAttr || !releaseAttr.value) return false;
@@ -263,7 +264,8 @@ const finalSubmitDraft = async (option) => {
 
   try {
     // 1. Clean and reorder the section in-place
-    if (props?.accession?.startsWith('TMP_')) {
+    
+    if (submission.value.newSubmission) {
       submission.value.section = cleanAndReorderSubsections(submission.value.section);
     }
 
@@ -346,7 +348,8 @@ watchEffect(async () => {
     const data = await response.data;
     const submissionJson = data?.content;
     submissionJson['displayKey'] = data?.displayKey
-
+    submissionJson['newSubmission'] = data?.newSubmission
+    isSubmittedSubmission.value =  displayType?.value !== 'readonly' && !data?.newSubmission;
 
     collectionName.value = submissionJson.attributes?.find(
       (n) => n?.name?.toLowerCase() === 'attachto',
