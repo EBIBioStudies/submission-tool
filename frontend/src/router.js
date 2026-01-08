@@ -100,7 +100,6 @@ const routes = [
   }
 ];
 
-
 const router = createRouter({
   history: createWebHistory(basePath),
   routes,
@@ -108,15 +107,15 @@ const router = createRouter({
     if (to.hash) {
       return {
         el: to.hash,
-        behavior: 'smooth', // optional: enables smooth scroll
+        behavior: 'smooth',
       };
     }
     return { top: 0 };
   }
 });
 
-
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
+  await AuthService.initializeAuth();
   if (to.matched.some((route) => route.meta.requiresAuth)) {
     if (!AuthService.isAuthenticated()) {
       next('/signin');
@@ -129,6 +128,5 @@ router.beforeEach((to, from, next) => {
     next();
   }
 });
-
 
 export default router;
