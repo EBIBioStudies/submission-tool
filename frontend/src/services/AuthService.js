@@ -39,12 +39,12 @@ const decodeJwt = (token) => {
 const setCookie = (name, token, days = 30) => {
   const expires = new Date(Date.now() + days * 864e5).toUTCString();
   const domain = window.location.hostname;
-  document.cookie = `${name}=${token}; expires=${expires}; path=/; domain=${domain}`;
+  document.cookie = `${name}=${token}; expires=${expires}; path=/;`;
 };
 
 // Helper to delete cookie
 const deleteCookie = (name) => {
-  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=${window.location.hostname}`;
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;`;
 };
 
 const user = ref({});
