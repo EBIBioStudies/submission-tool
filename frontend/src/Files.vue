@@ -131,7 +131,7 @@ const axiosAbortController = new AbortController();
 const MAX_UPLOAD_SIZE = 1024;// in MBs;
 const MAX_UPLOAD_FILE_COUNT = 1000;
 
-const currentPath = computed(() => props.paths === '' ? [''] : props.paths);
+const currentPath = computed(() => props.paths === '' ? [''] : ['', ...props.paths]);
 const sortedFiles = computed(() => files.value?.sort((a, b) => // sort on type before name
   sortDirection.value * (sortKey.value === 'name' ? `${a?.type}-${a?.name}`.localeCompare(`${b?.type}-${b?.name}`)
     : (a?.type === 'DIR' ? -1 : a?.size) - (b?.type === 'DIR' ? -1 : b?.size)),
@@ -241,8 +241,7 @@ const uploadFile = (file) => {
   formData.append('files', file);
 
   // Attach JSON as a string under key 'filePath'
-  formData.append('filePath', currentPath.value.map(a => decodeURIComponent(a)).join('/'));
-
+  formData.append('filePath', currentPath.value.slice(1).map(a => decodeURIComponent(a)).join('/'));
 
   return axios.post(`/api/files/user/upload`, formData, {
     signal: axiosAbortController.signal,
