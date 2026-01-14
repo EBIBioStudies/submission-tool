@@ -21,7 +21,7 @@
         Upload Folder</label> <input id="inputFolder" directory hidden="hidden" mozdirectory msdirectory
                                      multiple="multiple" odirectory type="file" webkitdirectory
                                      @change.stop="(e) => uploadFiles(e.target.files, true)">
-        <button class="btn btn-secondary btn-sm me-2" data-bs-target="#transferHelpModal" data-bs-toggle="modal">
+        <button class="btn btn-secondary btn-sm me-2 mb-2" data-bs-target="#transferHelpModal" data-bs-toggle="modal">
           <font-awesome-icon icon="fa-solid fa-upload"></font-awesome-icon>
           FTP/Aspera
         </button>
