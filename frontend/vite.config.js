@@ -24,18 +24,22 @@ export default defineConfig(({ mode }) => {
           target: env.VITE_BACKEND_URL,
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/biostudies\/submissions\/api/, '')
-        },
-        '/biostudies/submissions/config': {
-          bypass: (req, res) => {
-            res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({
-              instanceKey: env.VITE_INSTANCE_KEY,
-              recaptchaKey: env.VITE_RECAPTCHA_KEY,
-              frontendUrl: env.VITE_FRONTEND_URL
-            }));
-          }
         }
       }
+    },
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        if (req.url === '/biostudies/submissions/config') {
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({
+            instanceKey: env.VITE_INSTANCE_KEY,
+            recaptchaKey: env.VITE_RECAPTCHA_KEY,
+            frontendUrl: env.VITE_FRONTEND_URL
+          }));
+        } else {
+          next();
+        }
+      });
     }
   };
 });
