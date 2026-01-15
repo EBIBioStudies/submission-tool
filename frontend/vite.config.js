@@ -26,6 +26,7 @@ export default defineConfig(({ mode }) => {
           rewrite: (path) => path.replace(/^\/biostudies\/submissions\/api/, '')
         },
         '/biostudies/submissions/config': {
+          target: 'http://localhost:5173',
           bypass: (req, res) => {
             res.setHeader('Content-Type', 'application/json');
             res.end(JSON.stringify({
@@ -33,6 +34,7 @@ export default defineConfig(({ mode }) => {
               recaptchaKey: env.VITE_RECAPTCHA_KEY,
               frontendUrl: env.VITE_FRONTEND_URL
             }));
+            return false;
           }
         }
       }
