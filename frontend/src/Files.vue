@@ -41,7 +41,7 @@
             <font-awesome-icon :class="{'grayed': sortKey!=='name'}" :icon="sorterIcon('name')"
                                class="fa-sm"></font-awesome-icon>
           </th>
-          <th class="text-end pe-4" role="button" @click.prevent="flipSort('size')">Size (in bytes)
+          <th class="text-end text-nowrap pe-4" role="button" @click.prevent="flipSort('size')">Size
             <font-awesome-icon :class="{'grayed': sortKey!=='size'}" :icon="sorterIcon('size')"
                                class="fa-sm"></font-awesome-icon>
           </th>
@@ -58,7 +58,8 @@
           <td><a v-if="file.type.toLowerCase()==='dir'" class="pointer"
                  @click.stop="navigate(file.path, file.name)">{{ file.name }}</a> <span v-else>{{ file.name }}</span>
           </td>
-          <td class="text-end pe-4"><span v-if="file.type.toLowerCase()!=='dir'">{{ file.size.toLocaleString() }}</span>
+          <td class="text-end pe-4"><span class="text-nowrap" :title="file.size.toLocaleString() + ' bytes'"
+                                          v-if="file.type.toLowerCase()!=='dir'">{{ utils.humanFileSize(file.size) }}</span>
           </td>
           <td>
             <div class="btn-group">
