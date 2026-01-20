@@ -20,13 +20,21 @@ const confirm = (title, message, {okayLabel = 'Close', isLarge = false, showCanc
           <button id="bs-confirm-okay" type="button" class="btn btn-${level}" >${okayLabel}</button>
         </div>
     </div>
-  `
-  const thisModal = new Modal(modal)
-  thisModal.show()
-  document.querySelector('#bs-confirm-okay').addEventListener('click', (e) => {
+  `;
+  const thisModal = new Modal(modal);
+  thisModal.show();
+
+  const accept = () => {
     isOkay = true;
     thisModal.hide();
+  };
+  document.querySelector('#bs-confirm-okay').addEventListener('click', () => accept());
+  modal.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && e.target.id !== 'bs-confirm-cancel') {
+      accept();
+    }
   });
+
   return new Promise((resolve, reject) => {
     modal.addEventListener('hide.bs.modal', (e) => {
       document.body.querySelector('.modal-backdrop').remove();
