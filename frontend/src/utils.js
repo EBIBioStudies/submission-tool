@@ -36,7 +36,7 @@ const confirm = (title, message, {okayLabel = 'Close', isLarge = false, showCanc
   });
 };
 
-const prompt = (title, message, okayLabel = 'Close', isLarge = false, showCancel = true, cancelLabel = 'Cancel') => {
+const prompt = (title, message, {okayLabel = 'Close', isLarge = false, showCancel = true, cancelLabel = 'Cancel'} = {}) => {
   const modal = document.createElement('div');
   modal.id = 'modal-confirm';
   modal.className = 'modal' + (isLarge ? ' modal-lg' : '');

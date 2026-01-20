@@ -266,7 +266,7 @@ const searchAccession = async () => {
   accessionToSearch.value = await utils.prompt(
     'Search accession',
     `Please enter the accession to search`,
-    'Search',
+    { okayLabel: 'Search' }
   );
 };
 
