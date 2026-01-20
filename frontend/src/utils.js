@@ -1,4 +1,4 @@
-import {Modal} from "bootstrap";
+import { Modal } from 'bootstrap';
 
 const confirm = (title, message, {okayLabel = 'Close', isLarge = false, showCancel = true, cancelLabel = 'Cancel', level = 'danger'} = {}) => {
   const modal = document.createElement('div');
@@ -16,8 +16,8 @@ const confirm = (title, message, {okayLabel = 'Close', isLarge = false, showCanc
           <p>${message}</p>
         </div>
         <div class="modal-footer border-0">
-          <button id="bs-confirm-okay" type="button" class="btn ${showCancel? 'btn-danger' : 'btn-primary'}">${okayLabel}</button>
-         ${showCancel ? `<button data-bs-dismiss="modal"  type="button" class="btn btn-primary">${cancelLabel}</button>` : ''}
+         ${showCancel ? `<button id="bs-confirm-cancel" type="button" class="btn btn-outline-${level}" data-bs-dismiss="modal">${cancelLabel}</button>` : ''}
+          <button id="bs-confirm-okay" type="button" class="btn btn-${level}" >${okayLabel}</button>
         </div>
     </div>
   `
@@ -29,18 +29,18 @@ const confirm = (title, message, {okayLabel = 'Close', isLarge = false, showCanc
   });
   return new Promise((resolve, reject) => {
     modal.addEventListener('hide.bs.modal', (e) => {
-      document.body.querySelector('.modal-backdrop').remove()
-      modal.remove()
-      resolve(isOkay)
-    })
-  })
-}
+      document.body.querySelector('.modal-backdrop').remove();
+      modal.remove();
+      resolve(isOkay);
+    });
+  });
+};
 
 const prompt = (title, message, okayLabel = 'Close', isLarge = false, showCancel = true, cancelLabel = 'Cancel') => {
-  const modal = document.createElement('div')
-  modal.id = "modal-confirm"
-  modal.className = "modal" + (isLarge ? ' modal-lg' : '')
-  modal.tabIndex = -1
+  const modal = document.createElement('div');
+  modal.id = 'modal-confirm';
+  modal.className = 'modal' + (isLarge ? ' modal-lg' : '');
+  modal.tabIndex = -1;
   modal.innerHTML = `
     <div class="modal-dialog modal-dialog-scrollable ">
      <form @submit.prevent="closePrompt">
@@ -59,7 +59,7 @@ const prompt = (title, message, okayLabel = 'Close', isLarge = false, showCancel
        </div>
      </form>
     </div>
-  `
+  `;
   const thisModal = new Modal(modal);
   thisModal.show();
   document.body.querySelector('#prompt').focus();
@@ -68,20 +68,20 @@ const prompt = (title, message, okayLabel = 'Close', isLarge = false, showCancel
   });
   const closePrompt = () => {
     thisModal.hide();
-  }
+  };
   return new Promise((resolve, reject) => {
     modal.addEventListener('hide.bs.modal', (e) => {
-      const value = document.body.querySelector('#prompt').value
-      document.body.querySelector('.modal-backdrop').remove()
+      const value = document.body.querySelector('#prompt').value;
+      document.body.querySelector('.modal-backdrop').remove();
       modal.remove();
       resolve(value);
-    })
-  })
-}
+    });
+  });
+};
 
 const isOrcidValid = (orcid) => {
-  if(!orcid)
-    return false
+  if (!orcid)
+    return false;
   const orcidFormatRegex = /\d{4}-\d{4}-\d{4}-\d{3}[\dX]/gi;
   const matches = orcid?.match(orcidFormatRegex);
   if (matches === null) return false;
@@ -93,6 +93,6 @@ const isOrcidValid = (orcid) => {
   const result = (12 - remainder) % 11;
   const expectedCheckDigit = result === 10 ? 'X' : result.toString();
   return checkDigit === expectedCheckDigit;
-}
+};
 
-export default {confirm, prompt, isOrcidValid}
+export default { confirm, prompt, isOrcidValid };

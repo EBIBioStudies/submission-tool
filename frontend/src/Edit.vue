@@ -2,19 +2,19 @@
   <teleport to="body">
     <div class="fixed-top text-end col">
       <font-awesome-icon icon="fas fa-user-secret" class="p-2 link-dark" type="button"
-        @click="offCanvasJson.show();"></font-awesome-icon>
+                         @click="offCanvasJson.show();"></font-awesome-icon>
     </div>
   </teleport>
 
   <div v-if="isLoading" class="loading-overlay">
     <div class="spinner"></div>
   </div>
-  
+
   <div v-else-if="success" className="card">
     <div className="card-body">
       <h2 className="card-title ng-star-inserted">
         <i aria-hidden="true" className="fa fa-check-circle"></i> Study <span
-          className="ng-star-inserted">submitted</span>
+        className="ng-star-inserted">submitted</span>
       </h2>
       <p className="card-text mb-1 ng-star-inserted"> The study has been submitted to the BioStudies database and is now
         being processed. </p>
@@ -25,25 +25,28 @@
             <mark>Data processing time depends on the number and size of your files.</mark>
           </li>
           <li className="mb-3">
-            <mark>If there are any further validation errors, they will be available from the Submissions list
-              page</mark>
+            <mark>
+              If there are any further validation errors, they will be available from the Submissions list page
+            </mark>
           </li>
           <li className="mb-3">
             <mark>On successful processing you will receive the study accession number by e-mail.</mark>
           </li>
           <li className="mb-3">
-            <mark>The study will remain private and accessible only via login until the release date in the Western
-              European Time Zone.</mark>
+            <mark>
+              The study will remain private and accessible only via login until the release date in the Western European
+              Time Zone.
+            </mark>
           </li>
         </ul>
       </div>
       <div className="mt-3 ng-star-inserted">
         <strong>
           <a target="_blank" href="http://europepmc.org/abstract/MED/26700850"> Citing the BioStudies database <i
-              className="fa fa-fw fa-external-link-square"></i></a>
+            className="fa fa-fw fa-external-link-square"></i></a>
         </strong>
         <p>Sarkans U, Gostev M, Athar A, et al. <a href="http://doi.org/10.1093/nar/gkx965">The BioStudies database-one
-            stop shop for all data supporting a life sciences study. </a><i>Nucleic Acids Res.</i>
+          stop shop for all data supporting a life sciences study. </a><i>Nucleic Acids Res.</i>
           2018;46(D1):D1266-D1270. doi:10.1093/nar/gkx965
         </p>
       </div>
@@ -67,7 +70,9 @@
           <p class="card-text ng-star-inserted"> Please fill in the form below. The
             <span class="font-weight-bold">Validation</span> tab on the right-hand side lists those fields still
             incomplete or incorrect. Use the
-            <strong>Add or <font-awesome-icon :icon="['fas', 'plus']" class="icon fa-fw"></font-awesome-icon></strong>
+            <strong>Add or
+              <font-awesome-icon :icon="['fas', 'plus']" class="icon fa-fw"></font-awesome-icon>
+            </strong>
             buttons to quickly add new rows or tables.
           </p>
           <div role="alert" class="alert alert-warning mb-0 ng-star-inserted">
@@ -86,9 +91,11 @@
 
         <font-awesome-icon v-if="isSaving" :icon="['far', 'floppy-disk']" beat-fade class="pe-2" />
         <button :disabled="!enableSubmission" class="btn btn-primary btn-top-margin" type="button"
-          @click="submitDraftPopUp()">Submit</button>
+                @click="submitDraftPopUp()">Submit
+        </button>
         <button v-if="isSubmittedSubmission && enableSubmission" class="btn btn-outline-danger ms-2 btn-top-margin"
-          type="button" @click="revertDraft()">Revert</button>
+                type="button" @click="revertDraft()">Revert
+        </button>
       </div>
     </div>
     <div v-if="showModal" class="modal-overlay">
@@ -98,7 +105,7 @@
       <div class="col-1"></div>
       <div class="col-10">
         <Submission :submission="submission" :template="template" :accession="props.accession"
-          ref="submissionComponent" />
+                    ref="submissionComponent" />
       </div>
       <div class="col-1"></div>
       <!--div id="json" class="json col-3"></div-->
@@ -114,33 +121,34 @@
     </div>
 
     <div class="offcanvas offcanvas-end" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1"
-      id="offcanvasErrors" aria-labelledby="offcanvasScrollingLabel">
+         id="offcanvasErrors" aria-labelledby="offcanvasScrollingLabel">
       <div class="offcanvas-header">
         <h5 class="offcanvas-title" id="offcanvasScrollingLabel">Validation</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
       </div>
       <div class="offcanvas-body">
         <p v-if="validationErrors?.filter((e) => e.control.errors).length">Please fix these errors before submitting.
-        <ul class="list-group">
-          <template v-for="error in validationErrors">
-            <li v-if="error?.control?.errors?.length" role="button" class="list-group-item list-group-item-action"
-              @click="expandAndFocus(error?.element)">
-              <strong>{{ getErrorAttName(error) }}:</strong> {{
-                error.errorMessage
-              }}
-            </li>
-          </template>
-        </ul>
+          <ul class="list-group">
+            <template v-for="error in validationErrors">
+              <li v-if="error?.control?.errors?.length" role="button" class="list-group-item list-group-item-action"
+                  @click="expandAndFocus(error?.element)">
+                <strong>{{ getErrorAttName(error) }}:</strong> {{
+                  error.errorMessage
+                }}
+              </li>
+            </template>
+          </ul>
         </p>
         <p v-else>
-        <div class="pb-2">
-          <font-awesome-icon icon="check" class="text-success" />
-          All good to go!
-        </div>
-        <div class="text-center">
-          <button class="btn btn-primary text-center" type="button" @click="finalSubmitDraft()">Close and
-            Submit</button>
-        </div>
+          <div class="pb-2">
+            <font-awesome-icon icon="check" class="text-success" />
+            All good to go!
+          </div>
+          <div class="text-center">
+            <button class="btn btn-primary text-center" type="button" @click="finalSubmitDraft()">Close and
+              Submit
+            </button>
+          </div>
         </p>
       </div>
     </div>
@@ -163,15 +171,15 @@ import { computed, onMounted, provide, ref, watch, watchEffect } from 'vue';
 
 import Default from './templates/Default.json';
 import Submission from './components/Submission.vue';
-import ResubmitModal from "./components/ResubmitModal.vue";
-import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { allTemplates } from "@/templates/templates";
-import { Offcanvas } from "bootstrap";
-import axios from "axios";
-import utils from "@/utils";
+import ResubmitModal from './components/ResubmitModal.vue';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { allTemplates } from '@/templates/templates';
+import { Offcanvas } from 'bootstrap';
+import axios from 'axios';
+import utils from '@/utils';
 import AuthService from './services/AuthService';
-import { useFeatureFlags } from '@/composables/useFeatureFlags'
-import AnnouncementBanner from '@/components/AnnouncementBanner.vue'
+import { useFeatureFlags } from '@/composables/useFeatureFlags';
+import AnnouncementBanner from '@/components/AnnouncementBanner.vue';
 import { cleanAndReorderSubsections } from './templates/cleanUtils.js';
 
 
@@ -180,27 +188,27 @@ const submission = ref({});
 const template = ref({});
 const isSaving = ref(true);
 const hasValidated = ref(false);
-const success = ref(false)
-const serverErrorMessage = ref('')
-const displayType = ref('')
+const success = ref(false);
+const serverErrorMessage = ref('');
+const displayType = ref('');
 const editDateMode = ref(false);
 const isLoading = ref(false);
 const isManagerUser = ref(false);
-const collectionName = ref("")
+const collectionName = ref('');
 
-provide('hasValidated', hasValidated)
-provide('submission', submission)
-provide('parentDisplayType', displayType)
-provide('readOnlyEditDateMode', editDateMode)
-provide('isManagerUser', isManagerUser)
-provide('collectionName', collectionName)
+provide('hasValidated', hasValidated);
+provide('submission', submission);
+provide('parentDisplayType', displayType);
+provide('readOnlyEditDateMode', editDateMode);
+provide('isManagerUser', isManagerUser);
+provide('collectionName', collectionName);
 
-const isSubmittedSubmission =ref(true);
-const { enableSubmission } = useFeatureFlags()
+const isSubmittedSubmission = ref(true);
+const { enableSubmission } = useFeatureFlags();
 const showModal = ref(false);
 isManagerUser.value = AuthService?.user?.value?.superuser == true;
 
-const submissionComponent = ref({})
+const submissionComponent = ref({});
 
 let offCanvasErrors = null;
 let offCanvasJson = null;
@@ -208,12 +216,12 @@ let validationErrors = ref([]);
 
 
 const submitDraftPopUp = () => {
-  
+
   if (isSubmittedSubmission.value)
     showModal.value = true;
   else
-    finalSubmitDraft("");
-}
+    finalSubmitDraft('');
+};
 
 const publicSubmission = computed(() => {
   if (!isSubmittedSubmission.value)
@@ -236,7 +244,7 @@ function collectMessages(node) {
 
   const messages = [];
 
-  if (node.message != null && node.message !== "") {
+  if (node.message != null && node.message !== '') {
     messages.push(node.message);
   }
 
@@ -264,7 +272,7 @@ const finalSubmitDraft = async (option) => {
 
   try {
     // 1. Clean and reorder the section in-place
-    
+
     if (submission.value.newSubmission) {
       submission.value.section = cleanAndReorderSubsections(submission.value.section);
     }
@@ -278,13 +286,13 @@ const finalSubmitDraft = async (option) => {
     });
 
     // 3. Submit the final version
-    const headers = { "Submission_Type": "application/json" };
-    const params = option === "noFilesUpdated" ? { preferredSources: "SUBMISSION" } : {};
+    const headers = { 'Submission_Type': 'application/json' };
+    const params = option === 'noFilesUpdated' ? { preferredSources: 'SUBMISSION' } : {};
 
     const response = await axios.post(
       `/api/submissions/drafts/${props.accession}/submit`,
       {},
-      { headers, params }
+      { headers, params },
     );
 
     if (response.status === 200) {
@@ -296,15 +304,13 @@ const finalSubmitDraft = async (option) => {
 
   } catch (error) {
     success.value = false;
-    const allMessages = collectMessages(error?.response?.data?.log).join(" -- ");
+    const allMessages = collectMessages(error?.response?.data?.log).join(' -- ');
     serverErrorMessage.value =
       allMessages || error?.message || 'Unknown Error';
   } finally {
     isLoading.value = false;
   }
 };
-
-
 
 
 const revertDraft = async () => {
@@ -317,12 +323,12 @@ const revertDraft = async () => {
   if (response.status === 200) {
     location.href = location.href;
   }
-}
+};
 
 onMounted(() => {
   offCanvasErrors = Offcanvas.getOrCreateInstance('#offcanvasErrors', { 'backdrop': false });
   offCanvasJson = Offcanvas.getOrCreateInstance('#offcanvasJson', { 'backdrop': false });
-})
+});
 
 function deduplicateReleaseDate(submissionJson) {
   const seen = new Set();
@@ -347,13 +353,13 @@ watchEffect(async () => {
 
     const data = await response.data;
     const submissionJson = data?.content;
-    submissionJson['displayKey'] = data?.displayKey
-    submissionJson['newSubmission'] = data?.newSubmission
-    isSubmittedSubmission.value =  displayType?.value !== 'readonly' && !data?.newSubmission;
+    submissionJson['displayKey'] = data?.displayKey;
+    submissionJson['newSubmission'] = data?.newSubmission;
+    isSubmittedSubmission.value = displayType?.value !== 'readonly' && !data?.newSubmission;
 
     collectionName.value = submissionJson.attributes?.find(
       (n) => n?.name?.toLowerCase() === 'attachto',
-    )?.value
+    )?.value;
 
     // insert the release date as needed
     deduplicateReleaseDate(submissionJson);
@@ -386,7 +392,7 @@ watchEffect(async () => {
     } else if (submissionTitle && !studySectionTitle) {
       submissionJson?.section?.attributes.splice(0, 0, submissionTitle);
     } else if (submissionTitle && studySectionTitle) {
-      const index = submissionJson?.attributes?.findIndex((attr) => attr.name === 'Title')
+      const index = submissionJson?.attributes?.findIndex((attr) => attr.name === 'Title');
       submissionJson?.attributes?.splice(index, 1, studySectionTitle);
     }
 
@@ -418,7 +424,7 @@ watchEffect(async () => {
     }
   } else {
     //TODO: display error
-    console.log('No such submission')
+    console.log('No such submission');
   }
 });
 const updatedSubmission = computed(() =>
@@ -439,9 +445,9 @@ watch(updatedSubmission, async (sub) => {
   }
 
 
-  const delta = Date.now() - lastUpdated
+  const delta = Date.now() - lastUpdated;
   if (delta < 1000) {
-    clearTimeout(pendingSave)
+    clearTimeout(pendingSave);
   }
 
 
@@ -456,7 +462,7 @@ watch(updatedSubmission, async (sub) => {
         data: JSON.stringify(draft),
       });
     } catch (err) {
-      console.error("Draft save failed:", err);
+      console.error('Draft save failed:', err);
     } finally {
       isSaving.value = false;
     }
@@ -474,18 +480,18 @@ const expandAndFocus = async (el) => {
     }
     p = p.parentElement;
   }
-  await el.scrollIntoView()
-}
+  await el.scrollIntoView();
+};
 
 const getErrorAttName = (error) => {
   if (error?.errorMessage) {
-    const index = error?.errorMessage?.toLowerCase()?.indexOf("required"); // Find "required" case-insensitively
+    const index = error?.errorMessage?.toLowerCase()?.indexOf('required'); // Find "required" case-insensitively
     if (index !== -1) {
       return error?.errorMessage?.slice(0, index)?.trim();
     }
   }
-  return error?.element?.id
-}
+  return error?.element?.id;
+};
 
 </script>
 

@@ -3,10 +3,9 @@ import { computed, inject, ref, nextTick } from 'vue';
 import draggable from 'vuedraggable';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Attribute from '@/components/Attribute.vue';
-import utils from "@/utils";
-import EditableLabel from "@/components/EditableLabel.vue";
+import utils from '@/utils';
+import EditableLabel from '@/components/EditableLabel.vue';
 import Multiselect from '@vueform/multiselect';
-
 
 
 const props = defineProps(['rows', 'depth', 'sectionType', 'sectionSubType', 'parent', 'startCollapsed', 'title']);
@@ -19,7 +18,7 @@ const emits = defineEmits([
   'deleteRow',
   'deleteOrg',
   'createOrg',
-  'refreshSection'
+  'refreshSection',
 ]);
 
 const thisSection = ref(props.rows);
@@ -30,7 +29,7 @@ const headerMap = new Map();
 const parentDisplayType = inject('parentDisplayType');
 const sectionsRefreshKey = ref(0);
 const columnTypes = props?.sectionType?.columnTypes || [];
-const requiredColumnsArr = columnTypes.filter(item => item.display !== "required").map(item => item.name);
+const requiredColumnsArr = columnTypes.filter(item => item.display !== 'required').map(item => item.name);
 
 const hideNonRequiredColumns = props?.sectionType?.hideColumns || false;
 
@@ -59,7 +58,7 @@ const getFieldType = (attribute) => {
   name = attribute.hasOwnProperty('url') || attribute.name === 'url' ? 'Link' : name;
   let fieldType = props.sectionType?.columnTypes?.find((f) => (typeof f?.name === 'string') && (typeof name === 'string') && (f?.name?.toLowerCase() === name?.toLowerCase()));
   if (fieldType) return fieldType;
-  if (!fieldType && name && typeof name==='string') {
+  if (!fieldType && name && typeof name === 'string') {
     fieldType = {
       'name': name,
       'createdOnRender': true,
@@ -73,7 +72,7 @@ const getFieldType = (attribute) => {
 
 const getCell = (row, col) => {
   let attribute = row?.attributes?.find(
-    (att) => (typeof  col === "string") && (typeof att?.name === 'string') && (att?.name?.toLowerCase() === col?.toLowerCase()),
+    (att) => (typeof col === 'string') && (typeof att?.name === 'string') && (att?.name?.toLowerCase() === col?.toLowerCase()),
   );
   if (!attribute && (
     (tableType.value === 'File' && col === 'File')
@@ -135,7 +134,7 @@ const deleteRow = async (index) => {
 
   if (theseRows.value.length === 0) {
     emits('refreshSection');  // Let Section.vue handle cleanup
-  }else{
+  } else {
     sectionsRefreshKey.value += 1;
     await nextTick();
     emits('deleteRow', index);
@@ -151,14 +150,14 @@ const deleteColumn = (index) => {
   sectionsRefreshKey.value += 1;
 };
 
-const updateColumnName = ( value, index) => {
-  if(!value)
-    value = " "
+const updateColumnName = (value, index) => {
+  if (!value)
+    value = ' ';
   if (parentDisplayType.value === 'readonly') return;
   if (index === headers.value.length - 1) return;
   const oldValue = headers.value[index];
   const newValue = value;
-  if(newValue?.toLowerCase() === 'organisation' && headers.value.some(head => head?.toLowerCase() === 'affiliation')) return;
+  if (newValue?.toLowerCase() === 'organisation' && headers.value.some(head => head?.toLowerCase() === 'affiliation')) return;
   if (headers.value.find((n) => n === newValue)) return;
   emits('columnUpdated', { old: oldValue, new: newValue, index: index });
 };
@@ -206,14 +205,16 @@ defineExpose({ errors, thisSection });
       <span :class="[depth > 0 ? 'branch' : 'branch spacer']"></span>
       <span class="input-group-text text-start btn btn-lg ps-1 mt-2 section-title" @click="toggle()">
         <font-awesome-icon :icon="'fa-caret-' + (isCollapsed ? 'right' : 'down')" class="section-control" />
-        <span v-if="sectionType?.name || props.sectionSubType === 'File' || props.sectionSubType === 'Link'" :data-bs-title="sectionType?.description"
+        <span v-if="sectionType?.name || props.sectionSubType === 'File' || props.sectionSubType === 'Link'"
+              :data-bs-title="sectionType?.description"
               :data-bs-toggle="sectionType?.description ? 'tooltip' : false" class="ms-2"
               data-bs-html="true"><font-awesome-icon v-if="sectionType?.icon" :icon="sectionType?.icon"
                                                      class="icon" />{{ tableType }}</span>
         <span v-else>
 <!--          <input v-model="props.rows[0].type" class="ms-2" placeholder="Enter table name" type="text" @click.stop="" />-->
-          <EditableLabel :data="props.rows[0]" class="ms-2" placeholder="Enter table name"  :isEditable="true"  />
-          <font-awesome-icon v-if="parentDisplayType !== 'readonly'" class="icon ps-2" icon="fa-trash" role="button" size="sm" @click="$emit('delete')"
+          <EditableLabel :data="props.rows[0]" class="ms-2" placeholder="Enter table name" :isEditable="true" />
+          <font-awesome-icon v-if="parentDisplayType !== 'readonly'" class="icon ps-2" icon="fa-trash" role="button"
+                             size="sm" @click="$emit('delete')"
                              @click.stop=""></font-awesome-icon>
         </span>
       </span>
@@ -227,51 +228,55 @@ defineExpose({ errors, thisSection });
               <th :class="{ fixed: i === 0 || i === headers?.length - 1 }">
                 <div v-if="i > 0 && i < headers.length - 1" class="input-group input-group-sm align-items-center">
                   <template v-if="!getFieldType(header)?.createdOnRender">
-                      <label class="input-group-text " >
-  <!--                      <font-awesome-icon-->
-  <!--                        v-if="getFieldType(header)?.icon"-->
-  <!--                        class="icon"-->
-  <!--                        :icon="getFieldType(header)?.icon"-->
-  <!--                      ></font-awesome-icon>-->
-  <!--                      <font-awesome-icon-->
-  <!--                        v-else-->
-  <!--                        class="icon"-->
-  <!--                        inverse-->
-  <!--                        icon="fa-check"-->
-  <!--                      ></font-awesome-icon>-->
-                        <span class="form-control-sm">{{ getFieldType(header).name }}
+                    <label class="input-group-text ">
+                      <!--                      <font-awesome-icon-->
+                      <!--                        v-if="getFieldType(header)?.icon"-->
+                      <!--                        class="icon"-->
+                      <!--                        :icon="getFieldType(header)?.icon"-->
+                      <!--                      ></font-awesome-icon>-->
+                      <!--                      <font-awesome-icon-->
+                      <!--                        v-else-->
+                      <!--                        class="icon"-->
+                      <!--                        inverse-->
+                      <!--                        icon="fa-check"-->
+                      <!--                      ></font-awesome-icon>-->
+                      <span class="form-control-sm">{{ getFieldType(header).name }}
                           <span class="text-danger"
                                 v-if="getFieldType(header)?.display==='required' || getFieldType(header)?.controlType?.minlength >0">*</span>
                         </span>
-                        <font-awesome-icon v-if="getFieldType(header)?.helpContextual" :icon="['fas','circle-question']"
-                                           class="text-black-50 ps-1 small"
-                                           role="button" @click="showHelp(getFieldType(header))"/>
+                      <font-awesome-icon v-if="getFieldType(header)?.helpContextual" :icon="['fas','circle-question']"
+                                         class="text-black-50 ps-1 small"
+                                         role="button" @click="showHelp(getFieldType(header))" />
 
-                    <font-awesome-icon v-if="getFieldType(header)?.display !== 'required' && parentDisplayType !== 'readonly' && hideNonRequiredColumns" role="button" @click.prevent="deleteColumn(i)" class="icon fa-sm"
-                                       icon="fa-trash"></font-awesome-icon>
-                      </label>
+                      <font-awesome-icon
+                        v-if="getFieldType(header)?.display !== 'required' && parentDisplayType !== 'readonly' && hideNonRequiredColumns"
+                        role="button" @click.prevent="deleteColumn(i)" class="icon fa-sm"
+                        icon="fa-trash"></font-awesome-icon>
+                    </label>
                   </template>
                   <template v-else-if="header?.toLowerCase()!=='type' || tableType!=='Link'">
                     <div class="input-group-text">
-                      <input v-if="!hideNonRequiredColumns" ref="headerComponent" :value="header" class="form-control" :disabled="parentDisplayType === 'readonly'" type="text"
+                      <input v-if="!hideNonRequiredColumns" ref="headerComponent" :value="header" class="form-control"
+                             :disabled="parentDisplayType === 'readonly'" type="text"
                              @change.stop="(e) => updateColumnName( e.target.value, i)">
 
                       <Multiselect v-else
-                        ref="headerComponent"
-                        :allow-absent="true"
-                        label="value"
-                        :value="header"
-                        class="form-control"
-                        :searchable="true"
-                        :options="requiredColumnsArr"
-                        :disabled="parentDisplayType==='readonly' "
-                        :allow-empty="false"
-                        :append-to-body="true"
-                        :create-option="true"
-                        @input="updateColumnName( $event, i)"
-                        @remove="updateColumnName( $event, i)"
+                                   ref="headerComponent"
+                                   :allow-absent="true"
+                                   label="value"
+                                   :value="header"
+                                   class="form-control"
+                                   :searchable="true"
+                                   :options="requiredColumnsArr"
+                                   :disabled="parentDisplayType==='readonly' "
+                                   :allow-empty="false"
+                                   :append-to-body="true"
+                                   :create-option="true"
+                                   @input="updateColumnName( $event, i)"
+                                   @remove="updateColumnName( $event, i)"
                       />
-                      <button v-if="getFieldType(header)?.display !== 'required' && parentDisplayType !== 'readonly'" class="btn btn-outline-secondary icon" type="button" @click.prevent="deleteColumn(i)">
+                      <button v-if="getFieldType(header)?.display !== 'required' && parentDisplayType !== 'readonly'"
+                              class="btn btn-outline-secondary icon" type="button" @click.prevent="deleteColumn(i)">
                         <font-awesome-icon class="fa-sm" icon="fa-trash"></font-awesome-icon>
                       </button>
                     </div>
@@ -281,7 +286,8 @@ defineExpose({ errors, thisSection });
             </template>
           </draggable>
           </thead>
-          <draggable :disabled="true" v-model="theseRows" item-key="name" tag="tbody" @end="(e) => emits('rowsReordered', e)">
+          <draggable :disabled="true" v-model="theseRows" item-key="name" tag="tbody"
+                     @end="(e) => emits('rowsReordered', e)">
             <template #item="{ element: row, index: index }">
               <tr>
                 <td class="grip">
@@ -301,8 +307,10 @@ defineExpose({ errors, thisSection });
                   />
                 </td>
                 <td class="grip">
-                  <font-awesome-icon v-if="!(index === 0 && sectionType?.display === 'required') && parentDisplayType !== 'readonly'" class="fa-sm" icon="fa-trash" role="button"
-                                     @click="deleteRow(index)"></font-awesome-icon>
+                  <font-awesome-icon
+                    v-if="!(index === 0 && sectionType?.display === 'required') && parentDisplayType !== 'readonly'"
+                    class="fa-sm" icon="fa-trash" role="button"
+                    @click="deleteRow(index)"></font-awesome-icon>
                 </td>
               </tr>
             </template>
@@ -364,7 +372,6 @@ th:active {
   flex: none; /* Prevents the table from shrinking */
   min-width: 100%; /* Ensures the table takes at least the full width of the container */
 }
-
 
 
 </style>

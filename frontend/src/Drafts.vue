@@ -35,7 +35,8 @@
       </tr>
       </tfoot>
     </table>
-    <div v-if="drafts?.length===0" class="text-center">Welcome! You can click the <b>New Submissions</b> button to start a new study draft.
+    <div v-if="drafts?.length===0" class="text-center">
+      Welcome! You can click the <b>New Submissions</b> button to start a new study draft.
     </div>
 
     <!--    <div class="input-group w-25">-->
@@ -53,13 +54,13 @@
 </template>
 
 <script setup>
-import {ref, watchEffect} from 'vue';
-import AuthService from "./services/AuthService";
-import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
-import router from "./router";
-import axios from "axios";
-import NewSubmission from "@/components/NewSubmission.vue";
-import utils from "@/utils";
+import { ref, watchEffect } from 'vue';
+import AuthService from './services/AuthService';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import router from './router';
+import axios from 'axios';
+import NewSubmission from '@/components/NewSubmission.vue';
+import utils from '@/utils';
 
 const accession = ref('');
 const drafts = ref([]);
@@ -73,40 +74,40 @@ const isLoading = ref(true);
 const updateOffset = (delta) => {
   oldOffset.value = offset.value;
   offset.value += delta;
-}
+};
 
 watchEffect(async () => {
   if (!AuthService.isAuthenticated()) return;
   isLoading.value = true;
   await axios(`/api/submissions/drafts?offset=${offset.value}&limit=15`)
     .then(response => {
-      if (response.data.length)   {
+      if (response.data.length) {
         drafts.value = response.data;
-        showNext.value = drafts.value.length % pageLength.value === 0 ;
-        showPrevious.value = offset.value >0;
+        showNext.value = drafts.value.length % pageLength.value === 0;
+        showPrevious.value = offset.value > 0;
         isLoading.value = false;
       } else {
         showNext.value = false;
-        showPrevious.value = oldOffset.value >0;
+        showPrevious.value = oldOffset.value > 0;
       }
       isLoading.value = false;
     });
-})
+});
 
 const getKeyToDisplay = (draft) => {
-  return draft.displayKey ? draft.displayKey : draft.key
-}
+  return draft.displayKey ? draft.displayKey : draft.key;
+};
 
 const getTitle = (draft) => {
-  return draft.content?.section?.attributes?.find(attr => attr.name === 'Title')?.value || draft.content?.attributes?.find(attr => attr.name === 'Title')?.value
-}
+  return draft.content?.section?.attributes?.find(attr => attr.name === 'Title')?.value || draft.content?.attributes?.find(attr => attr.name === 'Title')?.value;
+};
 
 const editDraft = (accno) => {
-  router.push(`/edit/${accno}`)
-}
+  router.push(`/edit/${accno}`);
+};
 
 const deleteDraft = async (accno) => {
-  if (!await utils.confirm("Delete draft",
+  if (!await utils.confirm('Delete draft',
     `⚠️The draft with accession number ${accno} has not been submitted yet. If you proceed, it will be permanently deleted.`,
     { okayLabel: 'Delete' })) return;
   isLoading.value = true;
@@ -116,6 +117,6 @@ const deleteDraft = async (accno) => {
   if (response.status === 200) {
     location.reload();
   }
-}
+};
 
 </script>

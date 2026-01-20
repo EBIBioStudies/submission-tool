@@ -320,11 +320,11 @@ defineExpose({ errors, thisSection });
           :data-bs-toggle="sectionType?.description ? 'tooltip' : false"
           class="ms-2"
           data-bs-html="true"
-          ><font-awesome-icon
-            v-if="sectionType?.icon"
-            :icon="sectionType?.icon"
-            class="icon"
-          />{{ tableType }}</span
+        ><font-awesome-icon
+          v-if="sectionType?.icon"
+          :icon="sectionType?.icon"
+          class="icon"
+        />{{ tableType }}</span
         >
         <span v-else>
           <input
@@ -351,76 +351,76 @@ defineExpose({ errors, thisSection });
       <div class="table-container">
         <table class="table table-responsive">
           <thead>
-            <draggable
-              :disabled="true"
-              v-model="headers"
-              :item-key="(key) => key"
-              tag="tr"
-              @end.stop="reorderColumns"
-            >
-              <template #item="{ element: header, index: i }">
-                <th :class="{ fixed: i === 0 || i === headers?.length - 1 }">
-                  <div
-                    v-if="i > 0 && i < headers.length - 1"
-                    class="input-group input-group-sm align-items-center"
-                  >
-                    <template v-if="!getFieldType(header)?.createdOnRender">
-                      <label class="input-group-text">
+          <draggable
+            :disabled="true"
+            v-model="headers"
+            :item-key="(key) => key"
+            tag="tr"
+            @end.stop="reorderColumns"
+          >
+            <template #item="{ element: header, index: i }">
+              <th :class="{ fixed: i === 0 || i === headers?.length - 1 }">
+                <div
+                  v-if="i > 0 && i < headers.length - 1"
+                  class="input-group input-group-sm align-items-center"
+                >
+                  <template v-if="!getFieldType(header)?.createdOnRender">
+                    <label class="input-group-text">
                         <span class="form-control-sm"
-                          >{{ getFieldType(header).name }}
+                        >{{ getFieldType(header).name }}
                           <span
                             class="text-danger"
                             v-if="
                               getFieldType(header)?.display === 'required' ||
                               getFieldType(header)?.controlType?.minlength > 0
                             "
-                            >*</span
+                          >*</span
                           >
                         </span>
-                        <font-awesome-icon
-                          v-if="getFieldType(header)?.helpContextual"
-                          :icon="['fas', 'circle-question']"
-                          class="text-black-50 ps-1 small"
-                          role="button"
-                          @click="showHelp(getFieldType(header))"
-                        />
-                        <font-awesome-icon
-                          v-if="!getFieldType(header)?.display"
-                          role="button"
-                          @click.prevent="deleteColumn(i)"
-                          class="icon fa-sm"
-                          icon="fa-trash"
-                        ></font-awesome-icon>
-                      </label>
-                    </template>
-                    <template v-else>
-                      <input
-                        ref="headerComponent"
-                        :value="header"
-                        class="form-control"
-                        :disabled="
+                      <font-awesome-icon
+                        v-if="getFieldType(header)?.helpContextual"
+                        :icon="['fas', 'circle-question']"
+                        class="text-black-50 ps-1 small"
+                        role="button"
+                        @click="showHelp(getFieldType(header))"
+                      />
+                      <font-awesome-icon
+                        v-if="!getFieldType(header)?.display"
+                        role="button"
+                        @click.prevent="deleteColumn(i)"
+                        class="icon fa-sm"
+                        icon="fa-trash"
+                      ></font-awesome-icon>
+                    </label>
+                  </template>
+                  <template v-else>
+                    <input
+                      ref="headerComponent"
+                      :value="header"
+                      class="form-control"
+                      :disabled="
                           readOnly() ||
                           getFieldType(header)?.display
                         "
-                        type="text"
-                        @change.stop="(e) => updateColumnName(e, i)"
-                      />
-                      <button
-                        v-if="!getFieldType(header)?.display"
-                        class="btn btn-outline-secondary icon"
-                        type="button"
-                        @click.prevent="deleteColumn(i)"
-                      >
-                        <font-awesome-icon
-                          class="fa-sm"
-                          icon="fa-trash"
-                        ></font-awesome-icon>
-                      </button>
-                    </template>
-                  </div>
-                </th>
-              </template>
-            </draggable>
+                      type="text"
+                      @change.stop="(e) => updateColumnName(e, i)"
+                    />
+                    <button
+                      v-if="!getFieldType(header)?.display"
+                      class="btn btn-outline-secondary icon"
+                      type="button"
+                      @click.prevent="deleteColumn(i)"
+                    >
+                      <font-awesome-icon
+                        class="fa-sm"
+                        icon="fa-trash"
+                      ></font-awesome-icon>
+                    </button>
+                  </template>
+                </div>
+              </th>
+            </template>
+          </draggable>
           </thead>
           <draggable
             :disabled="true"
@@ -524,6 +524,7 @@ th .form-control {
 th:active {
   cursor: grabbing;
 }
+
 .table-container {
   width: 100%; /* Set your desired fixed width */
   overflow-x: auto; /* Add horizontal scrollbar when content overflows */
