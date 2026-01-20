@@ -48,14 +48,37 @@
         </tr>
         </thead>
         <tbody>
-        <tr v-for="file in sortedFiles">
+        <tr v-for="file in sortedFiles" :key="file.path + '/' + file.name">
           <td class="text-end pointer">
             <font-awesome-icon v-if="file.type.toLowerCase()==='dir'" class="fa-sm text-primary"
                                icon="fa-solid fa-folder"
                                @click.stop="navigate(file.path, file.name)"></font-awesome-icon>
           </td>
-          <td><a v-if="file.type.toLowerCase()==='dir'" class="pointer"
-                 @click.stop="navigate(file.path, file.name)">{{ file.name }}</a> <span v-else>{{ file.name }}</span>
+          <td class="hover-container">
+            <template v-if="renamingFileKey !== (file.path + '/' + file.name)">
+              <a v-if="file.type.toLowerCase()==='dir'" :ref="el => labelRefs[file.path + '/' + file.name] = el"
+                 class="pointer"
+                 @click.stop="navigate(file.path, file.name)">
+                {{ file.name }}
+              </a>
+              <span v-else :ref="el => labelRefs[file.path + '/' + file.name] = el">{{ file.name }}</span>
+              <font-awesome-icon class="hover-content fa-fw btn btn-link text-primary p-0 align-text-top"
+                                 icon="fa-regular fa-pen-to-square" title="Rename"
+                                 @click="startRenaming(file)"></font-awesome-icon>
+
+            </template>
+            <div class="position-relative" v-else>
+              <input
+                ref="renamingInput"
+                v-model="renamingFileName"
+                class="w-100"
+                @blur="endRenaming(file, true)"
+                @keyup.enter="endRenaming(file, false)"
+              />
+              <div class="alert alert-warning w-100 position-absolute" role="alert" v-if="renamingMessage !== null">
+                {{ renamingMessage }}
+              </div>
+            </div>
           </td>
           <td class="text-end pe-4"><span class="text-nowrap" :title="file.size.toLocaleString() + ' bytes'"
                                           v-if="file.type.toLowerCase()!=='dir'">{{ utils.humanFileSize(file.size) }}</span>
@@ -126,6 +149,13 @@ const currentUpload = ref({ name: '', progress: 0 });
 const sortKey = ref('size');
 const sortDirection = ref(1);
 
+const renamingFileKey = ref(null);
+const renamingFileName = ref(null);
+const renamingOngoing = ref(false);
+const renamingInput = ref(null);
+const labelRefs = {};
+const renamingMessage = ref(null);
+
 const axiosAbortController = new AbortController();
 //TODO: Get these constants from config
 const MAX_UPLOAD_SIZE = 1024;// in MBs;
@@ -145,7 +175,6 @@ const triggerToast = (message, duration = 3000) => {
   showToast.value = true;
   setTimeout(() => showToast.value = false, duration);  // auto-hide after 3 seconds
 };
-
 
 
 const sorterIcon = (key) => sortKey.value === key ? sortDirection.value === 1 ? 'fa-sort-up' : 'fa-sort-down' : 'fa-sort';
@@ -232,7 +261,97 @@ const deleteFile = async (file) => {
   }
 };
 
+const renameFile = async (file, newName) => {
+  if (file.name === newName) return true;
+  const body = {
+    path: file.path,
+    originalName: file.name,
+    newName,
+  };
 
+  try {
+    await axios.post('/api/files/user/rename', body, { responseType: 'json' });
+    await fetchFiles(); // refresh file list
+    return true;
+  } catch (error) {
+
+    console.error('Failed to rename file:', error);
+    renamingMessage.value = error.response.data.log.message;
+    return false;
+  }
+};
+
+const startRenaming = (file) => {
+  const fileKey = file.path + '/' + file.name;
+  renamingFileKey.value = fileKey;
+  renamingFileName.value = file.name;
+
+  focusRenamingInput();
+};
+
+const focusRenamingInput = () => {
+  nextTick(() => renamingInput.value?.[0]?.focus());
+};
+
+const endRenaming = async (file, forceClose = false) => {
+  if (renamingOngoing.value) return;
+  const newName = renamingFileName.value;
+
+  let check = isFolder(file) ? checkFolderName(newName) : checkFileName(newName);
+
+  if (!check.valid) {
+    renamingMessage.value = check.message;
+    return;
+  }
+
+  renamingOngoing.value = true;
+
+  if (!await checkExtension(file.name, newName)) {
+    renamingOngoing.value = false;
+    renamingFileKey.value = null;
+    renamingMessage.value = null;
+    return;
+  }
+
+  const renamed = await renameFile(file, newName);
+  renamingOngoing.value = false;
+
+  if (renamed || forceClose) {
+    renamingFileKey.value = null;
+    renamingMessage.value = null;
+  }
+};
+
+const checkFileName = (name) => {
+  if (!name) return { valid: false, message: 'File name cannot be empty' };
+  if (name.includes('/')) return { valid: false, message: 'File name cannot contain "/"' };
+  const indexOf = name.lastIndexOf('.');
+  const valid = !(indexOf === -1 || indexOf === name.length - 1);
+  return { valid, message: valid ? null : 'File name must contain a valid extension (.txt, .json, etc)' };
+};
+
+const checkFolderName = (name) => {
+  if (!name) return { valid: false, message: 'Folder name cannot be empty' };
+  if (name.includes('/')) return { valid: false, message: 'Folder name cannot contain "/"' };
+  return { valid: true };
+};
+
+const isFolder = (file) => file.type.toLowerCase() === 'dir';
+
+const checkExtension = async (oldName, newName) => {
+  const [oldExt, newExt] = [oldName, newName].map(n => n.split('.').at(-1));
+  if (oldExt !== newExt) {
+    return utils.confirm(
+      'Extension changed',
+      `Are you sure you want to change the extension of ${oldName} from “.${oldExt}” to “.${newExt}”?`,
+      {
+        okayLabel: `Use .${newExt}`,
+        cancelLabel: `Cancel rename`,
+        level: 'primary',
+      });
+  }
+  return true;
+};
 
 const uploadFile = (file) => {
   const formData = new FormData();
@@ -332,6 +451,35 @@ const uploadFiles = async (uploads, isFolderUpload) => {
 }
 .toast-notification[style*="display: none"] {
   opacity: 0;
+}
+
+.hover-content {
+  opacity: 0;
+}
+
+.hover-container:hover .hover-content {
+  opacity: 1;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  min-height: 200px;
+  container: loading / size;
+}
+
+.spinner-border {
+  --bs-spinner-border-width: 0.75em;
+  --bs-spinner-height: min(33cqw, 33cqh);
+  --bs-spinner-width: min(33cqw, 33cqh);
 }
 
 </style>
