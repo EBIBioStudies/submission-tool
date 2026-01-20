@@ -453,13 +453,15 @@ const uploadFiles = async (uploads, isFolderUpload) => {
   right: 20px;
   z-index: 1055;
   transition: opacity 0.3s ease-in-out;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  white-space: pre-line;
 }
 
 .toast-notification {
   transition: opacity 0.5s ease-in-out;
   opacity: 1;
 }
+
 .toast-notification[style*="display: none"] {
   opacity: 0;
 }
