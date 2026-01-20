@@ -5,8 +5,10 @@
         <div v-for="(folder, index) in currentPath" class="d-inline-block">
           <font-awesome-icon v-if="index!==0" class="fa-2xs text-black-50 opacity-25 ps-2 pe-2 align-middle"
                              icon="fa-angle-right"></font-awesome-icon>
-          <router-link :to="index === 0 ? '/files' : `/files/${currentPath.slice(0, index + 1).filter(Boolean).join('/')}`" class="text-decoration-none">
-          <font-awesome-icon v-if="index===0" class="pe-1" icon="fa-home"></font-awesome-icon>
+          <router-link
+            :to="index === 0 ? '/files' : `/files/${currentPath.slice(0, index + 1).filter(Boolean).join('/')}`"
+            class="text-decoration-none">
+            <font-awesome-icon v-if="index===0" class="pe-1" icon="fa-home"></font-awesome-icon>
             <span v-if="index===0">Home</span><span v-else>{{ folder }}</span>
           </router-link>
         </div>
@@ -229,13 +231,12 @@ const navigate = async (path, name) => {
 };
 
 
-
 const downloadFile = (file) => {
   axios.post('/api/files/user/download', {
     path: file.path,
-    fileName: file.name
+    fileName: file.name,
   }, {
-    responseType: 'blob'
+    responseType: 'blob',
   }).then((response) => {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(response.data);
@@ -378,7 +379,7 @@ const uploadFile = (file) => {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
-    onUploadProgress: function (progressEvent) {
+    onUploadProgress: function(progressEvent) {
       currentUpload.value.progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
     }.bind(this),
   });
