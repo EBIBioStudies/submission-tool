@@ -27,10 +27,18 @@
         </button>
       </div>
     </div> <!-- header end-->
+    <div class="clearfix"></div>
 
     <div v-if="showToast" class="alert alert-success toast-notification" role="alert">
       {{ toastMessage }}
     </div>
+
+    <div class="table-responsive-sm position-relative">
+      <div v-if="loading" class="loading-overlay">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
 
       <table v-if="files?.length" class="table table-sm align-middle  table-hover">
         <thead>
@@ -145,6 +153,7 @@ import TransferHelpModal from './components/TransferHelpModal.vue';
 
 const props = defineProps(['paths']);
 const files = ref([]);
+const loading = ref(false);
 const currentUpload = ref({ name: '', progress: 0 });
 const sortKey = ref('size');
 const sortDirection = ref(1);
@@ -190,18 +199,20 @@ const flipSort = (key) => {
 const fetchFiles = async () => {
   if (!AuthService.isAuthenticated()) return;
 
+  loading.value = true;
   const path = props.paths && props.paths !== '' ? props.paths.join('/') : '';
   try {
     const response = await axios.post('/api/files/user/query', { path });
     files.value = response.data.map(file => ({
       ...file,
-      path: file.path === 'user' ? '' : file.path.replace(/^user\/?/, '')
+      path: file.path === 'user' ? '' : file.path.replace(/^user\/?/, ''),
     }));
   } catch (error) {
-    console.error("Failed to fetch files:", error);
+    console.error('Failed to fetch files:', error);
+  } finally {
+    loading.value = false;
   }
 };
-
 
 watchEffect(fetchFiles);
 
