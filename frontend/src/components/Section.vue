@@ -259,7 +259,7 @@ const deleteSubSection = async (someSubSections, index) => {
     !(await utils.confirm(
       'Delete Section',
       `Do you want to delete the section ${someSubSections[index].type}?`,
-      'Delete',
+      { okayLabel: 'Delete' },
     ))
   )
     return;

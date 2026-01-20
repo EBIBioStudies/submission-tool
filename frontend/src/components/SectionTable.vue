@@ -185,14 +185,12 @@ const showHelp = (header) => {
   if (!header) return; // Ensure header is defined to avoid runtime errors
 
   utils.confirm(
-    header?.name || "Help",
-    `<p>${header?.helpContextual?.description || "No description available."}</p>` +
+    header?.name || 'Help',
+    `<p>${header?.helpContextual?.description || 'No description available.'}</p>` +
     (header?.helpContextual?.examples?.length
       ? `<p><h6>Examples:</h6><i>${header.helpContextual.examples.join('</i></p><p><i>')}</i></p>`
-      : ""),
-    "Close",
-    true,
-    false
+      : ''),
+    { isLarge: true, showCancel: false, level:'primary' },
   );
 };
 

@@ -170,8 +170,8 @@ const showHelp = () => {
     `<p>${props.fieldType?.helpContextual?.description}</p>` +
     (!props.fieldType?.helpContextual?.examples ? '' :
       `<p><h6>Examples:</h6><i>${props.fieldType?.helpContextual?.examples?.join('<p> </p>')}</i></p>`),
-    "Close", true, false);
-}
+    { isLarge: true, showCancel: false, level:'primary' });
+};
 
 </script>
 

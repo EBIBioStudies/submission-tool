@@ -1,11 +1,11 @@
 import {Modal} from "bootstrap";
 
-const confirm = (title, message, okayLabel = 'Close', isLarge = false, showCancel = true, cancelLabel = 'Cancel') => {
-  const modal = document.createElement('div')
-  let isOkay = false
-  modal.id = "modal-confirm"
-  modal.className = "modal" + (isLarge ? ' modal-lg' : '')
-  modal.tabIndex = -1
+const confirm = (title, message, {okayLabel = 'Close', isLarge = false, showCancel = true, cancelLabel = 'Cancel', level = 'danger'} = {}) => {
+  const modal = document.createElement('div');
+  let isOkay = false;
+  modal.id = 'modal-confirm';
+  modal.className = 'modal' + (isLarge ? ' modal-lg' : '');
+  modal.tabIndex = -1;
   modal.innerHTML = `
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable ">
       <div class="modal-content">

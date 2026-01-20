@@ -218,7 +218,7 @@ const downloadFileList = (file) => {
 };
 
 const deleteFile = async (file) => {
-  if (!await utils.confirm('Delete File', `Do you want to delete ${file.name}?`, 'Delete')) return;
+  if (!await utils.confirm('Delete File', `Do you want to delete ${file.name}?`, { okayLabel: 'Delete' })) return;
   const body = {
     path: file.path,
     fileName: file.name,
@@ -264,7 +264,7 @@ const uploadFiles = async (uploads, isFolderUpload) => {
     const proceed = await utils.confirm(
       `Upload warning`,
       `For uploading larger than ${MAX_UPLOAD_SIZE} MB or more than ${MAX_UPLOAD_FILE_COUNT} files, using FTP/Aspera is recommended. Do you still want to continue?`,
-      `Yes`, false, true, 'No, cancel');
+      { okayLabel: `Yes`, cancelLabel: 'No, cancel' });
     if (!proceed) return;
   }
 
@@ -282,7 +282,7 @@ const uploadFiles = async (uploads, isFolderUpload) => {
       isFolderUpload
         ? 'This may overwrite existing files in the folder. Do you want to go ahead?'
         : `Do you want to overwrite ${overlapString}`,
-      `Yes, overwrite`, false, true, 'No, cancel');
+      { okayLabel: `Yes, overwrite`, cancelLabel: 'No, cancel' });
     if (!proceed) return;
   }
 

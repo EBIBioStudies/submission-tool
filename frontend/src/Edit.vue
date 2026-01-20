@@ -308,9 +308,9 @@ const finalSubmitDraft = async (option) => {
 
 
 const revertDraft = async () => {
-  if (!await utils.confirm("Revert to released version",
-    "⚠️You are about to discard all changes made to this submission since it was last released. This operation cannot be undone.",
-    "Revert")) return;
+  if (!await utils.confirm('Revert to released version',
+    '⚠️You are about to discard all changes made to this submission since it was last released. This operation cannot be undone.',
+    { okayLabel: 'Revert' })) return;
   const response = await axios.delete(
     `/api/submissions/drafts/${props.accession}`,
   );

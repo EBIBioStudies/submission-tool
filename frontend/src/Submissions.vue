@@ -195,7 +195,7 @@ const deleteSubmission = async (accno) => {
     !(await utils.confirm(
       'Delete draft',
       `The submission with accession number ${accno} may have un-submitted changes. If you proceed, both the submission and any changes will be permanently lost.`,
-      'Delete',
+      { okayLabel: 'Delete' },
     ))
   )
     return;
