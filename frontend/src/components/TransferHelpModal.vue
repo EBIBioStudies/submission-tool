@@ -3,9 +3,14 @@
 import AuthService from '../services/AuthService';
 import { computed, ref } from 'vue';
 
+const user = computed(() => AuthService.user.value);
+
 const secret = computed(() => (location.hostname.startsWith('www.ebi.ac.uk') ? '/' : '/.beta/') + AuthService.user.value.secret);
-let uploadType = AuthService.user.value?.uploadType || '';
-let asperaVersion = uploadType === 'ftp' ? '4.2.12' : '3.11.2';
+const uploadType = computed(() => user.value?.uploadType || '');
+
+const asperaVersion = computed(() =>
+  uploadType.value === 'ftp' ? '4.2.12' : '3.11.2'
+);
 const selectedOS = ref('Windows');
 const platform = computed(()=>selectedOS.value==='Windows'?'Windows': (selectedOS.value==='Linux'?'Linux':'Mac+OSX'));
 
