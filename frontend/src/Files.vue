@@ -36,8 +36,8 @@
       <table v-if="files?.length" class="table table-sm align-middle  table-hover">
         <thead>
         <tr>
-          <th class="text-end"></th>
-          <th role="button" @click.prevent="flipSort('name')">Name
+          <th></th>
+          <th class="w-100" role="button" @click.prevent="flipSort('name')">Name
             <font-awesome-icon :class="{'grayed': sortKey!=='name'}" :icon="sorterIcon('name')"
                                class="fa-sm"></font-awesome-icon>
           </th>
@@ -45,7 +45,7 @@
             <font-awesome-icon :class="{'grayed': sortKey!=='size'}" :icon="sorterIcon('size')"
                                class="fa-sm"></font-awesome-icon>
           </th>
-          <th>Actions</th>
+          <th style="width: 100px" class="text-center">Actions</th>
         </tr>
         </thead>
         <tbody>
@@ -62,7 +62,7 @@
                                           v-if="file.type.toLowerCase()!=='dir'">{{ utils.humanFileSize(file.size) }}</span>
           </td>
           <td>
-            <div class="btn-group">
+            <div class="btn-group w-100">
               <font-awesome-icon v-if="file.type.toLowerCase()!=='dir'" class="fa-fw btn btn-link text-primary"
                                  icon="fa-download" title="Download"
                                  @click.stop="downloadFile(file)"></font-awesome-icon>
