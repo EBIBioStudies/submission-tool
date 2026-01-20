@@ -145,7 +145,7 @@
 <script setup>
 import router from './router';
 import AuthService from './services/AuthService';
-import { computed, createApp, ref, watchEffect } from 'vue';
+import { computed, nextTick, ref, watchEffect } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import utils from './utils.js';
 import axios from 'axios';
