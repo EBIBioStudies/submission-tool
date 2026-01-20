@@ -28,10 +28,9 @@
       </div>
     </div> <!-- header end-->
 
-    <div class="table-responsive-sm">
-      <div v-if="showToast" class="alert alert-success toast-notification" role="alert">
-        {{ toastMessage }}
-      </div>
+    <div v-if="showToast" class="alert alert-success toast-notification" role="alert">
+      {{ toastMessage }}
+    </div>
 
       <table v-if="files?.length" class="table table-sm align-middle  table-hover">
         <thead>
@@ -141,10 +140,10 @@ const sortedFiles = computed(() => files.value?.sort((a, b) => // sort on type b
 const toastMessage = ref('');
 const showToast = ref(false);
 
-const triggerToast = (message) => {
+const triggerToast = (message, duration = 3000) => {
   toastMessage.value = message;
   showToast.value = true;
-  setTimeout(() => showToast.value = false, 3000);  // auto-hide after 3 seconds
+  setTimeout(() => showToast.value = false, duration);  // auto-hide after 3 seconds
 };
 
 
