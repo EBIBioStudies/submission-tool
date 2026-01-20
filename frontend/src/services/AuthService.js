@@ -2,8 +2,6 @@ import { ref } from 'vue';
 import axios from 'axios';
 
 const TOKEN_COOKIE = 'BioStudiesToken';
-// Required as some code is called before axios.defaults are set
-const baseURL = import.meta.env.VITE_BASE_URL || '/';
 
 let initialized = false;
 
@@ -78,7 +76,8 @@ const initializeAuth = async () => {
 
   // Fetch full profile from /auth/profile and merge
   try {
-    const response = await axios.get(`${baseURL}api/auth/profile`);
+    
+    const response = await axios.get(`api/auth/profile`);
 
     // Merge profile data with existing (keep sessid from tempUser)
     user.value = { ...user.value, ...response.data };
