@@ -91,7 +91,8 @@
             </div>
           </td>
           <td class="text-end pe-4"><span class="text-nowrap" :title="file.size.toLocaleString() + ' bytes'"
-                                          v-if="file.type.toLowerCase()!=='dir'">{{ utils.humanFileSize(file.size) }}</span>
+                                          v-if="file.type.toLowerCase()!=='dir'">{{ utils.humanFileSize(file.size)
+            }}</span>
           </td>
           <td>
             <div class="btn-group w-100">
@@ -388,7 +389,7 @@ const uploadFile = (file) => {
 
 const uploadFiles = async (uploads, isFolderUpload) => {
 
-  const filesToUpload = Array.from(uploads);
+  let filesToUpload = Array.from(uploads);
   // warn when files are large or more than a threshold
   const largeFiles = filesToUpload.filter(file => file.size / (1024 * 1024) > MAX_UPLOAD_SIZE);
   if (largeFiles.length > 0 || filesToUpload.length > MAX_UPLOAD_FILE_COUNT) {
@@ -415,6 +416,25 @@ const uploadFiles = async (uploads, isFolderUpload) => {
         : `Do you want to overwrite ${overlapString}`,
       { okayLabel: `Yes, overwrite`, cancelLabel: 'No, cancel' });
     if (!proceed) return;
+  }
+
+  // filter hidden files
+  const hiddenFiles = filesToUpload.filter(file => file.name.startsWith('.'));
+  if (hiddenFiles.length > 0) {
+    const counter = hiddenFiles.map(file => file.name)
+      .reduce((acc, name) => (acc[name] ? acc[name]++ : acc[name] = 1) && acc, {});
+    const fileNamesCounts = Object.entries(counter).sort(([nameA, countA], [nameB, countB]) => (countA - countB) || (nameA.localeCompare(nameB)));
+
+    const examples = fileNamesCounts.length > 3 ? fileNamesCounts.slice(0, 3) : fileNamesCounts;
+    const filter = await utils.confirm(
+      `Upload hidden files?`,
+      `Do you want to include these ${hiddenFiles.length} hidden files? <ul>${examples.map(([name, count]) => `<li>${count > 1 ? `<b>${count} x </b> ` : ''} ${name}</li>`).join('')} ${examples.length === fileNamesCounts.length ? '' : '<li>...</li>'}</ul>`,
+      {
+        okayLabel: `Upload only visible files (${filesToUpload.length - hiddenFiles.length})`,
+        cancelLabel: `Upload all files (${filesToUpload.length})`,
+        level: 'primary',
+      });
+    if (filter) filesToUpload = filesToUpload.filter(file => !file.name.startsWith('.'));
   }
 
   const uploadModal = new Modal('#uploadModal');
