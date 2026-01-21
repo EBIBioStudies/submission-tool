@@ -439,8 +439,8 @@ const uploadFiles = async (uploads, isFolderUpload) => {
       `Upload hidden files?`,
       `${introDisplay} <ul>${examplesDisplay}</ul>`,
       {
-        okayLabel: `Upload only visible files (${filesToUpload.length - hiddenFiles.length})`,
-        cancelLabel: `Upload all files (${filesToUpload.length})`,
+        okayLabel: `Skip hidden files (${filesToUpload.length - hiddenFiles.length} files)`,
+        cancelLabel: `Include all files (${filesToUpload.length} files)`,
         level: 'primary',
       });
     if (filter) filesToUpload = filesToUpload.filter(file => !file.name.startsWith('.'));
