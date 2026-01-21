@@ -266,6 +266,7 @@ const deleteFile = async (file) => {
     fileName: file.name,
   };
   try {
+    loading.value = true;
     await axios.post('/api/files/user/delete', body);
     await fetchFiles(); // refresh file list
     triggerToast(`✅ "${file.name}" deleted successfully.`);
