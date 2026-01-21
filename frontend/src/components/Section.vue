@@ -259,7 +259,7 @@ const deleteSubSection = async (someSubSections, index) => {
     !(await utils.confirm(
       'Delete Section',
       `Do you want to delete the section ${someSubSections[index].type}?`,
-      'Delete',
+      { okayLabel: 'Delete' },
     ))
   )
     return;
@@ -346,8 +346,8 @@ const canUpdateColumnName = (subsection) => {
       subsectionType.toLowerCase() == 'publication' &&
       collectionName.value == 'ArrayExpress'
     )
-  )
-}
+  );
+};
 
 const updateColumnName = (subsection, update) => {
 
@@ -446,11 +446,11 @@ defineExpose({ errors, thisSection });
           :data-bs-toggle="sectionType?.description ? 'tooltip' : false"
           data-bs-html="true"
           :data-bs-title="sectionType?.description"
-          ><font-awesome-icon
-            v-if="props.sectionType?.icon"
-            class="icon"
-            :icon="props.sectionType?.icon"
-          />{{ section.type }}</span
+        ><font-awesome-icon
+          v-if="props.sectionType?.icon"
+          class="icon"
+          :icon="props.sectionType?.icon"
+        />{{ section.type }}</span
         >
         <span v-else>
           <EditableLabel
@@ -485,7 +485,7 @@ defineExpose({ errors, thisSection });
         v-if="depth === 0"
         class="float-end text-secondary"
         style="font-size: 8pt; padding-top: 35px"
-        >* Required</span
+      >* Required</span
       >
     </div>
     <!-- section content -->

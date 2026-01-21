@@ -1,10 +1,12 @@
 <template>
   <div class="container">
-    <div><AnnouncementBanner /></div>
+    <div>
+      <AnnouncementBanner />
+    </div>
     <NewSubmission @select="(e) => console.log(e)"></NewSubmission>
     <div class="d-flex justify-content-center">
       <span class="ps-1" :class="{ invisible: !isLoading }"
-        ><font-awesome-icon class="fa-spin" icon="fa-solid fa-spinner"
+      ><font-awesome-icon class="fa-spin" icon="fa-solid fa-spinner"
       /></span>
     </div>
     <div
@@ -18,116 +20,116 @@
     </div>
     <table class="table table-responsive table-striped table-hover">
       <thead>
-        <tr>
-          <th style="min-width: 120px">
-            Accession
-            <font-awesome-icon
-              style="margin-left: 1em"
-              role="button"
-              @click="searchAccession"
-              icon="fa-solid fa-filter"
-              size="xs"
-            ></font-awesome-icon>
-            <span
-              v-if="accessionToSearch"
-              role="button"
-              @click="accessionToSearch = ''"
-              class="badge text-bg-secondary filter"
-              >{{ accessionToSearch }}
+      <tr>
+        <th style="min-width: 120px">
+          Accession
+          <font-awesome-icon
+            style="margin-left: 1em"
+            role="button"
+            @click="searchAccession"
+            icon="fa-solid fa-filter"
+            size="xs"
+          ></font-awesome-icon>
+          <span
+            v-if="accessionToSearch"
+            role="button"
+            @click="accessionToSearch = ''"
+            class="badge text-bg-secondary filter"
+          >{{ accessionToSearch }}
               <font-awesome-icon icon="fa-solid fa-xmark" size="xs" />
             </span>
-          </th>
+        </th>
 
-          <th>
-            Title
-          </th>
-          <th style="min-width: 120px">Release Date</th>
-          <th style="min-width: 120px">Last Modified</th>
-          <th style="min-width: 140px">Actions</th>
-        </tr>
+        <th>
+          Title
+        </th>
+        <th style="min-width: 120px">Release Date</th>
+        <th style="min-width: 120px">Last Modified</th>
+        <th style="min-width: 140px">Actions</th>
+      </tr>
       </thead>
       <tbody>
-        <tr v-for="submission in submissions">
-          <td>
-            <template v-if="submission?.status === 'PROCESSED'">
-              {{ getAccNoToDisplay(submission) }}
-            </template>
+      <tr v-for="submission in submissions">
+        <td>
+          <template v-if="submission?.status === 'PROCESSED'">
+            {{ getAccNoToDisplay(submission) }}
+          </template>
 
-            <template v-else-if="submission?.status === 'INVALID'">
-              <button
-                class="btn btn-outline-danger btn-sm"
-                @click="showErrors(submission.errors)"
-              >
-                View Errors
-              </button>
-              <div>{{ getAccNoToDisplay(submission) }}</div>
-            </template>
-
-            <template v-else>
-              <font-awesome-icon
-                :icon="['fas', 'spinner']"
-                class="spinner-border spinner-border-sm status-spinner fa-spin"
-              />
-              {{ getAccNoToDisplay(submission) }}
-            </template>
-          </td>
-
-          <td>{{ submission.title }}</td>
-          <td>{{ moment(submission.rtime).format('DD MMM YYYY') }}</td>
-          <td>{{ moment(submission.mtime).format('DD MMM YYYY') }}</td>
-          <td>
+          <template v-else-if="submission?.status === 'INVALID'">
             <button
-              v-if="submission.status === 'PROCESSED'"
-              class="btn btn-link text-primary"
-              @click.stop="open(submission.accno)"
+              class="btn btn-outline-danger btn-sm"
+              @click="showErrors(submission.errors)"
             >
-              <font-awesome-icon
-                icon="fa-solid fa-arrow-up-right-from-square"
-              ></font-awesome-icon>
+              View Errors
             </button>
-            <button
-              v-if="
+            <div>{{ getAccNoToDisplay(submission) }}</div>
+          </template>
+
+          <template v-else>
+            <font-awesome-icon
+              :icon="['fas', 'spinner']"
+              class="spinner-border spinner-border-sm status-spinner fa-spin"
+            />
+            {{ getAccNoToDisplay(submission) }}
+          </template>
+        </td>
+
+        <td>{{ submission.title }}</td>
+        <td>{{ moment(submission.rtime).format('DD MMM YYYY') }}</td>
+        <td>{{ moment(submission.mtime).format('DD MMM YYYY') }}</td>
+        <td>
+          <button
+            v-if="submission.status === 'PROCESSED'"
+            class="btn btn-link text-primary"
+            @click.stop="open(submission.accno)"
+          >
+            <font-awesome-icon
+              icon="fa-solid fa-arrow-up-right-from-square"
+            ></font-awesome-icon>
+          </button>
+          <button
+            v-if="
                 submission.status === 'PROCESSED' ||
                 submission.status === 'INVALID'
               "
-              class="btn btn-link text-primary"
-              @click.stop="edit(submission.accno)"
-            >
-              <font-awesome-icon icon="fa-edit"></font-awesome-icon>
-            </button>
-            <button
-              v-if="canDelete(submission)"
-              class="btn btn-link text-primary"
-              @click.stop="deleteSubmission(submission.accno)"
-            >
-              <font-awesome-icon
-                icon="fa-regular fa-trash-alt"
-              ></font-awesome-icon>
-            </button>
-          </td>
-        </tr>
+            class="btn btn-link text-primary"
+            @click.stop="edit(submission.accno)"
+          >
+            <font-awesome-icon icon="fa-edit"></font-awesome-icon>
+          </button>
+          <button
+            v-if="canDelete(submission)"
+            class="btn btn-link text-primary"
+            @click.stop="deleteSubmission(submission.accno)"
+          >
+            <font-awesome-icon
+              icon="fa-regular fa-trash-alt"
+            ></font-awesome-icon>
+          </button>
+        </td>
+      </tr>
       </tbody>
       <tfoot>
-        <tr class="border-white">
-          <td colspan="5" class="text-end">
-            <button
-              v-if="offset > 0"
-              class="btn btn-outline-primary btn-sm m-2"
-              @click="offset -= pageLength"
-            >
-              <font-awesome-icon icon="fa-chevron-left"></font-awesome-icon>
-              Previous
-            </button>
-            <button
-              v-if="showNext"
-              class="btn btn-outline-primary btn-sm m-2"
-              @click="offset += pageLength"
-            >
-              <font-awesome-icon icon="fa-chevron-right"></font-awesome-icon>
-              Next
-            </button>
-          </td>
-        </tr>
+      <tr class="border-white">
+        <td colspan="5" class="text-end">
+          <button
+            v-if="offset > 0"
+            class="btn btn-outline-primary btn-sm m-2"
+            @click="offset -= pageLength"
+          >
+            <font-awesome-icon icon="fa-chevron-left"></font-awesome-icon>
+            Previous
+          </button>
+          <button
+            v-if="showNext"
+            class="btn btn-outline-primary btn-sm m-2"
+            @click="offset += pageLength"
+          >
+            <font-awesome-icon icon="fa-chevron-right"></font-awesome-icon>
+            Next
+          </button>
+        </td>
+      </tr>
       </tfoot>
     </table>
     <div v-if="!submissions.length" class="alert alert-secondary text-center">
@@ -179,8 +181,8 @@ const showErrors = (errors) => {
 };
 
 const getAccNoToDisplay = (submission) => {
-  return submission.displayAccNo? submission.displayAccNo: submission.accno
-}
+  return submission.displayAccNo ? submission.displayAccNo : submission.accno;
+};
 
 const canDelete = (submission) => {
   return (
@@ -195,7 +197,7 @@ const deleteSubmission = async (accno) => {
     !(await utils.confirm(
       'Delete draft',
       `The submission with accession number ${accno} may have un-submitted changes. If you proceed, both the submission and any changes will be permanently lost.`,
-      'Delete',
+      { okayLabel: 'Delete' },
     ))
   )
     return;
@@ -233,14 +235,14 @@ watchEffect(async () => {
       params: hasAccession
         ? { accNo: accessionToSearch.value.trim() }
         : {
-            offset: offset.value,
-            limit: pageLength.value + 1
-          },
+          offset: offset.value,
+          limit: pageLength.value + 1,
+        },
     });
 
     submissions.value = response.data.slice(0, pageLength.value);
     showNext.value = response.data.length === pageLength.value + 1;
-    
+
   } catch (error) {
     serverListingSubsErrorMessage.value =
       error?.log?.message || error?.message || 'Problem in listing submissions';
@@ -264,7 +266,7 @@ const searchAccession = async () => {
   accessionToSearch.value = await utils.prompt(
     'Search accession',
     `Please enter the accession to search`,
-    'Search',
+    { okayLabel: 'Search' }
   );
 };
 

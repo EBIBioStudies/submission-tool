@@ -1,17 +1,17 @@
 <script setup>
-import {computed, getCurrentInstance, inject, ref} from 'vue';
+import { computed, getCurrentInstance, inject, ref } from 'vue';
 import Multiselect from '@vueform/multiselect';
-import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import DatePicker from 'vue-datepicker-next';
 import 'vue-datepicker-next/index.css';
-import FileFolderSelectModal from "@/components/FileFolderSelectModal.vue";
-import Link from "@/components/Link.vue";
-import utils from "@/utils";
-import Reference from "@/components/Reference.vue";
-import Organisation from "@/components/Organisation.vue";
-import Publication from "@/components/Publication.vue";
+import FileFolderSelectModal from '@/components/FileFolderSelectModal.vue';
+import Link from '@/components/Link.vue';
+import utils from '@/utils';
+import Reference from '@/components/Reference.vue';
+import Organisation from '@/components/Organisation.vue';
+import Publication from '@/components/Publication.vue';
 
-const hasValidated = inject('hasValidated')
+const hasValidated = inject('hasValidated');
 
 const props = defineProps({
   'attribute': Object,
@@ -19,7 +19,7 @@ const props = defineProps({
   'parent': Object,
   'row': Object,
   'isTableAttribute': Boolean,
-  'isSectionAttribute': Boolean
+  'isSectionAttribute': Boolean,
 });
 const emits = defineEmits(['createTag', 'deleteTag', 'deleteAttribute', 'deleteOrg', 'createOrg']);
 const attributeId = 'attribute-' + getCurrentInstance().uid;
@@ -28,14 +28,14 @@ const curRow = ref(props.row);
 const attributeControl = ref(null);
 const thisMultiValuedAttribute = ref(
   props.parent?.map((a, i) => { // save the original index -- needed when deleting
-      return {index: i, ...a};
-    })?.filter( a  =>  a.name === thisAttribute.value.name && a?.value )
-)
-const parentDisplayType = inject('parentDisplayType')
-const editDateMode = inject('readOnlyEditDateMode')
-const isManagerUser = inject('isManagerUser')
-const isPublicSubmission = inject('isPublicSubmission')
-const collectionName = inject('collectionName')
+    return { index: i, ...a };
+  })?.filter(a => a.name === thisAttribute.value.name && a?.value),
+);
+const parentDisplayType = inject('parentDisplayType');
+const editDateMode = inject('readOnlyEditDateMode');
+const isManagerUser = inject('isManagerUser');
+const isPublicSubmission = inject('isPublicSubmission');
+const collectionName = inject('collectionName');
 
 const display = computed(() => {
   return props?.fieldType?.display || parentDisplayType?.value || 'optional';
@@ -48,8 +48,8 @@ function isString(val) {
 const getAttributesFromFieldType = (fieldType) => {
   return (fieldType?.controlType?.values ?? []).map((val) =>
     isString(val)
-      ? {name: fieldType.name, value: val}
-      : {name: fieldType.name, ...val},
+      ? { name: fieldType.name, value: val }
+      : { name: fieldType.name, ...val },
   );
 };
 
@@ -86,7 +86,7 @@ const onChangeSelect = (newValue, control) => {
 
 const onCreateTag = (newTag) => {
   // TODO: handle valqual
-  const obj = {name: props.attribute.name, value: newTag.value ?? newTag};
+  const obj = { name: props.attribute.name, value: newTag.value ?? newTag };
   emits('createTag', obj);
   return false; // ignore the event, it will be rendered by the parent
 };
@@ -110,59 +110,58 @@ const withinThreeYears = (date) => {
 };
 
 const errors = computed(() => {
-  const _errors = []
+  const _errors = [];
   //validate text fields
   if (thisAttribute?.value?.type?.toLowerCase() === 'file') {
     if (display.value === 'required' && (!thisAttribute?.value?.path || thisAttribute?.value?.path === '')) {
       _errors.push(`File required`);
     }
-  // } else if (thisAttribute?.value?.hasOwnProperty('url')) {
-  //   const IDENTIFIER_REGEXP = /^([\w\s].+):([\w\W]+)$/;
-  //   const URL_REGEXP = /^(http|https|ftp):\/\/.+$/;
-  //   if (display === 'required' && (!thisAttribute?.value?.url || thisAttribute?.value?.url === '' || (!IDENTIFIER_REGEXP.test(thisAttribute.value?.url) && !URL_REGEXP.test(thisAttribute.value?.url)))) {
-  //     _errors.push(`Link required`);
-  //   }
+    // } else if (thisAttribute?.value?.hasOwnProperty('url')) {
+    //   const IDENTIFIER_REGEXP = /^([\w\s].+):([\w\W]+)$/;
+    //   const URL_REGEXP = /^(http|https|ftp):\/\/.+$/;
+    //   if (display === 'required' && (!thisAttribute?.value?.url || thisAttribute?.value?.url === '' || (!IDENTIFIER_REGEXP.test(thisAttribute.value?.url) && !URL_REGEXP.test(thisAttribute.value?.url)))) {
+    //     _errors.push(`Link required`);
+    //   }
   } else if (props.fieldType?.controlType?.name?.toLowerCase() === 'orcid') {
-    const isValidOrcid =  utils.isOrcidValid(thisAttribute?.value?.value)
-    if ( (display.value === 'required' && !isValidOrcid) ||
-      (display.value !== 'required' && thisAttribute?.value?.value && thisAttribute?.value?.value!=='' && !isValidOrcid)
-      ) {
+    const isValidOrcid = utils.isOrcidValid(thisAttribute?.value?.value);
+    if ((display.value === 'required' && !isValidOrcid) ||
+      (display.value !== 'required' && thisAttribute?.value?.value && thisAttribute?.value?.value !== '' && !isValidOrcid)
+    ) {
       _errors.push(`Invalid ORCID value`);
     }
-  } else if (display.value === 'required' && props.fieldType?.name?.toLowerCase()!=='file' && props.fieldType?.name?.toLowerCase()!=='link' && (!thisAttribute.value?.value || thisAttribute?.value?.value?.trim() === '')) {
-     if(!(thisMultiValuedAttribute?.value?.value?.length>0) && props.fieldType?.name?.toLowerCase()!=='organisation' && props.fieldType?.name?.toLowerCase()!=='file list')
-       _errors.push(`${thisAttribute?.value?.name} required`);
-     else if(props.fieldType?.name?.toLowerCase()==='organisation'){
-       if(!(thisMultiValuedAttribute?.value?.length>0)){
-         _errors.push(`${thisAttribute?.value?.name} required`);
-       }
-     }
-     else if(props.fieldType?.name?.toLowerCase()==='file list'){
-       if(!(thisAttribute?.value?.path?.length>0))
-         _errors.push(`${thisAttribute?.value?.name} required`);
-     }
-  } else if(display.value === 'required' && props.fieldType?.name?.toLowerCase()==='file' && !thisAttribute?.value?.path){
+  } else if (display.value === 'required' && props.fieldType?.name?.toLowerCase() !== 'file' && props.fieldType?.name?.toLowerCase() !== 'link' && (!thisAttribute.value?.value || thisAttribute?.value?.value?.trim() === '')) {
+    if (!(thisMultiValuedAttribute?.value?.value?.length > 0) && props.fieldType?.name?.toLowerCase() !== 'organisation' && props.fieldType?.name?.toLowerCase() !== 'file list')
+      _errors.push(`${thisAttribute?.value?.name} required`);
+    else if (props.fieldType?.name?.toLowerCase() === 'organisation') {
+      if (!(thisMultiValuedAttribute?.value?.length > 0)) {
+        _errors.push(`${thisAttribute?.value?.name} required`);
+      }
+    } else if (props.fieldType?.name?.toLowerCase() === 'file list') {
+      if (!(thisAttribute?.value?.path?.length > 0))
+        _errors.push(`${thisAttribute?.value?.name} required`);
+    }
+  } else if (display.value === 'required' && props.fieldType?.name?.toLowerCase() === 'file' && !thisAttribute?.value?.path) {
     _errors.push('File path required');
-  } else if(display.value === 'required' && props.fieldType?.name?.toLowerCase()==='link' && !thisAttribute?.value?.url){
+  } else if (display.value === 'required' && props.fieldType?.name?.toLowerCase() === 'link' && !thisAttribute?.value?.url) {
     _errors.push('Link url required');
 
   }
-  if (thisAttribute?.value?.name?.toLowerCase()==='e-mail'){
+  if (thisAttribute?.value?.name?.toLowerCase() === 'e-mail') {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if ((display?.value === 'required' && !thisAttribute?.value?.value) || (thisAttribute?.value?.value && !regex.test(thisAttribute?.value?.value))) {
       _errors.push(`${thisAttribute?.value?.name} is not valid`);
     }
   }
   if (props.fieldType?.controlType?.minlength > (`${thisAttribute?.value?.value}`.trim()?.length ?? 0)) {
-    _errors.push(`Please enter at least ${props.fieldType?.controlType?.minlength} characters. `)
+    _errors.push(`Please enter at least ${props.fieldType?.controlType?.minlength} characters. `);
   }
   if (attributeControl?.value) {
-    _errors.push(attributeControl?.value?.errors)
+    _errors.push(attributeControl?.value?.errors);
   }
   return _errors.length ? _errors.join('. ').trim() : null;
-})
+});
 
-defineExpose({errors, attributeId});
+defineExpose({ errors, attributeId });
 
 
 const showHelp = () => {
@@ -170,8 +169,8 @@ const showHelp = () => {
     `<p>${props.fieldType?.helpContextual?.description}</p>` +
     (!props.fieldType?.helpContextual?.examples ? '' :
       `<p><h6>Examples:</h6><i>${props.fieldType?.helpContextual?.examples?.join('<p> </p>')}</i></p>`),
-    "Close", true, false);
-}
+    { isLarge: true, showCancel: false, level:'primary' });
+};
 
 </script>
 
@@ -194,7 +193,7 @@ const showHelp = () => {
         <span class="text-danger"
               v-if="fieldType?.display==='required' || fieldType?.controlType?.minlength >0">*</span>
       </span>
-    <span v-else>
+      <span v-else>
       <input
         :disabled="parentDisplayType==='readonly' || display==='readonly'"
         type="text"
@@ -207,7 +206,7 @@ const showHelp = () => {
     </span>
       <font-awesome-icon v-if="fieldType?.helpContextual" :icon="['fas','circle-question']"
                          class="text-black-50 ps-1 small"
-                         role="button" @click="showHelp()"/>
+                         role="button" @click="showHelp()" />
     </label>
 
     <!--largetext-->
@@ -330,10 +329,10 @@ const showHelp = () => {
 
     <!-- link -->
     <Link
-    v-else-if="fieldType?.controlType?.name === 'idlink'"
-    ref="attributeControl"
-    :row="curRow"
-    :link="thisAttribute"
+      v-else-if="fieldType?.controlType?.name === 'idlink'"
+      ref="attributeControl"
+      :row="curRow"
+      :link="thisAttribute"
       :class="{'is-invalid':errors && hasValidated}"
       :placeholder="fieldType?.controlType?.placeholder"
     />
@@ -370,7 +369,7 @@ const showHelp = () => {
       :placeholder="fieldType?.controlType?.placeholder"
     />
 
-      <!-- A cell (text) in a publication section from ArrayExpress: allways editable -->
+    <!-- A cell (text) in a publication section from ArrayExpress: allways editable -->
     <input
       v-else-if="row?.type == 'Publication' && collectionName==='ArrayExpress'"
       type="text"
@@ -417,7 +416,7 @@ const showHelp = () => {
   </div>
   <div class="pb-2 ps-2 text-danger text-end small" v-if="errors?.length && hasValidated">
     {{ errors }}
-    <font-awesome-icon :icon="['fas','arrow-turn-up']" transform="shrink-6 up-2"/>
+    <font-awesome-icon :icon="['fas','arrow-turn-up']" transform="shrink-6 up-2" />
   </div>
 </template>
 
@@ -438,12 +437,12 @@ label.attribute {
   padding-left: 0 !important;
 }
 
-.multiselect-wrapper, .multiselect  {
+.multiselect-wrapper, .multiselect {
   min-height: calc(1.8rem - calc(var(--bs-border-width) * 2)) !important;
   min-width: 84pt !important;
 }
 
-.multiselect.form-control.form-control-sm  {
+.multiselect.form-control.form-control-sm {
   font-size: 0.875em !important;
 }
 
@@ -467,7 +466,8 @@ label.attribute {
 .small {
   font-size: 0.8em;
 }
-.min-width-inp{
+
+.min-width-inp {
   min-width: 100px !important;
 }
 </style>
