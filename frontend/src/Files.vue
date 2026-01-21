@@ -421,14 +421,22 @@ const uploadFiles = async (uploads, isFolderUpload) => {
   // filter hidden files
   const hiddenFiles = filesToUpload.filter(file => file.name.startsWith('.'));
   if (hiddenFiles.length > 0) {
-    const counter = hiddenFiles.map(file => file.name)
-      .reduce((acc, name) => (acc[name] ? acc[name]++ : acc[name] = 1) && acc, {});
-    const fileNamesCounts = Object.entries(counter).sort(([nameA, countA], [nameB, countB]) => (countA - countB) || (nameA.localeCompare(nameB)));
-
+    // Count filenames to avoid repeating several times the same name
+    const counter = hiddenFiles.map(file => file.name).reduce((acc, name) => (acc[name] ? acc[name]++ : acc[name] = 1) && acc, {});
+    // Sort by how many time file names appear, and then by their name
+    const fileNamesCounts = Object.entries(counter).sort(([nameA, countA], [nameB, countB]) => (countB - countA) || (nameA.localeCompare(nameB)));
+    // Only display the top 3 kind of hidden filenames
     const examples = fileNamesCounts.length > 3 ? fileNamesCounts.slice(0, 3) : fileNamesCounts;
+
+    const introDisplay = hiddenFiles.length > 1
+      ? `Do you want to include these <b>${hiddenFiles.length}</b> hidden files?`
+      : `Do you want to include this hidden file?`;
+    let examplesDisplay = examples.map(([name, count]) => `<li>${count > 1 ? `<b>${count} x </b> ` : ''} ${name}</li>`).join('');
+    if (examples.length !== fileNamesCounts.length) examplesDisplay += '<li>...</li>';
+
     const filter = await utils.confirm(
       `Upload hidden files?`,
-      `Do you want to include these ${hiddenFiles.length} hidden files? <ul>${examples.map(([name, count]) => `<li>${count > 1 ? `<b>${count} x </b> ` : ''} ${name}</li>`).join('')} ${examples.length === fileNamesCounts.length ? '' : '<li>...</li>'}</ul>`,
+      `${introDisplay} <ul>${examplesDisplay}</ul>`,
       {
         okayLabel: `Upload only visible files (${filesToUpload.length - hiddenFiles.length})`,
         cancelLabel: `Upload all files (${filesToUpload.length})`,
