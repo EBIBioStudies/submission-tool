@@ -10,60 +10,145 @@ const emits = defineEmits(['deleteOrg', 'createOrg']);
 
 // get organisation which matches the affiliation reference
 const organisations = ref([]);
-const parentDisplayType = inject('parentDisplayType')
+const parentDisplayType = inject('parentDisplayType');
 
 const updateOptions = async (query) => {
   if (!query || query.length < 3) return [];
   return axios({
-    url: `https://api.ror.org/v1/organizations?query=${query}`,
+    url: `ror/organizations?query=${query}`,
     headers: { 'content-type': 'application/json' },
     method: 'GET',
-  }).then(response => response.data?.items?.map(i => {
-    return { label: i.name, value: i.id };
-  }).filter( entry => {
-    return organisations.value.filter( org=> org?.label===entry.label).length===0
-  }) );
+  }).then((response) =>
+    mapRorItemsToOptionsUnique(response.data?.items).filter((entry) => {
+      return (
+        organisations.value.filter((org) => org?.label === entry.label)
+          .length === 0
+      );
+    }),
+  );
 };
-organisations.value = model.value.map(affiliation => {
-  const org = submission?.value.section.subsections.filter( s => (s?.type?.toLowerCase() === 'organisation'
-    || s?.type?.toLowerCase() === 'organization') && s?.accno === affiliation.value)[0];
-  const label = org?.attributes.find(attr => attr.name === 'Name')?.value;
-  const rorIdAttribute = org?.attributes.find(attr => attr.name === 'RORID');
-  return {
-    accno: affiliation.value,
-    label: label,
-    value: rorIdAttribute?.length ? rorIdAttribute.value : label
-  };
-}).filter ( option=> option.label && option.label!=='')
 
+// Build an array of { value, label } for the multiselect.
+// - value: ROR organization ID
+// - label: human-friendly name
+// If more than one organization shares the same base label (acronym + display name),
+// append the location name to the label to make each entry distinguishable.
+const mapRorItemsToOptionsUnique = (items = []) => {
+  // Map<label, option[]>
+  const optionsByLabel = new Map();
+
+  // First pass: group options by their base label
+  items.forEach((org) => {
+    const id = org.id;
+
+    const acronym = org.names?.find((n) => n.types?.includes('acronym'))?.value;
+
+    const rorDisplay = org.names?.find((n) =>
+      n.types?.includes('ror_display'),
+    )?.value;
+
+    const locationName = org.locations?.find(
+      (loc) => loc.geonames_details?.name,
+    )?.geonames_details?.name;
+
+    const fallbackName =
+      rorDisplay ||
+      org.names?.find((n) => n.types?.includes('label'))?.value ||
+      org.names?.[0]?.value;
+
+    const baseLabel = acronym ? `${acronym} - ${fallbackName}` : fallbackName;
+
+    const option = { value: id, baseLabel, locationName };
+
+    const existing = optionsByLabel.get(baseLabel) ?? [];
+    existing.push(option);
+    optionsByLabel.set(baseLabel, existing);
+  });
+
+  // Second pass: disambiguate labels where needed
+  const cleanedOptions = [];
+
+  optionsByLabel.forEach((optionsWithSameLabel) => {
+    if (optionsWithSameLabel.length > 1) {
+      // Duplicate base labels: append location name
+      optionsWithSameLabel.forEach((opt) => {
+        const suffix = opt.locationName ? ` - ${opt.locationName}` : '';
+        cleanedOptions.push({
+          value: opt.value,
+          label: `${opt.baseLabel}${suffix}`,
+        });
+      });
+    } else {
+      // Unique base label: keep as-is
+      const opt = optionsWithSameLabel[0];
+      cleanedOptions.push({ value: opt.value, label: opt.baseLabel });
+    }
+  });
+
+  return cleanedOptions;
+};
+
+organisations.value = model.value
+  .map((affiliation) => {
+    const org = submission?.value.section.subsections.filter(
+      (s) =>
+        (s?.type?.toLowerCase() === 'organisation' ||
+          s?.type?.toLowerCase() === 'organization') &&
+        s?.accno === affiliation.value,
+    )[0];
+    const label = org?.attributes.find((attr) => attr.name === 'Name')?.value;
+    const rorIdAttribute = org?.attributes.find(
+      (attr) => attr.name === 'RORID',
+    );
+    return {
+      accno: affiliation.value,
+      label: label,
+      value: rorIdAttribute?.length ? rorIdAttribute.value : label,
+    };
+  })
+  .filter((option) => option.label && option.label !== '');
 </script>
 
 <template>
-  <Multiselect mode="tags"
-               no-options-text="Type+↵ to add"
-               v-model="organisations"
-               class="form-control form-control-sm org"
-               :allow-empty="false"
-               :class="props.class"
-               :create-option="true"
-               :searchable="true"
-               :allow-absent="true"
-               :options="async (q)=> await updateOptions(q)"
-               :object="true"
-               :delay="0"
-               :min-chars="3"
-               :disabled="parentDisplayType==='readonly'"
-               :filter-results="false"
-               :hide-selected="true"
-               :can-clear="false"
-               :append-to-body="true"
-               @deselect="(v) => { emits('deleteOrg', v); return false;}"
-               @create="(v) => { emits('createOrg', v); return false;}"
-               @select="(v) => { emits('createOrg', v); return false;}"
-
+  <Multiselect
+    mode="tags"
+    no-options-text="Type+↵ to add"
+    v-model="organisations"
+    class="form-control form-control-sm org"
+    :allow-empty="false"
+    :class="props.class"
+    :create-option="true"
+    :searchable="true"
+    :allow-absent="true"
+    :options="async (q) => await updateOptions(q)"
+    :object="true"
+    :delay="0"
+    :min-chars="3"
+    :disabled="parentDisplayType === 'readonly'"
+    :filter-results="false"
+    :hide-selected="true"
+    :can-clear="false"
+    :append-to-body="true"
+    @deselect="
+      (v) => {
+        emits('deleteOrg', v);
+        return false;
+      }
+    "
+    @create="
+      (v) => {
+        emits('createOrg', v);
+        return false;
+      }
+    "
+    @select="
+      (v) => {
+        emits('createOrg', v);
+        return false;
+      }
+    "
   >
   </Multiselect>
-
 </template>
 
 <style scoped>
