@@ -443,6 +443,7 @@ onBeforeUnmount(() => {
     position: fixed;
     top: 80px;
     z-index: 9;
+    overflow: auto;
   }
 
   .sidebar-expanded {

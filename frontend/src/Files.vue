@@ -170,8 +170,12 @@ const renamingMessage = ref(null);
 
 const axiosAbortController = new AbortController();
 //TODO: Get these constants from config
+const HARD_UPLOAD_SIZE_LIMIT = 30;// in GBs;
 const MAX_UPLOAD_SIZE = 1024;// in MBs;
 const MAX_UPLOAD_FILE_COUNT = 1000;
+const KB = 1024;
+const MB = KB * 1024;
+const GB = MB * 1024;
 
 const currentPath = computed(() => props.paths === '' ? [''] : ['', ...props.paths]);
 const sortedFiles = computed(() => files.value?.sort((a, b) => // sort on type before name
@@ -391,12 +395,22 @@ const uploadFile = (file) => {
 const uploadFiles = async (uploads, isFolderUpload) => {
 
   let filesToUpload = Array.from(uploads);
+
+  if (filesToUpload.find(file => file.size / GB > HARD_UPLOAD_SIZE_LIMIT)) {
+    await utils.confirm(
+      `Upload error`,
+      `You are trying to upload at least one file larger than ${HARD_UPLOAD_SIZE_LIMIT} GB.<br>This is not supported by this web interface.<br>Please use FTP/Aspera for such large files transfer.`,
+      { showCancel: false },
+    );
+    return;
+  }
+
   // warn when files are large or more than a threshold
-  const largeFiles = filesToUpload.filter(file => file.size / (1024 * 1024) > MAX_UPLOAD_SIZE);
+  const largeFiles = filesToUpload.filter(file => file.size / MB > MAX_UPLOAD_SIZE);
   if (largeFiles.length > 0 || filesToUpload.length > MAX_UPLOAD_FILE_COUNT) {
     const proceed = await utils.confirm(
       `Upload warning`,
-      `For uploading larger than ${MAX_UPLOAD_SIZE} MB or more than ${MAX_UPLOAD_FILE_COUNT} files, using FTP/Aspera is recommended. Do you still want to continue?`,
+      `For uploading files larger than ${MAX_UPLOAD_SIZE} MB or more than ${MAX_UPLOAD_FILE_COUNT} files, using FTP/Aspera is recommended. Do you still want to continue?`,
       { okayLabel: `Yes`, cancelLabel: 'No, cancel' });
     if (!proceed) return;
   }
@@ -439,8 +453,8 @@ const uploadFiles = async (uploads, isFolderUpload) => {
       `Upload hidden files?`,
       `${introDisplay} <ul>${examplesDisplay}</ul>`,
       {
-        okayLabel: `Upload only visible files (${filesToUpload.length - hiddenFiles.length})`,
-        cancelLabel: `Upload all files (${filesToUpload.length})`,
+        okayLabel: `Skip hidden files (${filesToUpload.length - hiddenFiles.length} files)`,
+        cancelLabel: `Include all files (${filesToUpload.length} files)`,
         level: 'primary',
       });
     if (filter) filesToUpload = filesToUpload.filter(file => !file.name.startsWith('.'));
