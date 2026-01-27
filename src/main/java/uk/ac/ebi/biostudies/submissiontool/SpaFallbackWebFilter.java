@@ -46,6 +46,7 @@ public class SpaFallbackWebFilter implements WebFilter {
     if (path.startsWith("/biostudies/submissions/api/") ||
         path.equals("/biostudies/submissions/config") ||
         path.startsWith("/biostudies/submissions/filelist/") ||
+        path.startsWith("/biostudies/submissions/ror/organizations") ||
         path.startsWith("/biostudies/submissions/assets/") ||
         path.startsWith("/biostudies/submissions/images/") ||
         path.equals("/biostudies/submissions/favicon.ico")) {
