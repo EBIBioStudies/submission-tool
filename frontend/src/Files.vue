@@ -704,7 +704,7 @@ const uploadFiles = async (uploads, isFolderUpload) => {
 };
 </script>
 
-<style>
+<style scoped>
 .pointer {
   cursor: pointer;
   text-decoration: none;
