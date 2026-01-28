@@ -248,7 +248,7 @@
               class="btn btn-danger"
               data-bs-dismiss="modal"
               type="button"
-              @click.stop="axiosAbortController.abort()"
+              @click.stop="currentUploadAbortController?.abort()"
             >
               Cancel
             </button>
@@ -264,7 +264,7 @@
 <script setup>
 import router from './router';
 import AuthService from './services/AuthService';
-import { computed, nextTick, ref, watchEffect } from 'vue';
+import { computed, nextTick, ref, watchEffect, onBeforeUnmount } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import utils from './utils.js';
 import axios from 'axios';
@@ -277,6 +277,8 @@ const loading = ref(false);
 const currentUpload = ref({ name: '', progress: 0 });
 const sortKey = ref('size');
 const sortDirection = ref(1);
+const fetchAbortController = ref(new AbortController());
+const currentUploadAbortController = ref(null);
 
 const renamingFileKey = ref(null);
 const renamingFileName = ref(null);
@@ -285,7 +287,6 @@ const renamingInput = ref(null);
 const labelRefs = {};
 const renamingMessage = ref(null);
 
-const axiosAbortController = new AbortController();
 //TODO: Get these constants from config
 const HARD_UPLOAD_SIZE_LIMIT = 30; // in GBs;
 const MAX_UPLOAD_SIZE = 1024; // in MBs;
@@ -314,6 +315,21 @@ const sortedFiles = computed(() =>
 const toastMessage = ref('');
 const showToast = ref(false);
 
+onBeforeUnmount(() => {
+  fetchAbortController.value.abort();
+  currentUploadAbortController.value?.abort();
+  loading.value = false;
+
+  // Clean up Bootstrap modal
+  const modalElement = document.getElementById('uploadModal');
+  if (modalElement) {
+    const modalInstance = Modal.getInstance(modalElement);
+    if (modalInstance) {
+      modalInstance.dispose();
+    }
+  }
+});
+
 const triggerToast = (message, duration = 3000) => {
   toastMessage.value = message;
   showToast.value = true;
@@ -339,14 +355,24 @@ const fetchFiles = async () => {
   if (!AuthService.isAuthenticated()) return;
 
   loading.value = true;
+  fetchAbortController.value = new AbortController();
   const path = props.paths && props.paths !== '' ? props.paths.join('/') : '';
+
   try {
-    const response = await axios.post('/api/files/user/query', { path });
+    const response = await axios.post(
+      '/api/files/user/query',
+      { path },
+      { signal: fetchAbortController.value.signal },
+    );
     files.value = response.data.map((file) => ({
       ...file,
       path: file.path === 'user' ? '' : file.path.replace(/^user\/?/, ''),
     }));
   } catch (error) {
+    // Ignore abort errors - these are intentional cancellations
+    if (error.code === 'ERR_CANCELED' || error.name === 'AbortError') {
+      return;
+    }
     console.error('Failed to fetch files:', error);
   } finally {
     loading.value = false;
@@ -517,7 +543,7 @@ const checkExtension = async (oldName, newName) => {
   if (oldExt !== newExt) {
     return utils.confirm(
       'Extension changed',
-      `Are you sure you want to change the extension of ${oldName} from “.${oldExt}” to “.${newExt}”?`,
+      `Are you sure you want to change the extension of ${oldName} from ".${oldExt}" to ".${newExt}"?`,
       {
         okayLabel: `Use .${newExt}`,
         cancelLabel: `Cancel rename`,
@@ -529,6 +555,7 @@ const checkExtension = async (oldName, newName) => {
 };
 
 const uploadFile = (file) => {
+  currentUploadAbortController.value = new AbortController();
   const formData = new FormData();
 
   // Attach the file
@@ -544,7 +571,7 @@ const uploadFile = (file) => {
   );
 
   return axios.post(`/api/files/user/upload`, formData, {
-    signal: axiosAbortController.signal,
+    signal: currentUploadAbortController.value.signal,
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -731,7 +758,7 @@ const uploadFiles = async (uploads, isFolderUpload) => {
 
 .spinner-border {
   --bs-spinner-border-width: 0.75em;
-  --bs-spinner-height: min(33cqw, 33cqh);
-  --bs-spinner-width: min(33cqw, 33cqh);
+  --bs-spinner-height: min(33cqmin, 5rem);
+  --bs-spinner-width: min(33cqmin, 5rem);
 }
 </style>
