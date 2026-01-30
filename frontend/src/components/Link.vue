@@ -4,11 +4,12 @@ import { prefixToLinkMap, SearchLinks } from '@/templates/links';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { Template } from '@/models/Template.model.ts';
 import { PageTab } from '@/models/PageTab.model.ts';
+import { Class } from '@/utils.ts';
 
 const props = defineProps<{
   fieldType?: Template.FieldType,
   link: PageTab.Link,
-  class: string,
+  class?: Class,
   placeholder?: string,
   row: PageTab.Link
 }>();

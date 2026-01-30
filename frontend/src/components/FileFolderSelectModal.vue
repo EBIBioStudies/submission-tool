@@ -7,11 +7,11 @@ import axios, { AxiosProgressEvent } from 'axios';
 import { useRoute } from 'vue-router';
 import { PageTab } from '@/models/PageTab.model.ts';
 import type { Node } from '@/models/FileTreeNode.model.ts';
-import utils from '@/utils.ts';
+import utils, { Class } from '@/utils.ts';
 
 const props = defineProps<{
   file: PageTab.File | PageTab.Attribute,
-  class?: string,
+  class?: Class,
   allowFolder?: boolean,
   isFileList?: boolean,
   row?: PageTab.File

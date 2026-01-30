@@ -167,3 +167,5 @@ export const isList = <T>(element: (T | T[])[]): element is T[] => {
 export const isString = (value: any): value is string => {
   return typeof value === 'string';
 };
+
+export type Class = string | Record<string, boolean> | (string | Record<string, boolean>)[];

@@ -3,9 +3,10 @@ import Multiselect from '@vueform/multiselect';
 import { inject, ref, Ref } from 'vue';
 import { Template } from '@/models/Template.model.ts';
 import { PageTab } from '@/models/PageTab.model.ts';
+import { Class } from '@/utils.ts';
 
 const props = defineProps<{
-  class?: string;
+  class?: Class;
   fieldType: Template.FieldType;
 }>();
 const submission = inject<Ref<Partial<PageTab.LocalSubmission>>>('submission');

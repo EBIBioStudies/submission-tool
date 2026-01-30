@@ -25,12 +25,13 @@ import { faSearch } from '@fortawesome/free-solid-svg-icons';
 import { Template } from '@/models/Template.model.ts';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { PublicationSearchResult } from 'components/PmidPopUp.vue';
+import { Class } from '@/utils.ts';
 
 
 const props = defineProps<{
   fieldType?: Template.FieldType,
   pmid: PageTab.Tag,
-  class?: string,
+  class?: Class,
   placeholder?: string,
   row: PageTab.DetailedAttribute[]
 }>()

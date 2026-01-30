@@ -5,10 +5,11 @@ import axios from 'axios';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { ROR } from '@/models/Organisation.model.ts';
 import { Template } from '@/models/Template.model.ts';
+import { Class } from '@/utils.ts';
 
 const model = defineModel<any[]>();
 const props = defineProps<{
-  class: string,
+  class?: Class,
   fieldType: Template.FieldType
 }>();
 const submission = inject<Ref<PageTab.LocalSubmission>>('submission');
