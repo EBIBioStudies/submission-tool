@@ -47,7 +47,7 @@ export default defineConfig(({ mode }) => {
         '/biostudies/submissions/ror/organizations' : {
           target: "https://api.ror.org",
           changeOrigin: true,
-          pathRewrite: { '^/biostudies/submissions/ror/organizations': '/v2/organizations' }
+          rewrite: (path) => path.replace('/biostudies/submissions/ror/organizations', '/v2/organizations')
         }
       }
     }
