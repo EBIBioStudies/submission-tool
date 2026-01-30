@@ -1,15 +1,26 @@
-<script setup>
-import Multiselect from "@vueform/multiselect";
-import { inject, ref } from "vue";
+<script setup lang="ts">
+import Multiselect from '@vueform/multiselect';
+import { inject, ref, Ref } from 'vue';
+import { Template } from '@/models/Template.model.ts';
+import { PageTab } from '@/models/PageTab.model.ts';
 
-const props = defineProps(['class', 'fieldType']);
-const submission = inject('submission');
-const options = ref([]);
+const props = defineProps<{
+  class?: string;
+  fieldType: Template.FieldType;
+}>();
+const submission = inject<Ref<Partial<PageTab.LocalSubmission>>>('submission');
+
+export interface Option {
+  value: string;
+  label: string;
+}
+
+const options = ref<Option[]>([]);
 
 // Centralized logic to build option list
 function buildOptions() {
-  const list = [];
-  const q = [submission.value?.section];
+  const list: Option[] = [];
+  const q = [submission!.value?.section];
 
   while (q.length) {
     const section = q.pop();
@@ -18,8 +29,8 @@ function buildOptions() {
         (a) => a.name.toLowerCase() === props.fieldType?.controlType?.field_name?.toLowerCase()
       );
       list.push({
-        value: att?.value ?? section?.accno,
-        label: att?.value ?? section?.type,
+        value: att?.value ?? section?.accno!,
+        label: att?.value ?? section?.type!,
       });
     }
     section?.subsections?.forEach((s) => q.push(s));

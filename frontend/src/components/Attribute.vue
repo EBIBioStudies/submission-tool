@@ -1,5 +1,5 @@
-<script setup>
-import { computed, getCurrentInstance, inject, ref } from 'vue';
+<script setup lang="ts">
+import { computed, getCurrentInstance, inject, Ref, ref } from 'vue';
 import Multiselect from '@vueform/multiselect';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import DatePicker from 'vue-datepicker-next';
@@ -10,28 +10,38 @@ import utils from '@/utils';
 import Reference from '@/components/Reference.vue';
 import Organisation from '@/components/Organisation.vue';
 import Publication from '@/components/Publication.vue';
+import { PageTab } from '@/models/PageTab.model.ts';
+import { Template } from '@/models/Template.model.ts';
+import { isFile } from '@/templates/templates.ts';
 
-const hasValidated = inject('hasValidated');
+const hasValidated = inject<boolean>('hasValidated');
 
-const props = defineProps({
-  'attribute': Object,
-  'fieldType': Object,
-  'parent': Object,
-  'row': Object,
-  'isTableAttribute': Boolean,
-  'isSectionAttribute': Boolean,
-});
-const emits = defineEmits(['createTag', 'deleteTag', 'deleteAttribute', 'deleteOrg', 'createOrg']);
-const attributeId = 'attribute-' + getCurrentInstance().uid;
-const thisAttribute = ref(props.attribute);
+const props = defineProps<{
+  attribute: PageTab.BuildingSection,
+  fieldType: Template.FieldType,
+  parent?: (PageTab.DetailedAttribute)[], // TODO confirm type
+  row?: PageTab.Section,
+  isTableAttribute?: boolean,
+  isSectionAttribute?: boolean,
+}>();
+const emits = defineEmits<{
+  createTag: [PageTab.Tag],
+  deleteTag: [PageTab.IndexedTag],
+  deleteAttribute: [PageTab.Attribute],
+  deleteOrg: [PageTab.Organisation],
+  createOrg: [PageTab.Organisation],
+}>();
+
+const attributeId = 'attribute-' + getCurrentInstance()!.uid;
+const thisAttribute = ref<PageTab.BuildingSection>(props.attribute);
 const curRow = ref(props.row);
-const attributeControl = ref(null);
+const attributeControl = ref<{ errors?: string[] }>();
 const thisMultiValuedAttribute = ref(
   props.parent?.map((a, i) => { // save the original index -- needed when deleting
     return { index: i, ...a };
   })?.filter(a => a.name === thisAttribute.value.name && a?.value),
 );
-const parentDisplayType = inject('parentDisplayType');
+const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
 const editDateMode = inject('readOnlyEditDateMode');
 const isManagerUser = inject('isManagerUser');
 const isPublicSubmission = inject('isPublicSubmission');
@@ -41,11 +51,13 @@ const display = computed(() => {
   return props?.fieldType?.display || parentDisplayType?.value || 'optional';
 });
 
-function isString(val) {
-  return typeof val === 'string' || val instanceof String;
+const minLength = computed(() => props?.fieldType?.controlType?.minlength || 0);
+
+function isString(val: any): val is string {
+  return val !== null && typeof val === 'string' || val instanceof String;
 }
 
-const getAttributesFromFieldType = (fieldType) => {
+const getAttributesFromFieldType = (fieldType: Template.FieldType) => {
   return (fieldType?.controlType?.values ?? []).map((val) =>
     isString(val)
       ? { name: fieldType.name, value: val }
@@ -53,18 +65,18 @@ const getAttributesFromFieldType = (fieldType) => {
   );
 };
 
-const getAttributesNotInFieldType = (fieldType, parent) => {
+const getAttributesNotInFieldType = (fieldType: Template.FieldType, parent: PageTab.Attribute[]) => {
   return parent?.filter(
     (a) =>
-      a.name.toLowerCase() === props.attribute.name.toLowerCase() &&
+      a.name.toLowerCase() === props.attribute.name?.toLowerCase() &&
       fieldType?.controlType?.values?.filter((val) => {
         const v = isString(val) ? val : val.value;
-        return v.toLowerCase() === props.attribute.name.toLowerCase();
+        return v.toLowerCase() === props.attribute.name?.toLowerCase();
       }).length === 0,
   );
 };
 
-const mergeAttributeArraysByValue = (a, b) => {
+const mergeAttributeArraysByValue = (a: PageTab.Attribute[], b: PageTab.Attribute[]) => {
   const aValues = a.map((obj) => obj.value);
   return [...(a ?? []), ...b.filter((o) => !aValues.includes(o.value))];
 };
@@ -74,24 +86,29 @@ const singleSelectValues = computed(() => {
     getAttributesFromFieldType(props.fieldType),
     getAttributesNotInFieldType(props.fieldType, props.parent),
   );
-  if (merged.length === 0) return null;
+  if (merged.length === 0) return [];
   return merged;
 });
 
-const onChangeSelect = (newValue, control) => {
+const onChangeSelect = (newValue: PageTab.DetailedAttribute, control: Multiselect) => {
   // TODO: Figure out a way to bind the selected option instead of copying the individual properties
-  const selected = control.options.find((o) => o.value === newValue);
+
+  const selected = (control.options as any[]).find((o) => o.value === newValue);
   thisAttribute.value.valqual = selected?.valqual;
 };
 
-const onCreateTag = (newTag) => {
+const isTag = (val: any): val is PageTab.Tag => {
+  return val !== null && typeof val === 'object' && 'name' in val && 'value' in val;
+};
+
+const onCreateTag = (newTag: string | PageTab.Tag) => {
   // TODO: handle valqual
-  const obj = { name: props.attribute.name, value: newTag.value ?? newTag };
+  const obj = { name: props.attribute.name!, value: isTag(newTag) ? newTag.value : newTag };
   emits('createTag', obj);
   return false; // ignore the event, it will be rendered by the parent
 };
 
-const onDeleteTag = (newTag) => {
+const onDeleteTag = (newTag: PageTab.IndexedTag) => {
   const obj = {
     name: props.fieldType?.name,
     value: newTag?.value,
@@ -101,18 +118,22 @@ const onDeleteTag = (newTag) => {
   return false; // ignore the event, it will be rendered by the parent
 };
 
-const withinThreeYears = (date) => {
+const withinThreeYears = (date: Date): boolean => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  return (
-    date < today || date > new Date(today).setFullYear(today.getFullYear() + 3)
-  );
+
+  const in3years = new Date(today);
+  in3years.setFullYear(today.getFullYear() + 3);
+
+  return date < today || date > in3years;
 };
 
 const errors = computed(() => {
-  const _errors = [];
+  const _errors: string[] = [];
+
+
   //validate text fields
-  if (thisAttribute?.value?.type?.toLowerCase() === 'file') {
+  if (isFile(thisAttribute.value)) {
     if (display.value === 'required' && (!thisAttribute?.value?.path || thisAttribute?.value?.path === '')) {
       _errors.push(`File required`);
     }
@@ -130,14 +151,14 @@ const errors = computed(() => {
       _errors.push(`Invalid ORCID value`);
     }
   } else if (display.value === 'required' && props.fieldType?.name?.toLowerCase() !== 'file' && props.fieldType?.name?.toLowerCase() !== 'link' && (!thisAttribute.value?.value || thisAttribute?.value?.value?.trim() === '')) {
-    if (!(thisMultiValuedAttribute?.value?.value?.length > 0) && props.fieldType?.name?.toLowerCase() !== 'organisation' && props.fieldType?.name?.toLowerCase() !== 'file list')
+    if (!(thisMultiValuedAttribute?.value?.length > 0) && props.fieldType?.name?.toLowerCase() !== 'organisation' && props.fieldType?.name?.toLowerCase() !== 'file list')
       _errors.push(`${thisAttribute?.value?.name} required`);
     else if (props.fieldType?.name?.toLowerCase() === 'organisation') {
       if (!(thisMultiValuedAttribute?.value?.length > 0)) {
         _errors.push(`${thisAttribute?.value?.name} required`);
       }
     } else if (props.fieldType?.name?.toLowerCase() === 'file list') {
-      if (!(thisAttribute?.value?.path?.length > 0))
+      if (!(((thisAttribute?.value)?.path?.length || 0) > 0))
         _errors.push(`${thisAttribute?.value?.name} required`);
     }
   } else if (display.value === 'required' && props.fieldType?.name?.toLowerCase() === 'file' && !thisAttribute?.value?.path) {
@@ -152,16 +173,19 @@ const errors = computed(() => {
       _errors.push(`${thisAttribute?.value?.name} is not valid`);
     }
   }
-  if (props.fieldType?.controlType?.minlength > (`${thisAttribute?.value?.value}`.trim()?.length ?? 0)) {
-    _errors.push(`Please enter at least ${props.fieldType?.controlType?.minlength} characters. `);
+  if (minLength.value > (`${thisAttribute?.value?.value}`.trim()?.length ?? 0)) {
+    _errors.push(`Please enter at least ${minLength.value} characters. `);
   }
-  if (attributeControl?.value) {
-    _errors.push(attributeControl?.value?.errors);
+  if (attributeControl?.value?.errors) {
+    _errors.push(...attributeControl?.value?.errors);
   }
   return _errors.length ? _errors.join('. ').trim() : null;
 });
 
-defineExpose({ errors, attributeId });
+
+const expose = { errors, attributeId };
+export type AttributeExpose = typeof expose;
+defineExpose<AttributeExpose>(expose);
 
 
 const showHelp = () => {
@@ -169,7 +193,7 @@ const showHelp = () => {
     `<p>${props.fieldType?.helpContextual?.description}</p>` +
     (!props.fieldType?.helpContextual?.examples ? '' :
       `<p><h6>Examples:</h6><i>${props.fieldType?.helpContextual?.examples?.join('<p> </p>')}</i></p>`),
-    { isLarge: true, showCancel: false, level:'primary' });
+    { isLarge: true, showCancel: false, level: 'primary' });
 };
 
 </script>
@@ -191,7 +215,7 @@ const showHelp = () => {
       ></font-awesome-icon>
       <span class="text-muted" v-if="fieldType?.display"><span class="attribute-name">{{ fieldType.name }}</span>
         <span class="text-danger"
-              v-if="fieldType?.display==='required' || fieldType?.controlType?.minlength >0">*</span>
+              v-if="fieldType?.display==='required' || minLength > 0">*</span>
       </span>
       <span v-else>
       <input
@@ -219,7 +243,7 @@ const showHelp = () => {
       v-model="thisAttribute.value"
       :class="{'is-invalid':errors && hasValidated}"
       :disabled="parentDisplayType==='readonly' || display==='readonly'"
-      :required="fieldType?.display==='required' || fieldType?.controlType?.minlength >0"
+      :required="fieldType?.display==='required' || minLength > 0"
     ></textarea>
 
     <!-- select  -->
@@ -247,7 +271,7 @@ const showHelp = () => {
     <Organisation
       v-else-if="fieldType?.controlType?.name === 'org'"
       v-model="thisMultiValuedAttribute"
-      :class="{'is-invalid':errors && hasValidated}"
+      :class="{'is-invalid':!!(errors && hasValidated)}"
       :fieldType="fieldType"
       @deleteOrg="(v) => emits('deleteOrg', v)"
       @createOrg="(v) => emits('createOrg', v)"
@@ -355,7 +379,7 @@ const showHelp = () => {
       :class="{'is-invalid':errors && hasValidated, 'form-control':isTableAttribute}"
       :placeholder="fieldType?.controlType?.placeholder"
       v-model="thisAttribute.value"
-      :required="fieldType?.display==='required' || fieldType?.controlType?.minlength >0"
+      :required="fieldType?.display==='required' || minLength > 0"
       :disabled="parentDisplayType==='readonly' || display==='readonly'"
     />
 
@@ -381,7 +405,7 @@ const showHelp = () => {
       :disabled="false"
       :placeholder="fieldType?.controlType?.placeholder"
       v-model="thisAttribute.value"
-      :required="fieldType?.display==='required' || fieldType?.controlType?.minlength >0"
+      :required="fieldType?.display==='required' || minLength > 0 "
     />
 
 
@@ -397,7 +421,7 @@ const showHelp = () => {
       :disabled="parentDisplayType==='readonly' || display==='readonly'"
       :placeholder="fieldType?.controlType?.placeholder"
       v-model="thisAttribute.value"
-      :required="fieldType?.display==='required' || fieldType?.controlType?.minlength >0"
+      :required="fieldType?.display==='required' || minLength > 0"
     />
 
 
@@ -410,7 +434,7 @@ const showHelp = () => {
         class="icon fa-sm"
         role="button"
         icon="fa-trash"
-        @click="emits('deleteAttribute', attribute)"
+        @click="emits('deleteAttribute', attribute as PageTab.DetailedAttribute)"
       ></font-awesome-icon>
     </div>
   </div>

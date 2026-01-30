@@ -1,4 +1,6 @@
-function cleanTopLevelAttributes(section) {
+import { PageTab } from '@/models/PageTab.model.ts';
+
+function cleanTopLevelAttributes(section: PageTab.Section) {
   if (Array.isArray(section.attributes)) {
     section.attributes = section.attributes.filter(attr => {
       return !(
@@ -16,9 +18,9 @@ function cleanTopLevelAttributes(section) {
   return section;
 }
 
-function cleanSubsectionAttributes(section) {
+function cleanSubsectionAttributes(section: PageTab.Section) {
   if (Array.isArray(section.subsections)) {
-    section.subsections.forEach(sub => {
+    section.subsections?.forEach(sub => {
       if (Array.isArray(sub.attributes)) {
         sub.attributes = sub.attributes.filter(attr => {
           return !(
@@ -38,16 +40,15 @@ function cleanSubsectionAttributes(section) {
   return section;
 }
 
-function groupSubsections(section) {
+function groupSubsections(section: PageTab.Section) {
   if (!Array.isArray(section.subsections)) return section;
 
-  const typeToGroup = new Map();
-  section.subsections.forEach((sub, idx) => {
+  const typeToGroup = new Map<string, {index: number, list: PageTab.Section[]}>();
+
+  section.subsections?.forEach((sub, idx) => {
     const type = sub.type || sub.name || '__unknown__';
-    if (!typeToGroup.has(type)) {
-      typeToGroup.set(type, { index: idx, list: [] });
-    }
-    typeToGroup.get(type).list.push(sub);
+    if (!typeToGroup.has(type)) typeToGroup.set(type, { index: idx, list: [] });
+    typeToGroup.get(type)!.list.push(sub);
   });
 
   section.subsections = Array.from(typeToGroup.entries())
@@ -57,9 +58,9 @@ function groupSubsections(section) {
   return section;
 }
 
-function cleanStudyComponentAssociations(section) {
+function cleanStudyComponentAssociations(section: PageTab.Section) {
   if (Array.isArray(section.subsections)) {
-    section.subsections.forEach(sub => {
+    section.subsections?.forEach(sub => {
       if (sub.type === 'Study Component' && Array.isArray(sub.subsections)) {
         sub.subsections.forEach(nested => {
           if (nested.type === 'Associations' && Array.isArray(nested.attributes)) {
@@ -83,7 +84,7 @@ function cleanStudyComponentAssociations(section) {
   return section;
 }
 
-export function cleanAndReorderSubsections(section) {
+export function cleanAndReorderSubsections(section: PageTab.Section) {
   if (!section || typeof section !== 'object') return section;
 
   try {

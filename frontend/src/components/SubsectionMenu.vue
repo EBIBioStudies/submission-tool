@@ -1,10 +1,16 @@
-<script setup>
+<script setup lang="ts">
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
-import {inject} from "vue";
+import {inject, Ref} from "vue";
+import { Template } from '@/models/Template.model.ts';
 
-const props = defineProps(['sectionType'])
-const emits = defineEmits(['newTable', 'newSection'])
-const parentDisplayType = inject('parentDisplayType')
+const props = defineProps<{
+  sectionType?: Template.SectionType
+}>()
+const emits = defineEmits<{
+  newTable: [table: Template.TableType | undefined],
+  newSection: [section: Template.SectionType | undefined]
+}>()
+const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType')
 
 </script>
 
@@ -30,24 +36,24 @@ const parentDisplayType = inject('parentDisplayType')
 <!--      <li>-->
 <!--        <hr class="dropdown-divider">-->
 <!--      </li>-->
-      <li><a class="dropdown-item btn" @click="$emit('newTable', null)">
+      <li><a class="dropdown-item btn" @click="emits('newTable', undefined)">
         <font-awesome-icon class="icon fa-fw" icon="fa-table"></font-awesome-icon>
         Table</a>
       </li>
-      <li v-for="(type,i) in props?.sectionType?.tableTypes">
-        <a class="dropdown-item btn" @click="$emit('newTable', type)">
+      <li v-for="(type) in props?.sectionType?.tableTypes">
+        <a class="dropdown-item btn" @click="emits('newTable', type)">
           <font-awesome-icon class="icon fa-fw" :icon="type.icon && type.icon!=='' ? type.icon : 'fa-table'"></font-awesome-icon>
           {{ type.name }}</a>
       </li>
       <li>
         <hr class="dropdown-divider">
       </li>
-      <li><a class="dropdown-item btn" @click="$emit('newSection')">
+      <li><a class="dropdown-item btn" @click="emits('newSection', undefined)">
         <font-awesome-icon class="icon fa-fw" icon="fa-caret-right"></font-awesome-icon>
         Subsection</a>
       </li>
-      <li v-for="(type,i) in props?.sectionType?.sectionTypes">
-        <a class="dropdown-item btn" @click="$emit('newSection', type)">
+      <li v-for="(type) in props?.sectionType?.sectionTypes">
+        <a class="dropdown-item btn" @click="emits('newSection', type)">
           <font-awesome-icon class="icon fa-fw" :icon="type.icon && type.icon!=='' ? type.icon : 'fa-caret-right'"></font-awesome-icon>
           {{ type.name }}</a>
       </li>

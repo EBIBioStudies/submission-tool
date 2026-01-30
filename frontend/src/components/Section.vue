@@ -1,51 +1,68 @@
-<script setup>
+<script setup lang="ts">
 import {
   computed,
+  ComputedRef,
   getCurrentInstance,
-  nextTick,
-  ref,
   inject,
-  provide,
+  nextTick,
   onMounted,
-  onUnmounted,
+  Ref,
+  ref,
+  ComponentPublicInstance,
 } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Attributes from '@/components/Attributes.vue';
 import SectionTable from '@/components/SectionTable.vue';
 import SubsectionMenu from '@/components/SubsectionMenu.vue';
 import { fillTemplate } from '@/templates/templates';
-import utils from '@/utils';
+import utils, { isElement, isString } from '@/utils';
 import SubSectionTable from '@/components/SubSectionTable.vue';
 import EditableLabel from '@/components/EditableLabel.vue';
 import Authors from '@/components/Authors.vue';
 import { Tooltip } from 'bootstrap';
+import { PageTab } from '@/models/PageTab.model.ts';
+import { Template } from '@/models/Template.model.ts';
+import Attribute from '@/components/Attribute.vue';
+import { ControlError } from '@/models/Error.model.ts';
 
-const props = defineProps([
-  'section',
-  'sectionType',
-  'depth',
-  'sectionTypeMap',
-]);
-const emits = defineEmits(['delete', 'addTable']);
+const props = defineProps<{
+  section: PageTab.Section;
+  sectionType: Template.TableType | string;
+  depth: number;
+  sectionTypeMap?: Map<string, Template.TableType> ;
+}>();
+
+const emits = defineEmits<{
+  delete: [msg?: { index: number }];
+  addTable: [msg: { index: number, section: PageTab.Section, instance: Template.SectionType }];
+}>();
 
 const componentInstance = getCurrentInstance();
 
-const attributesComponent = ref(null);
+const attributesComponent = ref<ComponentPublicInstance<typeof Attribute>>();
 
-const subsectionsRef = ref(null);
-const sectionTablesRef = ref(null);
-const sectionFilesRef = ref(null);
-const sectionLinksRef = ref(null);
-const parentDisplayType = inject('parentDisplayType');
-const isPublicSubmission = inject('isPublicSubmission');
-const collectionName = inject('collectionName');
-const errSecRefs = ref([]);
-const errSecTableRefs = ref([]);
-const errSpecialSecTableRefs = ref([]);
-const authorComponent = ref(null);
+const subsectionsRef = ref<HTMLDivElement[]>();
+const sectionTablesRef = ref<HTMLDivElement[]>();
+const sectionFilesRef = ref<ComponentPublicInstance<typeof SectionTable>>();
+const sectionLinksRef = ref<ComponentPublicInstance<typeof SectionTable>>();
+const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
+const isPublicSubmission = inject<ComputedRef<boolean>>('isPublicSubmission');
+const collectionName = inject<Ref<string>>('collectionName');
 
-const thisSection = ref(props.section);
-const deleteTag = (msg) => deleteAttribute(msg.index);
+const errSecRefs = ref<ComponentPublicInstance<typeof this>[]>();
+const errSecTableRefs = ref<ComponentPublicInstance<typeof SectionTable>[]>();
+const errSpecialSecTableRefs = ref<ComponentPublicInstance<typeof SubSectionTable>[]>();
+const authorComponent = ref<typeof Authors>();
+
+const thisSection = ref<PageTab.Section>(props.section);
+
+const sectionType = computed(() =>
+  isString(props.sectionType)
+    ? props.sectionTypeMap!.get(props.sectionType.toLowerCase())
+    : props.sectionType,
+);
+
+const deleteTag = (msg: PageTab.IndexedTag) => deleteAttribute(msg.index);
 // if (props?.sectionType?.display) {
 //   provide('parentDisplayType', props?.sectionType?.display)
 // }
@@ -56,12 +73,14 @@ const sectionsRefreshKey = ref(0);
 
 const subSectionTypeMap = props.sectionTypeMap
   ? props.sectionTypeMap
-  : new Map();
+  : new Map<string, Template.TableType>();
 
+!isString(props.sectionType) &&
 props?.sectionType?.tableTypes?.forEach((tbType) => {
   if (tbType && tbType.name)
     subSectionTypeMap.set(tbType?.name?.toLowerCase(), tbType);
 });
+
 
 onMounted(() => {
   nextTick(() => {
@@ -72,27 +91,27 @@ onMounted(() => {
       // Dispose of any existing tooltip instance first (optional)
       const instance = Tooltip.getInstance(el);
       if (instance) instance.dispose();
-      new Tooltip(el, { delay: { hide: 300 }, trigger: 'hover' });
+      new Tooltip(el, { delay: { hide: 300, show: 0 }, trigger: 'hover' });
     });
   });
 });
 
 const renderedRowSections = new Set();
-const getSectionsWithRowsAsSections = (type) => {
+const getSectionsWithRowsAsSections = (type: string): PageTab.Section[] => {
   renderedRowSections.add(type?.toLowerCase());
-  const combined = thisSection?.value?.subsections?.filter(
+  return thisSection.value.subsections?.filter(
     (s) =>
+      !Array.isArray(s) &&
       s?.type?.toLowerCase() === type.toLowerCase() &&
       subSectionTypeMap.get(type.toLowerCase())?.rowAsSection,
-  );
-  return combined;
+  ) || [];
 };
 
 const specialSectionMap = computed(() => {
-  const curMap = new Map();
-  props?.sectionType?.tableTypes?.forEach((tbType) => {
+  const curMap = new Map<string, PageTab.Section[]>();
+  sectionType.value?.tableTypes?.forEach((tbType) => {
     const combined = getSectionsWithRowsAsSections(tbType.name);
-    if (combined?.length > 0) {
+    if (combined?.length) {
       curMap.set(tbType.name, combined);
     }
   });
@@ -112,8 +131,8 @@ const specialSectionMap = computed(() => {
  */
 const updateSubSectionTypeMap = () => {
   const subsections = props.section?.subsections ?? [];
-  const sectionTypes = props.sectionType?.sectionTypes ?? [];
-  const tableTypes = props.sectionType?.tableTypes ?? [];
+  const sectionTypes = sectionType.value?.sectionTypes ?? [];
+  const tableTypes = sectionType.value?.tableTypes ?? [];
 
   const allTypes = [...sectionTypes, ...tableTypes];
 
@@ -125,7 +144,7 @@ const updateSubSectionTypeMap = () => {
         ? 'contact'
         : subsection?.type?.toLowerCase();
 
-    const type = allTypes.find((f) => f?.name?.toLowerCase() === typeName);
+    const type = allTypes.find((f) => f?.name?.toLowerCase() === typeName)!;
 
     subSectionTypeMap.set(subsection?.type?.toLowerCase(), type);
   });
@@ -137,16 +156,16 @@ const isCollapsed = ref((props?.depth ?? 0) >= 2);
 
 // children are not allowed to change properties of a parent
 // all section/attributes updates thus need to be at this level
-const addSubsection = async (aSection, i, type) => {
-  if (parentDisplayType.value === 'readonly') return;
+const addSubsection = async (aSection: PageTab.Section, _i: number, type: Template.SectionType) => {
+  if (parentDisplayType?.value === 'readonly') return;
   aSection.subsections = aSection.subsections || [];
-  const obj = {};
+  const obj = {} as PageTab.Section;
   if (type != null) fillTemplate(obj, type);
   else {
     obj.accno =
       (props.section.accno ?? Date.now()) +
       '-' +
-      (props.section.subsections.length + 1);
+      (props.section.subsections!.length + 1);
     obj.type = '';
   }
   obj.accno = String(obj.accno) + '-removable';
@@ -161,68 +180,67 @@ const addSubsection = async (aSection, i, type) => {
   // wait till the UI is updated and the focus the first attribute name
   await nextTick();
   const added = [
-    ...(componentInstance?.refs?.sectionTablesRef || []),
-    ...(componentInstance?.refs?.subsectionsRef || []),
-  ]?.pop();
-  added.scrollIntoView();
-  added.querySelector('input')?.focus();
+    ...(componentInstance?.refs?.sectionTablesRef as HTMLDivElement[] || []),
+    ...(componentInstance?.refs?.subsectionsRef as HTMLDivElement[] || []),
+  ].pop();
+
+  added?.scrollIntoView();
+  added?.querySelector('input')?.focus();
   // Expand section if collapsed
-  if (added.querySelector('.section-block')?.classList.contains('collapsed'))
-    added.querySelector('.section-title').click();
+  if (added?.querySelector('.section-block')?.classList.contains('collapsed'))
+    (added!.querySelector('.section-title') as HTMLDivElement).click();
 };
 
-const findLastInput = (item) => {
-  let added =
-    item && typeof item.querySelector === 'function' ? item : added?.$el;
+const findLastInput = (item: HTMLElement | ComponentPublicInstance): HTMLInputElement => {
+  let added = isElement(item) ? item : item.$el;
   return added?.querySelector('input');
   // const lastInput = inputs && inputs.length > 1 ? inputs[inputs.length - 2] : inputs[0];
 };
 
-const findAddedSection = (type) => {
+const findAddedSection = (type: string) => {
   let added;
-  if (type === 'Link') added = componentInstance?.refs?.sectionLinksRef;
-  else if (type === 'File') added = componentInstance?.refs?.sectionFilesRef;
-  else if (type == 'Contact') added = componentInstance?.refs?.authorComponent;
-  if (added) {
-    return added.$el;
-  }
+  if (type === 'Link') added = sectionLinksRef.value;
+  else if (type === 'File') added = sectionFilesRef.value;
+  else if (type == 'Contact') added = authorComponent.value;
+  if (added) return added.$el;
+
   if (type)
     added = [
-      ...(componentInstance?.refs?.sectionTablesRef || []),
-      ...(componentInstance?.refs?.subsectionsRef || []),
+      ...(sectionTablesRef.value || []),
+      ...(subsectionsRef.value || []),
     ]
       ?.filter((item) => item?.innerText?.includes(type))
       ?.pop();
   else
     added = [
-      ...(componentInstance?.refs?.sectionTablesRef || []),
-      ...(componentInstance?.refs?.subsectionsRef || []),
-    ]?.pop();
+      ...(sectionTablesRef.value || []),
+      ...(subsectionsRef.value || []),
+    ].pop();
 
   return added;
 };
 
-const addTable = async (aSection, i, type) => {
+const addTable = async (aSection: PageTab.BuildingSection, _i: number, type: Template.SectionType) => {
   // if (type?.name?.toLowerCase()==='contact')
   //   authorComponent.add
   //   return
-  if (parentDisplayType.value === 'readonly') return;
+  if (parentDisplayType?.value === 'readonly') return;
   aSection.subsections = aSection.subsections || [];
-  let obj = {};
+  let obj = {} as PageTab.Section;
   if (type != null) fillTemplate(obj, type);
   else {
     obj.accno =
       (props.section.accno ?? Date.now()) +
       '-' +
-      (props.section.subsections.length + 1);
+      (props.section.subsections!.length + 1);
     obj.type = 'Table';
     obj.attributes = [{ name: 'Column 1', value: '' }];
   }
   obj.accno = String(obj.accno) + '-removable';
   if (type?.name === 'Link')
-    aSection.links ? aSection.links.push(obj) : (aSection.links = [obj]);
+    aSection.links ? aSection.links.push(obj as PageTab.Link) : (aSection.links = [obj as PageTab.Link]);
   else if (type?.name === 'File')
-    aSection.files ? aSection.files.push(obj) : (aSection.files = [obj]);
+    aSection.files ? aSection.files.push(obj as PageTab.File) : (aSection.files = [obj as PageTab.File]);
   else {
     if (type?.name === 'Contact') {
       obj.type = 'Author';
@@ -232,7 +250,7 @@ const addTable = async (aSection, i, type) => {
         }
       });
     }
-    type ? aSection.subsections.push(obj) : aSection.subsections.push([obj]);
+    type ? aSection.subsections.push(obj) : aSection.subsections.push(obj as PageTab.Section);
   }
 
   // obj = (type?.name !== 'Publication' && type?.name !== 'Funding') ? [obj] : obj;
@@ -252,8 +270,8 @@ const addTable = async (aSection, i, type) => {
     added?.querySelector('.section-title').click();
 };
 
-const deleteSubSection = async (someSubSections, index) => {
-  if (parentDisplayType.value === 'readonly') return;
+const deleteSubSection = async (someSubSections: PageTab.BuildingSection[], index: number) => {
+  if (parentDisplayType?.value === 'readonly') return;
 
   if (
     !(await utils.confirm(
@@ -265,7 +283,7 @@ const deleteSubSection = async (someSubSections, index) => {
     return;
 
   const subsectionTypeMapKey = someSubSections[index].type?.toLowerCase();
-  thisSection.value.subsections = someSubSections.filter((v, i) => i !== index);
+  thisSection.value.subsections = someSubSections.filter((_v, i) => i !== index);
   thisSection.value.subsections = thisSection.value.subsections.filter(
     (sub) => !(Array.isArray(sub) && sub.length === 0),
   );
@@ -286,28 +304,26 @@ const refreshSection = async () => {
 };
 
 const addAttribute = async () => {
-  if (parentDisplayType.value === 'readonly') return;
+  if (parentDisplayType?.value === 'readonly') return;
   thisSection.value.attributes = thisSection.value.attributes || [];
   thisSection.value.attributes.push({ name: '', value: '' });
   attributesRefreshKey.value += 1;
   await nextTick();
   const added = [
-    ...componentInstance.refs.attributesComponent.$.ctx.$el.querySelectorAll(
-      '.attribute-name',
-    ),
+    ...attributesComponent.value!.$el.querySelectorAll('.attribute-name'), // TODO check is valid
   ].pop();
   added.scrollIntoView();
   added.focus();
 };
 
-const deleteAttribute = async (index) => {
-  if (parentDisplayType.value === 'readonly') return;
-  thisSection.value.attributes.splice(index, 1);
+const deleteAttribute = async (index: number) => {
+  if (parentDisplayType!.value === 'readonly') return;
+  thisSection.value.attributes?.splice(index, 1);
   attributesRefreshKey.value += 1;
 };
 
-const createTag = (msg) => {
-  if (parentDisplayType.value === 'readonly') return;
+const createTag = (msg: PageTab.Tag) => {
+  if (parentDisplayType!.value === 'readonly') return;
   thisSection.value.attributes = thisSection.value.attributes || [];
   // insert next to the last attribute with the same name
   // just to keep the structure cleaner
@@ -329,27 +345,30 @@ const createTag = (msg) => {
   attributesRefreshKey.value += 1;
 };
 
-const rowsReordered = (event, rows) => {
-  if (parentDisplayType.value === 'readonly') return;
+const rowsReordered = (event: {
+  newIndex: number;
+  oldIndex: number;
+}, rows: PageTab.BuildingSection[]) => {
+  if (parentDisplayType?.value === 'readonly') return;
   rows.splice(event.newIndex, 0, rows.splice(event.oldIndex, 1)[0]);
   sectionsRefreshKey.value += 1;
 };
 
-const canUpdateColumnName = (subsection) => {
+const canUpdateColumnName = (subsection: PageTab.BuildingSection | PageTab.BuildingSection[]) => {
   const subsectionType = Array.isArray(subsection)
     ? subsection[0]?.type
     : subsection?.type;
 
   return (
-    parentDisplayType.value !== 'readonly' ||
+    parentDisplayType?.value !== 'readonly' ||
     (
-      subsectionType.toLowerCase() == 'publication' &&
-      collectionName.value == 'ArrayExpress'
+      subsectionType?.toLowerCase() == 'publication' &&
+      collectionName?.value == 'ArrayExpress'
     )
   );
 };
 
-const updateColumnName = (subsection, update) => {
+const updateColumnName = (subsection: PageTab.BuildingSection[], update: { old: string; new: string; }) => {
 
   if (!canUpdateColumnName(subsection)) {
     return;
@@ -357,12 +376,12 @@ const updateColumnName = (subsection, update) => {
 
   subsection.forEach(
     (row) =>
-      (row.attributes.find((att) => att.name === update.old).name = update.new),
+      row.attributes!.find((att) => att.name === update.old)!.name = update.new,
   );
   sectionsRefreshKey.value += 1;
 };
 
-const canRender = (sec) => {
+const canRender = (sec: PageTab.Section): boolean => {
   return (
     ['author', 'organisation', 'organization'].indexOf(
       sec?.type?.toLowerCase(),
@@ -401,8 +420,12 @@ const errors = computed(() => {
 //   console.log(...args);
 //   return '';
 // };
+export interface SectionExposed {
+  errors: ComputedRef<ControlError[]>;
+  thisSection: Ref<PageTab.Section>;
+}
 
-defineExpose({ errors, thisSection });
+defineExpose<SectionExposed>({ errors, thisSection });
 </script>
 
 <template>
@@ -418,7 +441,7 @@ defineExpose({ errors, thisSection });
         :sectionType="
           sectionType?.tableTypes?.find(
             (s) => s.name.toLowerCase() === 'contact',
-          )
+          )!
         "
         ref="authorComponent"
       />
@@ -447,9 +470,9 @@ defineExpose({ errors, thisSection });
           data-bs-html="true"
           :data-bs-title="sectionType?.description"
         ><font-awesome-icon
-          v-if="props.sectionType?.icon"
+          v-if="sectionType?.icon"
           class="icon"
-          :icon="props.sectionType?.icon"
+          :icon="sectionType?.icon"
         />{{ section.type }}</span
         >
         <span v-else>
@@ -469,7 +492,7 @@ defineExpose({ errors, thisSection });
             thisSection?.accno?.includes('-removable')) &&
           parentDisplayType !== 'readonly' &&
           sectionType?.name !== 'Study' &&
-          !isPublicSubmission?.value
+          !isPublicSubmission
         "
         class="mt-2 btn btn-sm btn-delete"
         role="button"
@@ -496,13 +519,10 @@ defineExpose({ errors, thisSection });
           <Attributes
             :key="attributesRefreshKey"
             ref="attributesComponent"
-            :attributes="section.attributes"
-            :fieldTypes="sectionType?.fieldTypes || sectionType?.columnTypes"
+            :attributes="section.attributes!"
+            :fieldTypes="sectionType?.fieldTypes || sectionType?.columnTypes!"
             :isSectionAttribute="
-              subSectionTypeMap.get(sectionType?.name?.toLowerCase())
-                ?.rowAsSection == false
-                ? true
-                : false
+              subSectionTypeMap.get(sectionType?.name?.toLowerCase() || '')?.rowAsSection == false
             "
             @deleteAttribute="deleteAttribute"
             @createTag="createTag"
@@ -513,15 +533,15 @@ defineExpose({ errors, thisSection });
           <div class="p-0" :key="sectionsRefreshKey">
             <!-- Files -->
             <SectionTable
-              v-if="section.files && section.files?.length > 0"
-              :rows="section.files"
+              v-if="section.files && Array.isArray(section.files)"
+              :rows="section.files as PageTab.BuildingSection[]"
               :depth="props.depth + 1"
-              :sectionType="subSectionTypeMap.get('file')"
+              :sectionType="subSectionTypeMap.get('file')!"
               sectionSubType="File"
-              @rowsReordered="(e) => rowsReordered(e, section.files)"
-              @columnUpdated="(msg) => updateColumnName(section.files, msg)"
-              @columnsReordered="(msg) => (sectionsRefreshKey += 1)"
-              @delete="deleteSubSection(section.files, 0)"
+              @rowsReordered="(e) => rowsReordered(e, section.files as PageTab.BuildingSection[])"
+              @columnUpdated="(msg) => updateColumnName(section.files as PageTab.BuildingSection[], msg)"
+              @columnsReordered="() => (sectionsRefreshKey += 1)"
+              @delete="deleteSubSection(section.files as PageTab.BuildingSection[], 0)"
               @refreshSection="refreshSection()"
               ref="sectionFilesRef"
             />
@@ -529,14 +549,14 @@ defineExpose({ errors, thisSection });
             <!-- Links -->
             <SectionTable
               v-if="section.links && section.links?.length > 0"
-              :rows="section.links"
+              :rows="section.links as PageTab.BuildingSection[]"
               :depth="props.depth + 1"
-              :sectionType="subSectionTypeMap.get('link')"
+              :sectionType="subSectionTypeMap.get('link')!"
               sectionSubType="Link"
-              @rowsReordered="(e) => rowsReordered(e, section.links)"
-              @columnUpdated="(msg) => updateColumnName(section.links, msg)"
-              @columnsReordered="(msg) => (sectionsRefreshKey += 1)"
-              @delete="deleteSubSection(section.links, 0)"
+              @rowsReordered="(e) => rowsReordered(e, section.links as PageTab.BuildingSection[])"
+              @columnUpdated="(msg) => updateColumnName(section.links as PageTab.BuildingSection[], msg)"
+              @columnsReordered="() => (sectionsRefreshKey += 1)"
+              @delete="deleteSubSection(section.links as PageTab.BuildingSection[], 0)"
               @refreshSection="refreshSection()"
               ref="sectionLinksRef"
             />
@@ -550,13 +570,13 @@ defineExpose({ errors, thisSection });
                 v-if="Array.isArray(item[1]) && item[1]?.length > 0"
                 :rows="item[1]"
                 :depth="props.depth + 1"
-                :sectionType="subSectionTypeMap.get(item[0].toLowerCase())"
+                :sectionType="subSectionTypeMap.get(item[0].toLowerCase())!"
                 :sectionSubType="item[0]"
                 :parent="section"
                 @rowsReordered="(e) => rowsReordered(e, item[1])"
                 @columnUpdated="(msg) => updateColumnName(item[1], msg)"
-                @columnsReordered="(msg) => (sectionsRefreshKey += 1)"
-                @delete="deleteSubSection(section.subsections, index)"
+                @columnsReordered="() => (sectionsRefreshKey += 1)"
+                @delete="deleteSubSection(section.subsections as PageTab.BuildingSection[], index)"
                 @refreshSection="refreshSection()"
                 ref="errSpecialSecTableRefs"
               />
@@ -582,8 +602,8 @@ defineExpose({ errors, thisSection });
                 "
                 :depth="props.depth + 1"
                 :sectionTypeMap="subSectionTypeMap"
-                @delete="deleteSubSection(section.subsections, i)"
-                @addTable="(msg) => addTable(msg.section, msg.instance)"
+                @delete="deleteSubSection(section.subsections as PageTab.BuildingSection[], i)"
+                @addTable="(msg) => addTable(msg.section, i, msg.instance)"
                 ref="errSecRefs"
               />
 
@@ -592,26 +612,23 @@ defineExpose({ errors, thisSection });
                 v-if="Array.isArray(subsection) && subsection?.length > 0"
                 :rows="subsection"
                 :depth="props.depth + 1"
-                :sectionType="
-                  subSectionTypeMap.get(subsection[0]?.type?.toLowerCase())
-                "
+                :sectionType="subSectionTypeMap.get(subsection[0]?.type?.toLowerCase())!"
                 :sectionSubType="
-                  subSectionTypeMap.get(subsection[0]?.type?.toLowerCase())
-                    ?.name
+                  subSectionTypeMap.get(subsection[0]?.type?.toLowerCase())?.name
                 "
                 :parent="section"
                 @rowsReordered="(e) => rowsReordered(e, subsection)"
                 @columnUpdated="(msg) => updateColumnName(subsection, msg)"
-                @columnsReordered="(msg) => (sectionsRefreshKey += 1)"
-                @delete="deleteSubSection(section.subsections, i)"
+                @columnsReordered="() => (sectionsRefreshKey += 1)"
+                @delete="deleteSubSection(section.subsections as PageTab.BuildingSection[], i)"
                 @refreshSection="refreshSection()"
                 ref="errSecTableRefs"
               />
             </div>
             <SubsectionMenu
               :sectionType="sectionType"
-              @newSection="(type) => addSubsection(section, 1, type)"
-              @newTable="(type) => addTable(section, 1, type)"
+              @newSection="(type: Template.SectionType) => addSubsection(section, 1, type)"
+              @newTable="(type: Template.SectionType) => addTable(section, 1, type)"
             ></SubsectionMenu>
 
             <!-- Subsections end -->

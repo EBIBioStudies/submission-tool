@@ -1,105 +1,105 @@
 {
-  "name":"MicrobioRaman",
-  "title":"MicrobioRaman",
-  "description":"Microbiological Raman Spectroscopy Data",
-  "sectionType":{
-    "display":"required",
-    "displayAnnotations":false,
-    "tableGroups":[
+  "name": "MicrobioRaman",
+  "title": "MicrobioRaman",
+  "description": "Microbiological Raman Spectroscopy Data",
+  "sectionType": {
+    "display": "required",
+    "displayAnnotations": false,
+    "tableGroups": [
       []
     ],
-    "name":"Study",
-    "fieldTypes":[
+    "name": "Study",
+    "fieldTypes": [
       {
-        "name":"Title",
-        "icon":"fa-heading",
-        "controlType":{
-          "name":"largetext",
-          "placeholder":"Project title"
+        "name": "Title",
+        "icon": "fa-heading",
+        "controlType": {
+          "name": "largetext",
+          "placeholder": "Project title"
         },
-        "display":"required",
-        "asyncValueValidatorName":"forStudyTitle"
+        "display": "required",
+        "asyncValueValidatorName": "forStudyTitle"
       },
       {
-        "name":"ReleaseDate",
-        "title":"Release Date",
-        "icon":"fa-calendar-alt",
-        "display":"required",
-        "controlType":{
-          "name":"date",
-          "allowPast":false
+        "name": "ReleaseDate",
+        "title": "Release Date",
+        "icon": "fa-calendar-alt",
+        "display": "required",
+        "controlType": {
+          "name": "date",
+          "allowPast": false
         },
-        "helpContextual":{
-          "description":"Desired release date (GMT), for example, to ensure compliance with a publication embargo"
+        "helpContextual": {
+          "description": "Desired release date (GMT), for example, to ensure compliance with a publication embargo"
         }
       },
       {
-        "name":"Description",
-        "icon":"fa-comment",
-        "display":"desirable",
-        "controlType":{
-          "name":"largetext",
-          "placeholder":"Brief description of the project"
+        "name": "Description",
+        "icon": "fa-comment",
+        "display": "desirable",
+        "controlType": {
+          "name": "largetext",
+          "placeholder": "Brief description of the project"
         }
       },
       {
-        "name":"Software",
-        "icon":"fa-briefcase",
-        "controlType":{
-          "name":"text",
-          "placeholder":"If a commercial Raman system was used for measurement, the name and version of software"
+        "name": "Software",
+        "icon": "fa-briefcase",
+        "controlType": {
+          "name": "text",
+          "placeholder": "If a commercial Raman system was used for measurement, the name and version of software"
         },
-        "display":"optional"
+        "display": "optional"
       }
     ],
-    "tableTypes":[
+    "tableTypes": [
       {
-        "name":"Contact",
-        "icon":"fa-address-card",
-        "description":"Add the contact details for the authors involved in the study.",
-        "uniqueCols":true,
-        "display":"required",
-        "rowAsSection":true,
-        "columnTypes":[
+        "name": "Contact",
+        "icon": "fa-address-card",
+        "description": "Add the contact details for the authors involved in the study.",
+        "uniqueCols": true,
+        "display": "required",
+        "rowAsSection": true,
+        "columnTypes": [
           {
-            "name":"Name",
-            "controlType":{
-              "name":"text"
+            "name": "Name",
+            "controlType": {
+              "name": "text"
             },
-            "display":"required",
-            "required":true
+            "display": "required",
+            "required": true
           },
           {
-            "name":"Organisation",
-            "helpText":"Add org",
-            "helpLink":"help#new-item-dropdown",
-            "controlType":{
-              "name":"org",
-              "multiple":true
+            "name": "Organisation",
+            "helpText": "Add org",
+            "helpLink": "help#new-item-dropdown",
+            "controlType": {
+              "name": "org",
+              "multiple": true
             },
-            "display":"required",
-            "required":true
+            "display": "required",
+            "required": true
           },
           {
-            "name":"E-mail",
-            "controlType":{
-              "name":"text"
+            "name": "E-mail",
+            "controlType": {
+              "name": "text"
             },
-            "display":"required",
-            "required":true
+            "display": "required",
+            "required": true
           },
           {
-            "name":"ORCID",
-            "controlType":{
-              "name":"orcid"
+            "name": "ORCID",
+            "controlType": {
+              "name": "orcid"
             },
-            "display":"desirable"
+            "display": "desirable"
           },
           {
-            "name":"Role",
-            "controlType":{
-              "name":"select",
-              "values":[
+            "name": "Role",
+            "controlType": {
+              "name": "select",
+              "values": [
                 "corresponding author",
                 "data acquisition",
                 "data analyst",
@@ -111,237 +111,237 @@
                 "submitter"
               ]
             },
-            "display":"desirable"
+            "display": "desirable"
           },
           {
-            "name":"Address",
-            "controlType":{
-              "name":"text"
+            "name": "Address",
+            "controlType": {
+              "name": "text"
             },
-            "display":"optional"
+            "display": "optional"
           },
           {
-            "name":"Department",
-            "controlType":{
-              "name":"text"
+            "name": "Department",
+            "controlType": {
+              "name": "text"
             },
-            "display":"optional"
+            "display": "optional"
           },
           {
-            "name":"Funding",
-            "controlType":{
-              "name":"text"
+            "name": "Funding",
+            "controlType": {
+              "name": "text"
             },
-            "display":"optional"
+            "display": "optional"
           }
         ]
       },
       {
-        "name":"Publication",
-        "description":"Add the bibliography relevant to the study. Autofill is available when searching by <a target=\"_blank\" href=\"https://www.ncbi.nlm.nih.gov/pubmed/\">PubMed</a> identifier. For other IDs, you may use <a target=\"_blank\" href=\"https://www.ncbi.nlm.nih.gov/pmc/pmctopmid/#converter\">this converter</a>.",
-        "icon":"fa-book",
-        "display":"desirable",
-        "uniqueCols":true,
+        "name": "Publication",
+        "description": "Add the bibliography relevant to the study. Autofill is available when searching by <a target=\"_blank\" href=\"https://www.ncbi.nlm.nih.gov/pubmed/\">PubMed</a> identifier. For other IDs, you may use <a target=\"_blank\" href=\"https://www.ncbi.nlm.nih.gov/pmc/pmctopmid/#converter\">this converter</a>.",
+        "icon": "fa-book",
+        "display": "desirable",
+        "uniqueCols": true,
         "rowAsSection": false,
-        "columnTypes":[
+        "columnTypes": [
           {
-            "name":"PMID",
-            "controlType":{
-              "name":"pubmedid"
+            "name": "PMID",
+            "controlType": {
+              "name": "pubmedid"
             },
-            "display":"desirable"
+            "display": "desirable"
           },
           {
-            "name":"Authors",
-            "controlType":{
-              "name":"text"
+            "name": "Authors",
+            "controlType": {
+              "name": "text"
             },
-            "display":"required"
+            "display": "required"
           },
           {
-            "name":"Title",
-            "controlType":{
-              "name":"text"
+            "name": "Title",
+            "controlType": {
+              "name": "text"
             },
-            "display":"required"
+            "display": "required"
           },
           {
-            "name":"Year",
-            "controlType":{
-              "name":"text"
+            "name": "Year",
+            "controlType": {
+              "name": "text"
             },
-            "display":"required"
+            "display": "required"
           },
           {
-            "name":"Volume",
-            "controlType":{
-              "name":"text"
+            "name": "Volume",
+            "controlType": {
+              "name": "text"
             },
-            "display":"desirable"
+            "display": "desirable"
           },
           {
-            "name":"Issue",
-            "controlType":{
-              "name":"text"
+            "name": "Issue",
+            "controlType": {
+              "name": "text"
             },
-            "display":"desirable"
+            "display": "desirable"
           },
           {
-            "name":"Type",
-            "controlType":{
-              "name":"text"
+            "name": "Type",
+            "controlType": {
+              "name": "text"
             },
-            "display":"optional"
+            "display": "optional"
           },
           {
-            "name":"Issn",
-            "controlType":{
-              "name":"text"
+            "name": "Issn",
+            "controlType": {
+              "name": "text"
             },
-            "display":"optional"
+            "display": "optional"
           },
           {
-            "name":"DOI",
-            "controlType":{
-              "name":"text"
+            "name": "DOI",
+            "controlType": {
+              "name": "text"
             },
-            "display":"optional"
+            "display": "optional"
           }
         ]
       },
       {
-        "name":"File",
-        "title":"Raw Data File",
-        "icon":"fa-wave-square",
-        "rowAsSection":true,
-        "uniqueCols":true,
-        "description":"Unprocessed raw Raman data (composed of wavenumbers and corresponding Raman intensities) and data labels; format as TSV, CSV or other universal file format",
-        "display":"required",
-        "columnTypes":[
+        "name": "File",
+        "title": "Raw Data File",
+        "icon": "fa-wave-square",
+        "rowAsSection": true,
+        "uniqueCols": true,
+        "description": "Unprocessed raw Raman data (composed of wavenumbers and corresponding Raman intensities) and data labels; format as TSV, CSV or other universal file format",
+        "display": "required",
+        "columnTypes": [
           {
-            "name":"File",
-            "controlType":{
-              "name":"file",
-              "allowFolders":false
+            "name": "File",
+            "controlType": {
+              "name": "file",
+              "allowFolders": false
             },
-            "display":"required"
+            "display": "required"
           },
           {
-            "name":"Type",
-            "controlType":{
-              "name":"text",
-              "defaultValue":"Raw spectrum"
+            "name": "Type",
+            "controlType": {
+              "name": "text",
+              "defaultValue": "Raw spectrum"
             },
-            "display":"required"
+            "display": "required"
           }
         ]
       }
     ],
-    "sectionTypes":[
+    "sectionTypes": [
       {
-        "display":"required",
-        "displayAnnotations":false,
-        "name":"Sample",
-        "sectionExample":"The biological context and treatment",
-        "fieldTypes":[
+        "display": "required",
+        "displayAnnotations": false,
+        "name": "Sample",
+        "sectionExample": "The biological context and treatment",
+        "fieldTypes": [
           {
-            "name":"Name of cell or compound",
-            "icon":"fa-file-invoice",
-            "controlType":{
-              "name":"text",
-              "placeholder":"Sample names"
+            "name": "Name of cell or compound",
+            "icon": "fa-file-invoice",
+            "controlType": {
+              "name": "text",
+              "placeholder": "Sample names"
             },
-            "display":"required"
+            "display": "required"
           },
           {
-            "name":"Source",
-            "icon":"fa-vial",
-            "controlType":{
-              "name":"text",
-              "placeholder":"Source of a sample, such as a strain collection, a chemical supplier, or the environment or tissue from which a sample was obtained"
+            "name": "Source",
+            "icon": "fa-vial",
+            "controlType": {
+              "name": "text",
+              "placeholder": "Source of a sample, such as a strain collection, a chemical supplier, or the environment or tissue from which a sample was obtained"
             },
-            "display":"required"
+            "display": "required"
           },
           {
-            "name":"Composition",
-            "icon":"fa-cogs",
-            "controlType":{
-              "name":"largetext",
-              "placeholder":"Entities contained in the sample, including not just the cells of interest, but also the medium, as well as any extraneous materials such as tissue, debris, biofilm matrix, or soil"
+            "name": "Composition",
+            "icon": "fa-cogs",
+            "controlType": {
+              "name": "largetext",
+              "placeholder": "Entities contained in the sample, including not just the cells of interest, but also the medium, as well as any extraneous materials such as tissue, debris, biofilm matrix, or soil"
             },
-            "display":"required"
+            "display": "required"
           },
           {
-            "name":"Preparation",
-            "icon":"fa-temperature-low",
-            "controlType":{
-              "name":"largetext",
-              "placeholder":"E.g., preservation after sampling, culturing condition (e.g., sample volume, medium, light condition/diel cycle, pH, temperature, antibiotics, oxic/anoxic), sample age, fixed or unfixed, whether the cells were dry or wet for Raman measurement"
+            "name": "Preparation",
+            "icon": "fa-temperature-low",
+            "controlType": {
+              "name": "largetext",
+              "placeholder": "E.g., preservation after sampling, culturing condition (e.g., sample volume, medium, light condition/diel cycle, pH, temperature, antibiotics, oxic/anoxic), sample age, fixed or unfixed, whether the cells were dry or wet for Raman measurement"
             },
-            "display":"required"
+            "display": "required"
           },
           {
-            "name":"Mounting substrate",
-            "icon":"fa-layer-group",
-            "controlType":{
-              "name":"text",
-              "placeholder":"E.g., glass coverslip, aluminum slide, CaF2 slide, quartz slide"
+            "name": "Mounting substrate",
+            "icon": "fa-layer-group",
+            "controlType": {
+              "name": "text",
+              "placeholder": "E.g., glass coverslip, aluminum slide, CaF2 slide, quartz slide"
             },
-            "display":"required"
+            "display": "required"
           }
         ],
-        "tableTypes":[
+        "tableTypes": [
           {
-            "name":"File",
-            "title":"Image File",
-            "display":"desirable",
-            "description":"Image files from Raman imaging",
-            "icon":"fa-file-image",
-            "uniqueCols":true,
-            "rowAsSection":true,
-            "allowImport":true,
-            "columnTypes":[
+            "name": "File",
+            "title": "Image File",
+            "display": "desirable",
+            "description": "Image files from Raman imaging",
+            "icon": "fa-file-image",
+            "uniqueCols": true,
+            "rowAsSection": true,
+            "allowImport": true,
+            "columnTypes": [
               {
-                "name":"File",
-                "controlType":{
-                  "name":"file",
-                  "allowFolders":false
+                "name": "File",
+                "controlType": {
+                  "name": "file",
+                  "allowFolders": false
                 },
-                "display":"required"
+                "display": "required"
               },
               {
-                "name":"Type",
-                "controlType":{
-                  "name":"text",
-                  "defaultValue":"Image file"
+                "name": "Type",
+                "controlType": {
+                  "name": "text",
+                  "defaultValue": "Image file"
                 },
-                "display":"required"
+                "display": "required"
               }
             ]
           }
         ]
       },
       {
-        "display":"required",
-        "displayAnnotations":false,
-        "name":"Setup",
-        "sectionExample":"Experimental conditions",
-        "fieldTypes":[
+        "display": "required",
+        "displayAnnotations": false,
+        "name": "Setup",
+        "sectionExample": "Experimental conditions",
+        "fieldTypes": [
           {
-            "name":"Raman system",
-            "icon":"fa-microscope",
-            "controlType":{
-              "name":"text",
-              "placeholder":"Manufacturer and model of the scope"
+            "name": "Raman system",
+            "icon": "fa-microscope",
+            "controlType": {
+              "name": "text",
+              "placeholder": "Manufacturer and model of the scope"
             },
-            "display":"required"
+            "display": "required"
           },
           {
-            "name":"Measurement type",
-            "icon":"fa-ruler-combined",
-            "controlType":{
-              "name":"select",
-              "values":[
+            "name": "Measurement type",
+            "icon": "fa-ruler-combined",
+            "controlType": {
+              "name": "select",
+              "values": [
                 "coherent anti-Stokes Raman scattering (CARS)",
                 "hyper Raman scattering (HRS)",
                 "normal Raman scattering",
@@ -354,75 +354,75 @@
                 "tip-enhanced Raman scattering (TERS)"
               ]
             },
-            "display":"required"
+            "display": "required"
           }
         ],
-        "tableTypes":[
+        "tableTypes": [
           {
-            "name":"Lasers and connected components/parameter",
-            "display":"required",
-            "description":"Wavelength of laser (nm), power of excitation laser (mW), neutral density filter (%) and other characteristics",
-            "icon":"fa-grip-lines",
-            "uniqueCols":true,
-            "allowImport":true,
-            "columnTypes":[
+            "name": "Lasers and connected components/parameter",
+            "display": "required",
+            "description": "Wavelength of laser (nm), power of excitation laser (mW), neutral density filter (%) and other characteristics",
+            "icon": "fa-grip-lines",
+            "uniqueCols": true,
+            "allowImport": true,
+            "columnTypes": [
               {
-                "name":"Description",
-                "controlType":{
-                  "name":"text"
+                "name": "Description",
+                "controlType": {
+                  "name": "text"
                 },
-                "display":"desirable"
+                "display": "desirable"
               },
               {
-                "name":"Manufacturer and model",
-                "controlType":{
-                  "name":"text"
+                "name": "Manufacturer and model",
+                "controlType": {
+                  "name": "text"
                 },
-                "display":"desirable"
+                "display": "desirable"
               },
               {
-                "name":"Wavelength (nm)",
-                "controlType":{
-                  "name":"text"
+                "name": "Wavelength (nm)",
+                "controlType": {
+                  "name": "text"
                 },
-                "display":"required"
+                "display": "required"
               },
               {
-                "name":"Power (mW)",
-                "controlType":{
-                  "name":"text"
+                "name": "Power (mW)",
+                "controlType": {
+                  "name": "text"
                 },
-                "display":"required"
+                "display": "required"
               },
               {
-                "name":"Continuous wave or pulsed",
-                "controlType":{
-                  "name":"text",
-                  "placeholder":"If pulsed, pulse duration and repetition rate"
+                "name": "Continuous wave or pulsed",
+                "controlType": {
+                  "name": "text",
+                  "placeholder": "If pulsed, pulse duration and repetition rate"
                 },
-                "display":"required"
+                "display": "required"
               },
               {
-                "name":"Excitation intensity",
-                "controlType":{
-                  "name":"text",
-                  "placeholder":"For nonlinear Raman spectroscopy (e.g., CARS/SRS)"
+                "name": "Excitation intensity",
+                "controlType": {
+                  "name": "text",
+                  "placeholder": "For nonlinear Raman spectroscopy (e.g., CARS/SRS)"
                 },
-                "display":"desirable"
+                "display": "desirable"
               },
               {
-                "name":"Polarization state",
-                "controlType":{
-                  "name":"text",
-                  "placeholder":"For polarized Raman spectroscopy"
+                "name": "Polarization state",
+                "controlType": {
+                  "name": "text",
+                  "placeholder": "For polarized Raman spectroscopy"
                 },
-                "display":"desirable"
+                "display": "desirable"
               },
               {
-                "name":"Laser spot shape",
-                "controlType":{
-                  "name":"select",
-                  "values":[
+                "name": "Laser spot shape",
+                "controlType": {
+                  "name": "select",
+                  "values": [
                     "circular",
                     "elliptical",
                     "torus",
@@ -430,59 +430,59 @@
                     "rectangular"
                   ]
                 },
-                "display":"required"
+                "display": "required"
               },
               {
-                "name":"Laser illumination spot size",
-                "controlType":{
-                  "name":"text",
-                  "placeholder":"E.g., diameter for a circular shape"
+                "name": "Laser illumination spot size",
+                "controlType": {
+                  "name": "text",
+                  "placeholder": "E.g., diameter for a circular shape"
                 },
-                "display":"required"
+                "display": "required"
               },
               {
-                "name":"Neutral density filter (%)",
-                "controlType":{
-                  "name":"text",
-                  "placeholder":"100% if not used"
+                "name": "Neutral density filter (%)",
+                "controlType": {
+                  "name": "text",
+                  "placeholder": "100% if not used"
                 },
-                "display":"required"
+                "display": "required"
               },
               {
-                "name":"Grating",
-                "controlType":{
-                  "name":"text",
-                  "placeholder":"0 if not used"
+                "name": "Grating",
+                "controlType": {
+                  "name": "text",
+                  "placeholder": "0 if not used"
                 },
-                "display":"required"
+                "display": "required"
               },
               {
-                "name":"Acquisition time (sec)",
-                "display":"required",
-                "controlType":{
-                  "name":"text"
+                "name": "Acquisition time (sec)",
+                "display": "required",
+                "controlType": {
+                  "name": "text"
                 }
               },
               {
-                "name":"Accumulation number",
-                "display":"required",
-                "controlType":{
-                  "name":"text",
-                  "placeholder":"For averaging"
+                "name": "Accumulation number",
+                "display": "required",
+                "controlType": {
+                  "name": "text",
+                  "placeholder": "For averaging"
                 }
               },
               {
-                "name":"Spectral window (cm⁻¹)",
-                "display":"required",
-                "controlType":{
-                  "name":"text"
+                "name": "Spectral window (cm⁻¹)",
+                "display": "required",
+                "controlType": {
+                  "name": "text"
                 }
               },
               {
-                "name":"Resolution (cm⁻¹)",
-                "display":"required",
-                "controlType":{
-                  "name":"text"
+                "name": "Resolution (cm⁻¹)",
+                "display": "required",
+                "controlType": {
+                  "name": "text"
                 }
               }
             ]
@@ -490,128 +490,129 @@
         ]
       },
       {
-        "display":"desirable",
-        "displayAnnotations":false,
-        "minRequired":0,
-        "name":"Treated spectrum",
-        "sectionExample":"Data processing",
-        "fieldTypes":[
+        "display": "desirable",
+        "displayAnnotations": false,
+        "minRequired": 0,
+        "name": "Treated spectrum",
+        "sectionExample": "Data processing",
+        "fieldTypes": [
           {
-            "name":"Software",
-            "icon":"fa-briefcase",
-            "controlType":{
-              "name":"text",
-              "placeholder":"If manufacturer’s software was used for data processing, the name and version of software"
+            "name": "Software",
+            "icon": "fa-briefcase",
+            "controlType": {
+              "name": "text",
+              "placeholder": "If manufacturer’s software was used for data processing, the name and version of software"
             },
-            "display":"desirable"
+            "display": "desirable"
           }
         ],
-        "tableTypes":[
+        "tableTypes": [
           {
-            "name":"File",
-            "title":"Processed Data File",
-            "icon":"fa-wave-square",
-            "display":"desirable",
-            "rowAsSection":true,
-            "uniqueCols":true,
-            "columnTypes":[
+            "name": "File",
+            "title": "Processed Data File",
+            "icon": "fa-wave-square",
+            "display": "desirable",
+            "rowAsSection": true,
+            "uniqueCols": true,
+            "columnTypes": [
               {
-                "name":"File",
-                "controlType":{
-                  "name":"file",
-                  "allowFolders":false
+                "name": "File",
+                "controlType": {
+                  "name": "file",
+                  "allowFolders": false
                 },
-                "display":"required"
+                "display": "required"
               },
               {
-                "name":"Type",
-                "controlType":{
-                  "name":"text",
-                  "defaultValue":"Processed Raman data"
+                "name": "Type",
+                "controlType": {
+                  "name": "text",
+                  "defaultValue": "Processed Raman data"
                 },
-                "display":"required"
+                "display": "required"
               }
             ]
           },
           {
-            "name":"Data treatments",
-            "icon":"fa-list",
-            "description":"List of computational algorithms and their parameters and sources used for data processing",
-            "display":"desirable",
+            "name": "Data treatments",
+            "icon": "fa-list",
+            "description": "List of computational algorithms and their parameters and sources used for data processing",
+            "display": "desirable",
             "rowAsSection": false,
-            "columnTypes":[
+            "columnTypes": [
               {
-                "name":"Treatment",
-                "controlType":{
-                  "name":"text",
-                  "placeholder":"Treatment description"
+                "name": "Treatment",
+                "controlType": {
+                  "name": "text",
+                  "placeholder": "Treatment description"
                 },
-                "display":"required"
+                "display": "required"
               }
             ]
           },
           {
-            "name":"Software",
-            "icon":"fa-comment",
+            "name": "Software",
+            "icon": "fa-comment",
             "rowAsSection": false,
-            "controlType":{
-              "name":"text",
-              "placeholder":"If manufacturer’s software was used for data processing, the name and version of software."
+            "controlType": {
+              "name": "text",
+              "placeholder": "If manufacturer’s software was used for data processing, the name and version of software."
             },
-            "display":"optional"
+            "display": "optional"
           }
         ]
       },
       {
-        "name":"Instrument metadata",
+        "name": "Instrument metadata",
         "rowAsSection": false,
-        "displayAnnotations":true,
-        "minRequired":0,
-        "icon":"fa-file-invoice",
-        "sectionExample":"Additional instrument information that could help users to reproduce the measurements",
-        "display":"desirable",
-        "annotationsType":{
-          "title":"Additional instrument details",
-          "description":"Provide any additional details that could help users to reproduce the measurements. Select from the list, or add your own.",
-          "icon":"fa-tag",
-          "display":"desirable",
-          "singleRow":true,
-          "allowImport":false,
-          "columnTypes":[
+        "displayAnnotations": true,
+        "minRequired": 0,
+        "icon": "fa-file-invoice",
+        "sectionExample": "Additional instrument information that could help users to reproduce the measurements",
+        "display": "desirable",
+        "annotationsType": {
+          "name": "Additional instrument details",
+          "title": "Additional instrument details",
+          "description": "Provide any additional details that could help users to reproduce the measurements. Select from the list, or add your own.",
+          "icon": "fa-tag",
+          "display": "desirable",
+          "singleRow": true,
+          "allowImport": false,
+          "columnTypes": [
             {
-              "name":"Type of spike filter",
-              "controlType":{
-                "name":"text"
+              "name": "Type of spike filter",
+              "controlType": {
+                "name": "text"
               },
-              "display":"optional"
+              "display": "optional"
             },
             {
-              "name":"Detector specifications",
-              "controlType":{
-                "name":"text"
+              "name": "Detector specifications",
+              "controlType": {
+                "name": "text"
               },
-              "display":"optional"
+              "display": "optional"
             },
             {
-              "name":"Details of a microscope objective or a focusing lens",
-              "controlType":{
-                "name":"text"
+              "name": "Details of a microscope objective or a focusing lens",
+              "controlType": {
+                "name": "text"
               },
-              "display":"optional"
+              "display": "optional"
             },
             {
-              "name":"Confocality",
-              "controlType":{
-                "name":"text"
+              "name": "Confocality",
+              "controlType": {
+                "name": "text"
               },
-              "display":"optional"
+              "display": "optional"
             },
             {
-              "name":"Binning",
-              "controlType":{
-                "name":"text"
+              "name": "Binning",
+              "controlType": {
+                "name": "text"
               },
-              "display":"optional"
+              "display": "optional"
             }
           ]
         }

@@ -27,14 +27,19 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import AuthService from './services/AuthService';
 import { ref, watchEffect } from 'vue';
 import axios from 'axios';
 
+export interface Collection {
+  title: string,
+  accno: string,
+}
+
 const isLoading = ref(true);
-const collections = ref([]);
+const collections = ref<Collection[]>([]);
 
 watchEffect(async () => {
   if (!AuthService.isAuthenticated()) return;

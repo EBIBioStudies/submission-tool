@@ -1,20 +1,32 @@
-<script setup>
+<script setup lang="ts">
 import Multiselect from '@vueform/multiselect';
-import { inject, ref } from 'vue';
+import { inject, ref, Ref } from 'vue';
 import axios from 'axios';
+import { PageTab } from '@/models/PageTab.model.ts';
+import { ROR } from '@/models/Organisation.model.ts';
+import { Template } from '@/models/Template.model.ts';
 
-const model = defineModel();
-const props = defineProps(['class', 'fieldType']);
-const submission = inject('submission');
-const emits = defineEmits(['deleteOrg', 'createOrg']);
+const model = defineModel<any[]>();
+const props = defineProps<{
+  class: string,
+  fieldType: Template.FieldType
+}>();
+const submission = inject<Ref<PageTab.LocalSubmission>>('submission');
+
+
+const emits = defineEmits<{
+  deleteOrg: [PageTab.Organisation],
+  createOrg: [PageTab.Organisation]
+}>();
 
 // get organisation which matches the affiliation reference
-const organisations = ref([]);
-const parentDisplayType = inject('parentDisplayType');
+const organisations = ref<Option[]>([]);
+const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
 
-const updateOptions = async (query) => {
+
+const updateOptions = async (query: string) => {
   if (!query || query.length < 3) return [];
-  return axios({
+  return axios<ROR.Organisations>({
     url: `ror/organizations?query=${query}`,
     headers: { 'content-type': 'application/json' },
     method: 'GET',
@@ -28,14 +40,17 @@ const updateOptions = async (query) => {
   );
 };
 
+type Option = { value: string, label?: string, baseLabel?: string, locationName?: string, accno?: string };
+
 // Build an array of { value, label } for the multiselect.
 // - value: ROR organization ID
 // - label: human-friendly name
 // If more than one organization shares the same base label (acronym + display name),
+
 // append the location name to the label to make each entry distinguishable.
-const mapRorItemsToOptionsUnique = (items = []) => {
+const mapRorItemsToOptionsUnique = (items: ROR.Organisation[] = []) => {
   // Map<label, option[]>
-  const optionsByLabel = new Map();
+  const optionsByLabel = new Map<string, Option[]>();
 
   // First pass: group options by their base label
   items.forEach((org) => {
@@ -66,7 +81,7 @@ const mapRorItemsToOptionsUnique = (items = []) => {
   });
 
   // Second pass: disambiguate labels where needed
-  const cleanedOptions = [];
+  const cleanedOptions: Option[] = [];
 
   optionsByLabel.forEach((optionsWithSameLabel) => {
     if (optionsWithSameLabel.length > 1) {
@@ -88,22 +103,20 @@ const mapRorItemsToOptionsUnique = (items = []) => {
   return cleanedOptions;
 };
 
-organisations.value = model.value
+organisations.value = model.value!
   .map((affiliation) => {
-    const org = submission?.value.section.subsections.filter(
+    const org = submission?.value.section.subsections?.filter(
       (s) =>
         (s?.type?.toLowerCase() === 'organisation' ||
           s?.type?.toLowerCase() === 'organization') &&
         s?.accno === affiliation.value,
     )[0];
-    const label = org?.attributes.find((attr) => attr.name === 'Name')?.value;
-    const rorIdAttribute = org?.attributes.find(
-      (attr) => attr.name === 'RORID',
-    );
+    const label = org?.attributes?.find((attr) => attr.name === 'Name')?.value!;
+    const rorIdAttribute = org?.attributes?.find((attr) => attr.name === 'RORID');
     return {
-      accno: affiliation.value,
+      accno: affiliation.value!,
       label: label,
-      value: rorIdAttribute?.length ? rorIdAttribute.value : label,
+      value: rorIdAttribute?.value ? rorIdAttribute.value : label,
     };
   })
   .filter((option) => option.label && option.label !== '');
@@ -120,7 +133,7 @@ organisations.value = model.value
     :create-option="true"
     :searchable="true"
     :allow-absent="true"
-    :options="async (q) => await updateOptions(q)"
+    :options="async (q: string) => await updateOptions(q)"
     :object="true"
     :delay="0"
     :min-chars="3"
@@ -136,7 +149,7 @@ organisations.value = model.value
       }
     "
     @create="
-      (v) => {
+      (v: PageTab.Organisation) => {
         emits('createOrg', v);
         return false;
       }

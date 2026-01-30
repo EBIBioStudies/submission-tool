@@ -502,7 +502,7 @@
             "description": "List other data files for the imaging study",
             "icon": "fa-file",
             "uniqueCols": true,
-            "display": "disarable",
+            "display": "desirable",
             "columnTypes": [
               {
                 "name": "File",

@@ -1,9 +1,14 @@
-<script setup>
+<script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import SectionTable from '@/components/SectionTable.vue';
 import { addMissingAttributesGeneral } from '@/composables/useAttributesHelper';
+import { Template } from '@/models/Template.model.ts';
+import { PageTab } from '@/models/PageTab.model.ts';
 
-const props = defineProps(['section', 'sectionType']);
+const props = defineProps<{
+  section: PageTab.Section,
+  sectionType: Template.TableType,
+}>();
 const hideNonRequiredColumns = props.sectionType.hideColumns || false;
 
 const thisSection = ref(props.section);
@@ -13,6 +18,7 @@ onMounted(() => {
   if (!thisSection?.value?.subsections) return;
 
   thisSection.value.subsections
+
     .filter((s) => s.type?.toLowerCase() === 'author')
     .forEach((author) => {
       if (author.attributes && props.sectionType?.columnTypes) {
@@ -25,27 +31,27 @@ onMounted(() => {
       }
     });
 
-  const authorsList = thisSection.value.subsections.filter(
-    (s) => s.type?.toLowerCase() === 'author',
-  );
+  const authorsList = thisSection.value.subsections
+
+    .filter((s) => s.type?.toLowerCase() === 'author');
+
   if (authorsList[0] && authorsList[0].accno?.includes('-init')) {
     authorsList[0].accno = authorsList[0].accno.replace('-init', '');
     let contact =
       props.sectionType?.name?.toLowerCase() === 'contact'
         ? props.sectionType
         : props.sectionType?.tableTypes?.find(
-            (s) => s?.type?.toLowerCase() === 'contact',
-          );
+          (s) => s?.name?.toLowerCase() === 'contact', // TODO check s?.type should indeed be s?.name
+        );
     if (!hideNonRequiredColumns) {
-      const existingAttributeNames = authorsList[0].attributes.map(
-        (attr) => attr.name,
-      );
-      contact.columnTypes.forEach((column) => {
+      const existingAttributeNames = authorsList[0].attributes!.map((attr) => attr.name);
+
+      contact?.columnTypes?.forEach((column) => {
         if (
           !existingAttributeNames.includes(column.name) &&
           column?.name?.toLowerCase() !== 'organisation'
         ) {
-          authorsList[0].attributes.push({ name: column.name, value: '' });
+          authorsList[0].attributes?.push({ name: column.name, value: '' });
         }
       });
     }
@@ -65,12 +71,12 @@ const authors = computed(() => {
 
 const authorTableRef = ref();
 const authorRefreshKey = ref(0);
-const OnDeleteOrg = (o) => {
+const OnDeleteOrg = (o: PageTab.Organisation) => {
   if (o?.accno === '') return;
   // unlink the affiliation from author
   let affiliationIndex = -1,
     totalAffiliations = 0;
-  authors.value[o.authorIndex].attributes.forEach((attr, i) => {
+  authors.value[o.authorIndex].attributes?.forEach((attr, i) => {
     if (attr.name?.toLowerCase() !== 'affiliation') return;
     if (attr.value === o.accno) affiliationIndex = i;
     totalAffiliations++;
@@ -78,26 +84,26 @@ const OnDeleteOrg = (o) => {
 
   // always keep an empty affiliation
   if (totalAffiliations === 1) {
-    authors.value[o.authorIndex].attributes[affiliationIndex].value = '';
-    delete authors.value[o.authorIndex].attributes[affiliationIndex].reference;
+    authors.value[o.authorIndex].attributes![affiliationIndex].value = '';
+    delete (authors.value[o.authorIndex].attributes![affiliationIndex] as PageTab.ReferenceAttribute).reference;
   } else {
-    authors.value[o.authorIndex].attributes.splice(affiliationIndex, 1);
+    authors.value[o.authorIndex].attributes?.splice(affiliationIndex, 1);
   }
 
   deleteUnusedOrganisations();
   return refresh();
 };
 
-const orgWithAcc = (accno) =>
+const orgWithAcc = (accno: string): PageTab.Organisation | undefined =>
   thisSection?.value?.subsections?.find(
     (s) =>
       (s?.type?.toLowerCase() === 'organisation' ||
         s?.type?.toLowerCase() === 'organization') &&
       s?.attributes?.some((a) => a.value === accno),
-  );
+  ) as PageTab.Organisation | undefined;
 
-const OnCreateOrg = (o) => {
-  let org = orgWithAcc(o.label);
+const OnCreateOrg = (o: PageTab.Organisation) => {
+  let org = orgWithAcc(o.label!);
 
   // if org does not exist, create it
   if (!org) {
@@ -111,7 +117,7 @@ const OnCreateOrg = (o) => {
       .map((s) => {
         const match = s.accno?.match(/^o(\d+)$/);
         return match ? parseInt(match[1], 10) : 0;
-      });
+      }) || [];
 
     const maxOrgNumber =
       existingOrgNumbers.length > 0 ? Math.max(...existingOrgNumbers) : 0;
@@ -129,29 +135,26 @@ const OnCreateOrg = (o) => {
         },
       ],
       type: 'organisation',
-    };
+    } as PageTab.Organisation;
 
     if (o.label !== o.value) {
-      newOrg.attributes.push({ name: 'RORID', value: o.value }); // add ROR ID if available
+      newOrg.attributes?.push({ name: 'RORID', value: o.value }); // add ROR ID if available
     }
 
     thisSection?.value?.subsections?.push(newOrg);
-    org =
-      thisSection?.value?.subsections[
-        thisSection?.value?.subsections?.length - 1
-      ];
+    org = thisSection?.value?.subsections?.at(-1) as PageTab.Organisation;
   }
 
   // delete empty org
-  const emptyIndex = authors.value[o.authorIndex].attributes.findIndex(
+  const emptyIndex = authors.value[o.authorIndex].attributes!.findIndex(
     (attr) => attr.name.toLowerCase() === 'affiliation' && attr.value === '',
   );
 
   if (emptyIndex !== -1)
-    authors.value[o.authorIndex].attributes.splice(emptyIndex, 1);
+    authors.value[o.authorIndex].attributes!.splice(emptyIndex, 1);
 
   // assign it to the author
-  authors.value[o.authorIndex].attributes.push({
+  authors.value[o.authorIndex].attributes!.push({
     name: 'affiliation',
     value: org.accno,
     reference: true,
@@ -160,8 +163,8 @@ const OnCreateOrg = (o) => {
   return refresh();
 };
 
-const reorderAuthors = (event) => {
-  const authorIndexMap = {}; // lookup for index in authors to index in subsections
+const reorderAuthors = (event: {newIndex: number, oldIndex: number}) => {
+  const authorIndexMap: Record<number, number> = {}; // lookup for index in authors to index in subsections
   let authIndex = 0;
   thisSection?.value?.subsections?.forEach((section, i) => {
     if (section?.type?.toLowerCase() === 'author') {
@@ -182,8 +185,8 @@ const reorderAuthors = (event) => {
   return refresh();
 };
 
-const OnDeleteRow = (index) => {
-  const authorIndexMap = {}; // lookup for index in authors to index in subsections
+const OnDeleteRow = (index: number) => {
+  const authorIndexMap: Record<number, number> = {}; // lookup for index in authors to index in subsections
   let authIndex = 0;
   thisSection?.value?.subsections?.forEach((section, i) => {
     if (section?.type?.toLowerCase() === 'author') {
@@ -198,15 +201,15 @@ const OnDeleteRow = (index) => {
   return refresh();
 };
 
-const OnRowAdded = (row) => {
+const OnRowAdded = (row: PageTab.Section) => {
   thisSection?.value?.subsections?.push(row);
   return refresh();
 };
 
-const OnColumnUpdated = (row) => {
+const OnColumnUpdated = (row: { old: string, new: string, index: number }) => {
   thisSection?.value?.subsections?.forEach((section) => {
     if (section?.type?.toLowerCase() !== 'author') return;
-    section.attributes.find((att) => att.name === row.old).name = row.new;
+    section.attributes!.find((att) => att.name === row.old)!.name = row.new;
   });
   return refresh();
 };
@@ -214,14 +217,14 @@ const OnColumnUpdated = (row) => {
 const deleteUnusedOrganisations = () => {
   const usedAffiliation = new Set();
   authors.value.forEach((author) => {
-    author.attributes.forEach((attr) => {
+    author.attributes!.forEach((attr) => {
       if (attr.name?.toLowerCase() === 'affiliation' && attr.value !== '') {
         usedAffiliation.add(attr.value);
       }
     });
   });
 
-  const indicesToRemove = [];
+  const indicesToRemove: number[] = [];
   thisSection?.value?.subsections?.forEach((s, i) => {
     if (
       (s.type?.toLowerCase() === 'organisation' ||

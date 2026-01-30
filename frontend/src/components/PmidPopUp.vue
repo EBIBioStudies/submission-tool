@@ -4,12 +4,14 @@
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h5 class="modal-title">PMID Search</h5>
-          <button @click="close" type="button" attr.aria-label="Close" class="btn btn-default "><span aria-hidden="true">×</span></button>
+          <button @click="close" type="button" attr.aria-label="Close" class="btn btn-default "><span
+            aria-hidden="true">×</span></button>
         </div>
         <div class="modal-body">
           <div v-if="loading">Loading...</div>
           <div v-else>
-            <input  type="text" placeholder="Search with pmid" class="form-control mb-3" v-model="pmidQuery" ref="searchInput" />
+            <input type="text" placeholder="Search with pmid" class="form-control mb-3" v-model="pmidQuery"
+                   ref="searchInput" />
             <table v-if="searchResults.length">
               <thead>
               <tr>
@@ -21,12 +23,24 @@
               </tr>
               </thead>
               <tbody>
-              <tr v-for="(result, index) in searchResults" :key="index" >
-                <td>{{ result.title }}</td>
-                <td>{{ result.authorString }}</td>
-                <td>{{ result.pubYear }}</td>
-                <td>{{ result.journalVolume }}</td>
-                <td><button @click="select(result)" class="btn btn-primary btn-sm">Select</button></td> <!-- Button for selecting a row -->
+              <tr v-for="(result, index) in searchResults" :key="index">
+                <td>
+                  <div class="sticky-cell">{{ result.title }}</div>
+                </td>
+                <td>
+                  <div class="sticky-cell">{{ result.authorString }}</div>
+                </td>
+                <td>
+                  <div class="sticky-cell">{{ result.pubYear }}</div>
+                </td>
+                <td>
+                  <div class="sticky-cell">{{ result.journalVolume }}</div>
+                </td>
+                <td>
+                  <div class="sticky-cell">
+                    <button @click="select(result)" class="btn btn-primary btn-sm">Select</button>
+                  </div>
+                </td> <!-- Button for selecting a row -->
               </tr>
               </tbody>
             </table>
@@ -41,28 +55,59 @@
   </div>
 </template>
 
-<script setup>
-import {defineProps, defineEmits, ref, watchEffect, watch, nextTick} from 'vue';
+<script setup lang="ts">
+import { defineEmits, ref, watchEffect, watch, nextTick } from 'vue';
 
-const props = defineProps({
-  pmid: String
-});
+const props = defineProps<{ pmid?: string }>();
 
 const pmidQuery = ref(props.pmid || '');
-const emit = defineEmits(['select', 'close']);
-const searchResults = ref([]);
-const loading = ref(false)
-const searchInput = ref(null); // Ref for the input element
+const emit = defineEmits<{
+  select: [PublicationSearchResult],
+  close: []
+}>();
+
+export interface PublicationSearchResult {
+  authorString: string;
+  citedByCount: number;
+  doi: string;
+  firstIndexDate: TDateISODate;
+  firstPublicationDate: TDateISODate;
+  fullTextIdList: { fullTextId: string[] };
+  hasBook: 'N' | 'Y';
+  hasDbCrossReferences: 'N' | 'Y';
+  hasLabsLinks: 'N' | 'Y';
+  hasPDF: 'N' | 'Y';
+  hasReferences: 'N' | 'Y';
+  hasSuppl: 'N' | 'Y';
+  hasTMAccessionNumbers: 'N' | 'Y';
+  hasTextMinedTerms: 'N' | 'Y';
+  id: string;
+  inEPMC: 'N' | 'Y';
+  inPMC: 'N' | 'Y';
+  isOpenAccess: 'N' | 'Y';
+  journalIssn: string;
+  journalTitle: string;
+  journalVolume: string;
+  issue: string;
+  pageInfo: string;
+  pmcid: string;
+  pmid: string;
+  pubType: string;
+  pubYear: string;
+  source: string;
+  title: string;
+}
+
+const searchResults = ref<PublicationSearchResult[]>([]);
+const loading = ref(false);
+const searchInput = ref<HTMLInputElement>(); // Ref for the input element
 
 
-
-function debounce(fn, delay) {
-  let timeoutId = null;
-  return (...args) => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => {
-      fn(...args);
-    }, delay);
+function debounce(fn: (...args: any[]) => void, delay: number) {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  return (...args: any[]) => {
+    if (timeoutId) clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn(...args), delay);
   };
 }
 
@@ -78,7 +123,7 @@ watch(searchInput, async (newVal) => {
 
 
 // Create a debounced function for search
-const debouncedSearch = debounce((query) => {
+const debouncedSearch = debounce((query: string) => {
   // Mocked fetching function, replace with your actual fetch call
   fetchResults(query).then(data => {
     searchResults.value = data.resultList.result;
@@ -87,27 +132,29 @@ const debouncedSearch = debounce((query) => {
 
 watchEffect(() => {
   if (pmidQuery.value) {
-    loading.value = true
+    loading.value = true;
     debouncedSearch(pmidQuery.value);
-    loading.value = false
+    loading.value = false;
   }
 });
 
-const select = (result) => {
-  emit('select', result);
-};
+const select = (result: PublicationSearchResult) => emit('select', result);
 
-const close = () => {
-  emit('close');
-};
+const close = () => emit('close');
 
-async function fetchResults(query) {
+async function fetchResults(query: string) {
   const response = await fetch(`https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=ext_id:${query}&format=json`);
   return response.json();
 }
 </script>
 
 <style scoped>
+.sticky-cell {
+  position: sticky;
+  top: 0;
+  bottom: 0;
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -127,7 +174,7 @@ async function fetchResults(query) {
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
   width: auto;
-  max-width: 600px; /* Limiting the maximum width */
+  //max-width: 600px; /* Limiting the maximum width */
 }
 
 .modal-header {
@@ -179,6 +226,7 @@ input[type="text"] {
   flex-grow: 1; /* Take available space */
   margin-right: 10px; /* Spacing between the input and the button */
 }
+
 table tr:nth-child(odd) {
   background-color: #f0f0f0; /* A slightly darker shade than the default */
 }

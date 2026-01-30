@@ -1,31 +1,40 @@
-<script setup>
+<script setup lang="ts">
 import { computed, inject, ref } from 'vue';
-import Attribute from './Attribute.vue';
+import Attribute from '@/components/Attribute.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { addMissingAttributesGeneral } from '@/composables/useAttributesHelper';
+import { PageTab } from '@/models/PageTab.model.ts';
+import { Template } from '@/models/Template.model.ts';
+import { AttributeExpose } from '@/components/Attribute.vue';
+import { ControlError } from '@/models/Error.model.ts';
 
-const props = defineProps(['attributes', 'fieldTypes', 'isSectionAttribute']);
-const emits = defineEmits([
-  'deleteAttribute',
-  'createTag',
-  'deleteTag',
-  'newAttribute',
-]);
+const props = defineProps<{
+  attributes?: PageTab.DetailedAttribute[],
+  fieldTypes?: Template.FieldType[],
+  isSectionAttribute?: boolean,
+}>();
+const emits = defineEmits<{
+  deleteAttribute: [index: number]
+  createTag: [obj: PageTab.Tag]
+  deleteTag: [obj: PageTab.IndexedTag]
+  newAttribute: []
+}>();
 const attributeList = ref(props.attributes);
 const duplicateAttributes = attributeList.value?.filter(
-  (value, index, array) =>
-    array.find((v, i) => v.name === value.name) !== value && value.name !== '',
+  (value, _index, array) =>
+    array.find((v) => v.name === value.name) !== value && value.name !== '',
 );
-const attributeRefs = ref([]);
+const attributeRefs = ref<AttributeExpose[]>();
 const parentDisplayType = inject('parentDisplayType');
 
-const processed = (attribute) => duplicateAttributes.includes(attribute);
+const processed = (attribute: PageTab.DetailedAttribute) => duplicateAttributes?.includes(attribute);
 
-const getFieldType = (attribute) => {
-  const fieldType = props?.fieldTypes?.find(
-    (f) => f.name?.toLowerCase() === attribute?.name?.toLowerCase(),
-  );
-  return fieldType ? fieldType : props?.attributes?.length > 1 ? attribute : '';
+const getFieldType = (attribute: PageTab.DetailedAttribute): Template.FieldType | undefined => {
+  // const fieldType = props?.fieldTypes?.find(
+  //   (f) => f.name?.toLowerCase() === attribute?.name?.toLowerCase(),
+  // );
+  // return fieldType ? fieldType : props?.attributes?.length > 1 ? attribute : '';
+  return props?.fieldTypes?.find((f) => f.name?.toLowerCase() === attribute?.name?.toLowerCase());
 };
 
 const addMissingAttributes = () => {
@@ -33,15 +42,15 @@ const addMissingAttributes = () => {
 };
 
 const errors = computed(() => {
-  const _errors = [];
+  const _errors: ControlError<AttributeExpose>[] = [];
   // validate subsections
-  attributeRefs?.value.forEach((a) => {
-    const err = a.errors;
+  attributeRefs?.value?.forEach((a) => {
+    const err = a.errors.value;
     if (err)
       _errors.push({
         errorMessage: err,
         control: a,
-        element: document.getElementById(a.attributeId),
+        element: document.getElementById(a.attributeId)!,
       });
   });
   return _errors;
@@ -58,12 +67,12 @@ addMissingAttributes();
         <Attribute
           :key="index"
           ref="attributeRefs"
-          :attribute="attribute"
-          :field-type="getFieldType(attribute)"
+          :attribute="attribute as PageTab.BuildingSection"
+          :field-type="getFieldType(attribute)!"
           :parent="attributeList"
           @createTag="(v) => emits('createTag', v)"
           :isSectionAttribute="isSectionAttribute"
-          @deleteAttribute="(v) => emits('deleteAttribute', index)"
+          @deleteAttribute="() => emits('deleteAttribute', index)"
           @deleteTag="(v) => emits('deleteTag', v)"
         />
       </template>

@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <NewSubmission @select="(e)=>console.log(e)"></NewSubmission>
+    <NewSubmission @select="(e: any)=>console.log(e)"></NewSubmission>
     <table class="table table-responsive table-striped table-hover">
       <thead>
       <th style="width: 180px">Draft Key</th>
@@ -53,7 +53,7 @@
   </a>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, watchEffect } from 'vue';
 import AuthService from './services/AuthService';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
@@ -61,9 +61,17 @@ import router from './router';
 import axios from 'axios';
 import NewSubmission from '@/components/NewSubmission.vue';
 import utils from '@/utils';
+import { PageTab } from '@/models/PageTab.model.ts';
 
-const accession = ref('');
-const drafts = ref([]);
+export interface Draft {
+  content: PageTab.Submission & {displayKey: string, newSubmission: boolean},
+  displayKey: string,
+  key: string,
+  modificationTime: TDateISO,
+  newSubmission: boolean
+}
+
+const drafts = ref<Draft[]>([]);
 const offset = ref(0);
 const oldOffset = ref(0);
 const pageLength = ref(15);
@@ -71,7 +79,7 @@ const showNext = ref(true);
 const showPrevious = ref(true);
 const isLoading = ref(true);
 
-const updateOffset = (delta) => {
+const updateOffset = (delta: number) => {
   oldOffset.value = offset.value;
   offset.value += delta;
 };
@@ -94,19 +102,19 @@ watchEffect(async () => {
     });
 });
 
-const getKeyToDisplay = (draft) => {
+const getKeyToDisplay = (draft: Draft) => {
   return draft.displayKey ? draft.displayKey : draft.key;
 };
 
-const getTitle = (draft) => {
+const getTitle = (draft: Draft) => {
   return draft.content?.section?.attributes?.find(attr => attr.name === 'Title')?.value || draft.content?.attributes?.find(attr => attr.name === 'Title')?.value;
 };
 
-const editDraft = (accno) => {
+const editDraft = (accno: string) => {
   router.push(`/edit/${accno}`);
 };
 
-const deleteDraft = async (accno) => {
+const deleteDraft = async (accno: string) => {
   if (!await utils.confirm('Delete draft',
     `⚠️The draft with accession number ${accno} has not been submitted yet. If you proceed, it will be permanently deleted.`,
     { okayLabel: 'Delete' })) return;
