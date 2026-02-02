@@ -5,7 +5,7 @@ import { computed, ref } from 'vue';
 
 const user = computed(() => AuthService.user.value);
 
-const secret = computed(() => (location.hostname.startsWith('www.ebi.ac.uk') ? '/' : '/.beta/') + AuthService.user.value.secret);
+const secret = computed(() => '/' + AuthService.user.value.secret);
 const uploadType = computed(() => user.value?.uploadType || '');
 
 const asperaVersion = computed(() => uploadType.value === 'ftp' ? '4.2.12' : '3.11.2');
