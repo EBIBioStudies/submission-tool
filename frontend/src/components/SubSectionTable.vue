@@ -3,11 +3,11 @@ import { computed, inject, nextTick, ref, Ref } from 'vue';
 import draggable from 'vuedraggable';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Attribute from '@/components/Attribute.vue';
-import utils from '@/utils';
+import utils, { ensureArray } from '@/utils';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { Template } from '@/models/Template.model.ts';
-import { ControlError } from '@/models/Error.model.ts';
 import { AttributeExpose } from 'components/Attribute.vue';
+import { ControlError, SectionExpose } from 'components/expose.model.ts';
 
 
 const props = defineProps<{
@@ -43,7 +43,7 @@ const theseRows = ref(Array.isArray(props.rows) ? props.rows : props.rows[0]);
 const headerMap = new Map();
 const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
 const collectionName = inject<Ref<string>>('collectionName');
-const subSections = ref(props?.parent?.subsections!);
+const subSections = ref(props.parent!.subsections!.flatMap(ensureArray));
 
 if (tableType.value === 'File') {
   headerMap.set('File', []);
@@ -292,7 +292,7 @@ const showHelp = (header: Template.FieldType) => {
   );
 };
 
-defineExpose({ errors, thisSection });
+defineExpose<SectionExpose>({ errors, thisSection });
 </script>
 <template>
   <div class="section-block">
@@ -487,6 +487,8 @@ defineExpose({ errors, thisSection });
 <style scoped>
 .grip {
   color: #cccccc;
+  text-align: center;
+  vertical-align: middle;
 }
 
 .grip {

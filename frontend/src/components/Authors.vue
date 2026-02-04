@@ -4,6 +4,7 @@ import SectionTable from '@/components/SectionTable.vue';
 import { addMissingAttributesGeneral } from '@/composables/useAttributesHelper';
 import { Template } from '@/models/Template.model.ts';
 import { PageTab } from '@/models/PageTab.model.ts';
+import { ensureArray } from '@/utils.ts';
 
 const props = defineProps<{
   section: PageTab.Section,
@@ -18,6 +19,7 @@ onMounted(() => {
   if (!thisSection?.value?.subsections) return;
 
   thisSection.value.subsections
+    .flatMap(ensureArray)
 
     .filter((s) => s.type?.toLowerCase() === 'author')
     .forEach((author) => {
@@ -32,6 +34,7 @@ onMounted(() => {
     });
 
   const authorsList = thisSection.value.subsections
+    .flatMap(ensureArray)
 
     .filter((s) => s.type?.toLowerCase() === 'author');
 
@@ -63,7 +66,10 @@ onMounted(() => {
 const authors = computed(() => {
   // Just return filtered authors without mutation
   return (
-    thisSection?.value?.subsections?.filter(
+    thisSection?.value?.subsections
+      ?.flatMap(ensureArray)
+
+      ?.filter(
       (s) => s?.type?.toLowerCase() === 'author',
     ) ?? []
   );
@@ -95,7 +101,7 @@ const OnDeleteOrg = (o: PageTab.Organisation) => {
 };
 
 const orgWithAcc = (accno: string): PageTab.Organisation | undefined =>
-  thisSection?.value?.subsections?.find(
+  thisSection?.value?.subsections?.flatMap(ensureArray)?.find(
     (s) =>
       (s?.type?.toLowerCase() === 'organisation' ||
         s?.type?.toLowerCase() === 'organization') &&
@@ -109,6 +115,8 @@ const OnCreateOrg = (o: PageTab.Organisation) => {
   if (!org) {
     // find the highest existing organisation number
     const existingOrgNumbers = thisSection?.value?.subsections
+      ?.flatMap(ensureArray)
+
       ?.filter(
         (s) =>
           s?.type?.toLowerCase() === 'organisation' ||
@@ -166,7 +174,7 @@ const OnCreateOrg = (o: PageTab.Organisation) => {
 const reorderAuthors = (event: {newIndex: number, oldIndex: number}) => {
   const authorIndexMap: Record<number, number> = {}; // lookup for index in authors to index in subsections
   let authIndex = 0;
-  thisSection?.value?.subsections?.forEach((section, i) => {
+  thisSection?.value?.subsections?.flatMap(ensureArray)?.forEach((section, i) => {
     if (section?.type?.toLowerCase() === 'author') {
       authorIndexMap[authIndex++] = i;
     }
@@ -188,7 +196,7 @@ const reorderAuthors = (event: {newIndex: number, oldIndex: number}) => {
 const OnDeleteRow = (index: number) => {
   const authorIndexMap: Record<number, number> = {}; // lookup for index in authors to index in subsections
   let authIndex = 0;
-  thisSection?.value?.subsections?.forEach((section, i) => {
+  thisSection?.value?.subsections?.flatMap(ensureArray)?.forEach((section, i) => {
     if (section?.type?.toLowerCase() === 'author') {
       authorIndexMap[authIndex++] = i;
     }
@@ -207,7 +215,7 @@ const OnRowAdded = (row: PageTab.Section) => {
 };
 
 const OnColumnUpdated = (row: { old: string, new: string, index: number }) => {
-  thisSection?.value?.subsections?.forEach((section) => {
+  thisSection?.value?.subsections?.flatMap(ensureArray)?.forEach((section) => {
     if (section?.type?.toLowerCase() !== 'author') return;
     section.attributes!.find((att) => att.name === row.old)!.name = row.new;
   });
@@ -225,7 +233,7 @@ const deleteUnusedOrganisations = () => {
   });
 
   const indicesToRemove: number[] = [];
-  thisSection?.value?.subsections?.forEach((s, i) => {
+  thisSection?.value?.subsections?.flatMap(ensureArray)?.forEach((s, i) => {
     if (
       (s.type?.toLowerCase() === 'organisation' ||
         s.type?.toLowerCase() === 'organization') &&

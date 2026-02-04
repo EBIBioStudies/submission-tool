@@ -3,7 +3,7 @@ import Multiselect from '@vueform/multiselect';
 import { inject, ref, Ref } from 'vue';
 import { Template } from '@/models/Template.model.ts';
 import { PageTab } from '@/models/PageTab.model.ts';
-import { Class } from '@/utils.ts';
+import { Class, ensureArray } from '@/utils.ts';
 
 const props = defineProps<{
   class?: Class;
@@ -34,7 +34,7 @@ function buildOptions() {
         label: att?.value ?? section?.type!,
       });
     }
-    section?.subsections?.forEach((s) => q.push(s));
+    section?.subsections?.flatMap(ensureArray)?.forEach((s) => q.push(s));
   }
 
   return list;

@@ -146,6 +146,7 @@ const humanFileSize = (bytes: number, si = true, dp = 2): string => {
 };
 
 export const ensureArray = <T>(arr: T[] | T): T[] => Array.isArray(arr) ? arr : [arr];
+export const isDefined = <T>(nullable: T | null | undefined): nullable is T => nullable !== null && nullable !== undefined;
 
 export default { confirm, prompt, isOrcidValid, humanFileSize };
 

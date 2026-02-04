@@ -6,7 +6,7 @@ import { addMissingAttributesGeneral } from '@/composables/useAttributesHelper';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { Template } from '@/models/Template.model.ts';
 import { AttributeExpose } from '@/components/Attribute.vue';
-import { ControlError } from '@/models/Error.model.ts';
+import { ControlError, SectionExpose } from 'components/expose.model.ts';
 
 const props = defineProps<{
   attributes?: PageTab.DetailedAttribute[],
@@ -55,7 +55,7 @@ const errors = computed(() => {
   });
   return _errors;
 });
-defineExpose({ errors });
+defineExpose<SectionExpose>({ errors });
 
 addMissingAttributes();
 </script>

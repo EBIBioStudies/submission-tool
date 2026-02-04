@@ -1,21 +1,21 @@
 <script setup lang="ts">
 import {
+  ComponentPublicInstance,
   computed,
   ComputedRef,
   getCurrentInstance,
   inject,
   nextTick,
   onMounted,
-  Ref,
   ref,
-  ComponentPublicInstance,
+  Ref,
 } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Attributes from '@/components/Attributes.vue';
 import SectionTable from '@/components/SectionTable.vue';
 import SubsectionMenu from '@/components/SubsectionMenu.vue';
 import { fillTemplate } from '@/templates/templates';
-import utils, { isElement, isString } from '@/utils';
+import utils, { ensureArray, isElement, isString } from '@/utils';
 import SubSectionTable from '@/components/SubSectionTable.vue';
 import EditableLabel from '@/components/EditableLabel.vue';
 import Authors from '@/components/Authors.vue';
@@ -23,13 +23,13 @@ import { Tooltip } from 'bootstrap';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { Template } from '@/models/Template.model.ts';
 import Attribute from '@/components/Attribute.vue';
-import { ControlError } from '@/models/Error.model.ts';
+import { SectionExpose } from 'components/expose.model.ts';
 
 const props = defineProps<{
   section: PageTab.Section;
   sectionType: Template.TableType | string;
   depth: number;
-  sectionTypeMap?: Map<string, Template.TableType> ;
+  sectionTypeMap?: Map<string, Template.TableType>;
 }>();
 
 const emits = defineEmits<{
@@ -49,9 +49,9 @@ const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType')
 const isPublicSubmission = inject<ComputedRef<boolean>>('isPublicSubmission');
 const collectionName = inject<Ref<string>>('collectionName');
 
-const errSecRefs = ref<ComponentPublicInstance<typeof this>[]>();
-const errSecTableRefs = ref<ComponentPublicInstance<typeof SectionTable>[]>();
-const errSpecialSecTableRefs = ref<ComponentPublicInstance<typeof SubSectionTable>[]>();
+const errSecRefs = ref<SectionExpose[]>([]);
+const errSecTableRefs = ref<SectionExpose[]>([]);
+const errSpecialSecTableRefs = ref<SectionExpose[]>([]);
 const authorComponent = ref<typeof Authors>();
 
 const thisSection = ref<PageTab.Section>(props.section);
@@ -99,7 +99,7 @@ onMounted(() => {
 const renderedRowSections = new Set();
 const getSectionsWithRowsAsSections = (type: string): PageTab.Section[] => {
   renderedRowSections.add(type?.toLowerCase());
-  return thisSection.value.subsections?.filter(
+  return thisSection.value.subsections?.flatMap(ensureArray)?.filter(
     (s) =>
       !Array.isArray(s) &&
       s?.type?.toLowerCase() === type.toLowerCase() &&
@@ -156,7 +156,7 @@ const isCollapsed = ref((props?.depth ?? 0) >= 2);
 
 // children are not allowed to change properties of a parent
 // all section/attributes updates thus need to be at this level
-const addSubsection = async (aSection: PageTab.Section, _i: number, type: Template.SectionType) => {
+const addSubsection = async (aSection: PageTab.Section, _i: number, type?: Template.SectionType) => {
   if (parentDisplayType?.value === 'readonly') return;
   aSection.subsections = aSection.subsections || [];
   const obj = {} as PageTab.Section;
@@ -197,7 +197,7 @@ const findLastInput = (item: HTMLElement | ComponentPublicInstance): HTMLInputEl
   // const lastInput = inputs && inputs.length > 1 ? inputs[inputs.length - 2] : inputs[0];
 };
 
-const findAddedSection = (type: string) => {
+const findAddedSection = (type?: string) => {
   let added;
   if (type === 'Link') added = sectionLinksRef.value;
   else if (type === 'File') added = sectionFilesRef.value;
@@ -220,13 +220,13 @@ const findAddedSection = (type: string) => {
   return added;
 };
 
-const addTable = async (aSection: PageTab.BuildingSection, _i: number, type: Template.SectionType) => {
+const addTable = async (aSection: PageTab.BuildingSection, _i: number, type?: Template.SectionType) => {
   // if (type?.name?.toLowerCase()==='contact')
   //   authorComponent.add
   //   return
   if (parentDisplayType?.value === 'readonly') return;
   aSection.subsections = aSection.subsections || [];
-  let obj = {} as PageTab.Section;
+  let obj = {} as PageTab.BuildingSection;
   if (type != null) fillTemplate(obj, type);
   else {
     obj.accno =
@@ -250,7 +250,7 @@ const addTable = async (aSection: PageTab.BuildingSection, _i: number, type: Tem
         }
       });
     }
-    type ? aSection.subsections.push(obj) : aSection.subsections.push(obj as PageTab.Section);
+    type ? aSection.subsections.push(obj) : aSection.subsections.push([obj]);
   }
 
   // obj = (type?.name !== 'Publication' && type?.name !== 'Funding') ? [obj] : obj;
@@ -345,12 +345,16 @@ const createTag = (msg: PageTab.Tag) => {
   attributesRefreshKey.value += 1;
 };
 
-const rowsReordered = (event: {
+const rowsReordered = <T>(event: {
   newIndex: number;
   oldIndex: number;
-}, rows: PageTab.BuildingSection[]) => {
+}, rows: T[]) => {
   if (parentDisplayType?.value === 'readonly') return;
   rows.splice(event.newIndex, 0, rows.splice(event.oldIndex, 1)[0]);
+  sectionsRefreshKey.value += 1;
+};
+
+const columnsReordered = () => {
   sectionsRefreshKey.value += 1;
 };
 
@@ -381,12 +385,10 @@ const updateColumnName = (subsection: PageTab.BuildingSection[], update: { old: 
   sectionsRefreshKey.value += 1;
 };
 
-const canRender = (sec: PageTab.Section): boolean => {
-  return (
-    ['author', 'organisation', 'organization'].indexOf(
-      sec?.type?.toLowerCase(),
-    ) < 0
-  );
+const NOT_RENDERABLE = new Set(['author', 'organisation', 'organization']);
+const canRender = (sec?: PageTab.BuildingSection | PageTab.BuildingSection[]): boolean => {
+  if (!sec || Array.isArray(sec)) return true;
+  return !NOT_RENDERABLE.has(sec?.type?.toLowerCase()!);
 };
 
 const errors = computed(() => {
@@ -401,31 +403,20 @@ const errors = computed(() => {
     _errors = [..._errors, ...(sectionLinksRef?.value?.errors ?? [])];
   }
   // validate subsections
-  errSpecialSecTableRefs?.value?.forEach((subsec) => {
-    if (!canRender(subsec.thisSection)) return;
-    _errors = [..._errors, ...subsec?.errors];
-  });
-  errSecRefs?.value?.forEach((subsec) => {
-    if (!canRender(subsec.thisSection)) return;
-    _errors = [..._errors, ...subsec?.errors];
-  });
-  errSecTableRefs?.value?.forEach((subsec) => {
+  [
+    ...errSpecialSecTableRefs.value,
+    ...errSecRefs.value,
+    ...errSecTableRefs.value,
+  ].forEach((subsec) => {
     if (!canRender(subsec.thisSection)) return;
     _errors = [..._errors, ...subsec?.errors];
   });
 
   return _errors;
 });
-// const log = (...args) => {
-//   console.log(...args);
-//   return '';
-// };
-export interface SectionExposed {
-  errors: ComputedRef<ControlError[]>;
-  thisSection: Ref<PageTab.Section>;
-}
 
-defineExpose<SectionExposed>({ errors, thisSection });
+defineExpose<SectionExpose>({ errors, thisSection });
+
 </script>
 
 <template>
@@ -538,9 +529,10 @@ defineExpose<SectionExposed>({ errors, thisSection });
               :depth="props.depth + 1"
               :sectionType="subSectionTypeMap.get('file')!"
               sectionSubType="File"
-              @rowsReordered="(e) => rowsReordered(e, section.files as PageTab.BuildingSection[])"
+              fixed-first-column
+              @rowsReordered="(e) => rowsReordered(e, section.files!)"
               @columnUpdated="(msg) => updateColumnName(section.files as PageTab.BuildingSection[], msg)"
-              @columnsReordered="() => (sectionsRefreshKey += 1)"
+              @columnsReordered="columnsReordered"
               @delete="deleteSubSection(section.files as PageTab.BuildingSection[], 0)"
               @refreshSection="refreshSection()"
               ref="sectionFilesRef"
@@ -553,9 +545,10 @@ defineExpose<SectionExposed>({ errors, thisSection });
               :depth="props.depth + 1"
               :sectionType="subSectionTypeMap.get('link')!"
               sectionSubType="Link"
-              @rowsReordered="(e) => rowsReordered(e, section.links as PageTab.BuildingSection[])"
+              fixed-first-column
+              @rowsReordered="(e) => rowsReordered(e, section.links!)"
               @columnUpdated="(msg) => updateColumnName(section.links as PageTab.BuildingSection[], msg)"
-              @columnsReordered="() => (sectionsRefreshKey += 1)"
+              @columnsReordered="columnsReordered"
               @delete="deleteSubSection(section.links as PageTab.BuildingSection[], 0)"
               @refreshSection="refreshSection()"
               ref="sectionLinksRef"
@@ -575,7 +568,7 @@ defineExpose<SectionExposed>({ errors, thisSection });
                 :parent="section"
                 @rowsReordered="(e) => rowsReordered(e, item[1])"
                 @columnUpdated="(msg) => updateColumnName(item[1], msg)"
-                @columnsReordered="() => (sectionsRefreshKey += 1)"
+                @columnsReordered="columnsReordered"
                 @delete="deleteSubSection(section.subsections as PageTab.BuildingSection[], index)"
                 @refreshSection="refreshSection()"
                 ref="errSpecialSecTableRefs"
@@ -619,7 +612,7 @@ defineExpose<SectionExposed>({ errors, thisSection });
                 :parent="section"
                 @rowsReordered="(e) => rowsReordered(e, subsection)"
                 @columnUpdated="(msg) => updateColumnName(subsection, msg)"
-                @columnsReordered="() => (sectionsRefreshKey += 1)"
+                @columnsReordered="columnsReordered"
                 @delete="deleteSubSection(section.subsections as PageTab.BuildingSection[], i)"
                 @refreshSection="refreshSection()"
                 ref="errSecTableRefs"
@@ -627,8 +620,8 @@ defineExpose<SectionExposed>({ errors, thisSection });
             </div>
             <SubsectionMenu
               :sectionType="sectionType"
-              @newSection="(type: Template.SectionType) => addSubsection(section, 1, type)"
-              @newTable="(type: Template.SectionType) => addTable(section, 1, type)"
+              @newSection="(type?: Template.SectionType) => addSubsection(section, 1, type)"
+              @newTable="(type?: Template.SectionType) => addTable(section, 1, type)"
             ></SubsectionMenu>
 
             <!-- Subsections end -->

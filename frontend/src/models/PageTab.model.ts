@@ -38,9 +38,9 @@ export namespace PageTab {
     accno?: string;
     type: string;
     attributes?: Attribute[];
-    subsections?: Section[];
-    links?: (Link | Link[])[];
-    files?: (File | File[])[];
+    subsections?: (Section | Section[])[];
+    links?: Link[];
+    files?: File[];
 
     label?: string;
     name?: string;

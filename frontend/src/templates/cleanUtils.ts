@@ -1,4 +1,5 @@
 import { PageTab } from '@/models/PageTab.model.ts';
+import { ensureArray } from '@/utils.ts';
 
 function cleanTopLevelAttributes(section: PageTab.Section) {
   if (Array.isArray(section.attributes)) {
@@ -21,7 +22,7 @@ function cleanTopLevelAttributes(section: PageTab.Section) {
 function cleanSubsectionAttributes(section: PageTab.Section) {
   if (Array.isArray(section.subsections)) {
     section.subsections?.forEach(sub => {
-      if (Array.isArray(sub.attributes)) {
+      if (!Array.isArray(sub) && Array.isArray(sub.attributes)) {
         sub.attributes = sub.attributes.filter(attr => {
           return !(
             attr &&
@@ -43,9 +44,9 @@ function cleanSubsectionAttributes(section: PageTab.Section) {
 function groupSubsections(section: PageTab.Section) {
   if (!Array.isArray(section.subsections)) return section;
 
-  const typeToGroup = new Map<string, {index: number, list: PageTab.Section[]}>();
+  const typeToGroup = new Map<string, { index: number, list: PageTab.Section[] }>();
 
-  section.subsections?.forEach((sub, idx) => {
+  section.subsections?.flatMap(ensureArray)?.forEach((sub, idx) => {
     const type = sub.type || sub.name || '__unknown__';
     if (!typeToGroup.has(type)) typeToGroup.set(type, { index: idx, list: [] });
     typeToGroup.get(type)!.list.push(sub);
@@ -60,9 +61,9 @@ function groupSubsections(section: PageTab.Section) {
 
 function cleanStudyComponentAssociations(section: PageTab.Section) {
   if (Array.isArray(section.subsections)) {
-    section.subsections?.forEach(sub => {
+    section.subsections?.flatMap(ensureArray)?.forEach(sub => {
       if (sub.type === 'Study Component' && Array.isArray(sub.subsections)) {
-        sub.subsections.forEach(nested => {
+        sub.subsections?.flatMap(ensureArray)?.forEach(nested => {
           if (nested.type === 'Associations' && Array.isArray(nested.attributes)) {
             nested.attributes = nested.attributes.filter(attr => {
               return !(
@@ -93,7 +94,7 @@ export function cleanAndReorderSubsections(section: PageTab.Section) {
     section = cleanStudyComponentAssociations(section);
     section = groupSubsections(section);
   } catch (err) {
-    console.warn("Cleaning failed:", err);
+    console.warn('Cleaning failed:', err);
   }
   return section;
 }

@@ -33,7 +33,7 @@ const props = defineProps<{
   pmid: PageTab.Tag,
   class?: Class,
   placeholder?: string,
-  row: PageTab.DetailedAttribute[]
+  row?: PageTab.DetailedAttribute[]
 }>()
 const pmidQuery = ref(props.pmid);
 const row = ref(props.row);

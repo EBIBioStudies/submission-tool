@@ -13,12 +13,13 @@ import Publication from '@/components/Publication.vue';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { Template } from '@/models/Template.model.ts';
 import { isFile } from '@/templates/templates.ts';
+import assert from 'assert';
 
 const hasValidated = inject<boolean>('hasValidated');
 
 const props = defineProps<{
   attribute: PageTab.BuildingSection,
-  fieldType: Template.FieldType,
+  fieldType?: Template.FieldType,
   parent?: (PageTab.DetailedAttribute)[], // TODO confirm type
   row?: PageTab.Section,
   isTableAttribute?: boolean,
@@ -34,12 +35,12 @@ const emits = defineEmits<{
 
 const attributeId = 'attribute-' + getCurrentInstance()!.uid;
 const thisAttribute = ref<PageTab.BuildingSection>(props.attribute);
-const curRow = ref(props.row);
+const curRow = ref<PageTab.BuildingSection>(props.row!);
 const attributeControl = ref<{ errors?: string[] }>();
 const thisMultiValuedAttribute = ref(
   props.parent?.map((a, i) => { // save the original index -- needed when deleting
     return { index: i, ...a };
-  })?.filter(a => a.name === thisAttribute.value.name && a?.value),
+  })?.filter(a => a.name === thisAttribute.value.name && a?.value) || [],
 );
 const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
 const editDateMode = inject('readOnlyEditDateMode');
@@ -57,15 +58,15 @@ function isString(val: any): val is string {
   return val !== null && typeof val === 'string' || val instanceof String;
 }
 
-const getAttributesFromFieldType = (fieldType: Template.FieldType) => {
-  return (fieldType?.controlType?.values ?? []).map((val) =>
+const getAttributesFromFieldType = (fieldType?: Template.FieldType) : PageTab.Attribute[] => {
+  return fieldType?.controlType?.values?.map((val) =>
     isString(val)
-      ? { name: fieldType.name, value: val }
-      : { name: fieldType.name, ...val },
-  );
+      ? { name: fieldType?.name, value: val }
+      : { name: fieldType?.name, ...val },
+  ) || [];
 };
 
-const getAttributesNotInFieldType = (fieldType: Template.FieldType, parent: PageTab.Attribute[]) => {
+const getAttributesNotInFieldType = (fieldType?: Template.FieldType, parent?: PageTab.Attribute[]) => {
   return parent?.filter(
     (a) =>
       a.name.toLowerCase() === props.attribute.name?.toLowerCase() &&
@@ -76,9 +77,9 @@ const getAttributesNotInFieldType = (fieldType: Template.FieldType, parent: Page
   );
 };
 
-const mergeAttributeArraysByValue = (a: PageTab.Attribute[], b: PageTab.Attribute[]) => {
-  const aValues = a.map((obj) => obj.value);
-  return [...(a ?? []), ...b.filter((o) => !aValues.includes(o.value))];
+const mergeAttributeArraysByValue = (a?: PageTab.Attribute[], b?: PageTab.Attribute[]) => {
+  const aValues = a?.map((obj) => obj.value) || [];
+  return [...(a ?? []), ...(b?.filter((o) => !aValues.includes(o.value)) || [])];
 };
 
 const singleSelectValues = computed(() => {
@@ -113,7 +114,7 @@ const onDeleteTag = (newTag: PageTab.IndexedTag) => {
     name: props.fieldType?.name,
     value: newTag?.value,
     index: newTag?.index,
-  };
+  }as PageTab.IndexedTag;
   emits('deleteTag', obj);
   return false; // ignore the event, it will be rendered by the parent
 };
@@ -189,8 +190,10 @@ defineExpose<AttributeExpose>(expose);
 
 
 const showHelp = () => {
-  utils.confirm(props.fieldType?.name,
-    `<p>${props.fieldType?.helpContextual?.description}</p>` +
+  assert(props.fieldType, 'fieldType is required')
+  assert(props.fieldType.helpContextual, 'help contextual is required')
+  utils.confirm(props.fieldType.name,
+    `<p>${props.fieldType.helpContextual?.description}</p>` +
     (!props.fieldType?.helpContextual?.examples ? '' :
       `<p><h6>Examples:</h6><i>${props.fieldType?.helpContextual?.examples?.join('<p> </p>')}</i></p>`),
     { isLarge: true, showCancel: false, level: 'primary' });
@@ -340,24 +343,24 @@ const showHelp = () => {
     <FileFolderSelectModal
       v-else-if="fieldType?.controlType?.name === 'file'"
       :row="curRow"
-      :file="thisAttribute"
-      :class="{'is-invalid':errors && hasValidated}"
+      :file="thisAttribute as PageTab.File"
+      :class="{'is-invalid': !!(errors && hasValidated)}"
     />
 
     <FileFolderSelectModal
       v-else-if="fieldType?.controlType?.name === 'filelist'"
-      :file="thisAttribute"
+      :file="thisAttribute as PageTab.File"
       :is-file-list=true
-      :class="{'is-invalid':errors && hasValidated}"
+      :class="{'is-invalid':!!(errors && hasValidated)}"
     />
 
     <!-- link -->
     <Link
       v-else-if="fieldType?.controlType?.name === 'idlink'"
       ref="attributeControl"
-      :row="curRow"
-      :link="thisAttribute"
-      :class="{'is-invalid':errors && hasValidated}"
+      :row="curRow as PageTab.Link"
+      :link="thisAttribute  as PageTab.Link"
+      :class="{'is-invalid':!!(errors && hasValidated)}"
       :placeholder="fieldType?.controlType?.placeholder"
     />
 
@@ -365,7 +368,7 @@ const showHelp = () => {
     <Reference
       v-else-if="fieldType?.controlType?.name === 'reference'"
       v-model="thisAttribute.value"
-      :class="{'is-invalid':errors && hasValidated}"
+      :class="{'is-invalid':!!(errors && hasValidated)}"
       :fieldType="fieldType"
       :disabled="parentDisplayType==='readonly' || display==='readonly'"
     >
@@ -387,9 +390,9 @@ const showHelp = () => {
       v-else-if="fieldType?.controlType?.name === 'pubmedid' || fieldType?.controlType?.name === 'pmid' || fieldType?.controlType?.name === 'pubmed id'"
       ref="attributeControl"
       :row="props.parent"
-      :pmid="thisAttribute"
+      :pmid="thisAttribute as PageTab.Tag"
       :disabled="(parentDisplayType==='readonly' || display==='readonly') && collectionName != 'ArrayExpress'"
-      :class="{'is-invalid':errors && hasValidated}"
+      :class="{'is-invalid':!!(errors && hasValidated)}"
       :placeholder="fieldType?.controlType?.placeholder"
     />
 
@@ -399,7 +402,7 @@ const showHelp = () => {
       type="text"
       class="form-control"
       :class="{
-        'is-invalid': errors && hasValidated,
+        'is-invalid': !!(errors && hasValidated),
         'min-width-inp': isTableAttribute
       }"
       :disabled="false"

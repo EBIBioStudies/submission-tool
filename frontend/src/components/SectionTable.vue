@@ -9,15 +9,17 @@ import Multiselect from '@vueform/multiselect';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { Template } from '@/models/Template.model.ts';
 import { AttributeExpose } from 'components/Attribute.vue';
+import { SectionExpose } from 'components/expose.model.ts';
 
 
 const props = defineProps<{
   rows: PageTab.BuildingSection[],
   depth: number,
-  sectionType: Template.TableType,
+  sectionType?: Template.TableType,
   sectionSubType?: string,
   parent?: PageTab.BuildingSection,
   startCollapsed?: boolean,
+  fixedFirstColumn?: boolean,
   title?: string,
 }>();
 
@@ -41,8 +43,10 @@ const theseRows = ref(props.rows);
 const headerMap = new Map<string, PageTab.Attribute[]>();
 const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
 const sectionsRefreshKey = ref(0);
+const colDrag = ref(false);
+const rowDrag = ref(false);
+
 const columnTypes = props?.sectionType?.columnTypes || [];
-const requiredColumnsArr = columnTypes.filter(item => item.display !== 'required').map(item => item.name);
 
 const hideNonRequiredColumns = props?.sectionType?.hideColumns || false;
 
@@ -60,6 +64,11 @@ theseRows.value.forEach((row) => {
 });
 const keys = ['', ...headerMap.keys(), ''];
 const headers = ref(keys);
+const columnOptions = computed(() => columnTypes
+  .filter(col => col.display !== 'required')
+  .filter(col => !headers.value.includes(col.name))
+  .map(col => col.name)
+)
 
 const getFieldType = (attribute: PageTab.BuildingSection): Template.FieldType => {
   let name = attribute?.type?.toLowerCase() === 'file' || attribute.hasOwnProperty('path') ? 'File' : attribute?.name || attribute;
@@ -98,13 +107,20 @@ const getCell = (row: PageTab.Section, col: string): PageTab.BuildingSection => 
   return attribute as PageTab.BuildingSection;
 };
 
+const canMove= (e: {draggedContext: {futureIndex: number, index: number, element: any}}): boolean => {
+  return !(props.fixedFirstColumn && e.draggedContext.futureIndex === 1)
+}
 const reorderColumns = () => {
   const atts = theseRows.value[0].attributes!;
   headers.value.forEach((header, i) => {
     if (header === '') return;
     const index = atts.findIndex((a) => a.name === header);
-    const deleted = atts.splice(index, 1);
-    atts.splice(i - 1, 0, deleted[0]);
+    theseRows.value.forEach(row => {
+      if (!row.attributes) return;
+      const deleted = row.attributes.splice(index, 1);
+      row.attributes.splice(i - 1, 0, deleted[0]);
+    })
+
   });
   emits('columnsReordered');
 };
@@ -205,7 +221,7 @@ const showHelp = (header: Template.SectionType) => {
 };
 
 
-defineExpose({ errors, thisSection });
+defineExpose<SectionExpose>({ errors, thisSection });
 
 </script>
 
@@ -235,75 +251,83 @@ defineExpose({ errors, thisSection });
         <table class="table table-responsive">
           <thead>
           <draggable v-model="headers" :item-key="(key: string) => key" tag="tr" @end.stop="reorderColumns"
-                     :disabled="true">
-            <template #item="{ element: header, index: i }">
-              <th :class="{ fixed: i === 0 || i === headers?.length - 1 }">
-                <div v-if="i > 0 && i < headers.length - 1" class="input-group input-group-sm align-items-center">
-                  <template v-if="!getFieldType(header)?.createdOnRender">
-                    <label class="input-group-text ">
-                      <!--                      <font-awesome-icon-->
-                      <!--                        v-if="getFieldType(header)?.icon"-->
-                      <!--                        class="icon"-->
-                      <!--                        :icon="getFieldType(header)?.icon"-->
-                      <!--                      ></font-awesome-icon>-->
-                      <!--                      <font-awesome-icon-->
-                      <!--                        v-else-->
-                      <!--                        class="icon"-->
-                      <!--                        inverse-->
-                      <!--                        icon="fa-check"-->
-                      <!--                      ></font-awesome-icon>-->
-                      <span class="form-control-sm">{{ getFieldType(header)?.name }}
+                     handle=".handle" :move="canMove" @start="colDrag = true" @end="colDrag = false" >
+              <template #item="{ element: header, index: i }">
+
+                <th :class="{ fixed: i === 0 || i === headers?.length - 1 }">
+                  <div v-if="i > 0 && i < headers.length - 1" class="input-group input-group-sm align-items-center">
+                    <template v-if="!getFieldType(header)?.createdOnRender">
+
+                      <label class="input-group-text ">
+                        <font-awesome-icon icon="fa-solid fa-grip-horizontal" class="handle icon" v-if="!(fixedFirstColumn && i === 1)"/>
+
+                        <!--                      <font-awesome-icon-->
+                        <!--                        v-if="getFieldType(header)?.icon"-->
+                        <!--                        class="icon"-->
+                        <!--                        :icon="getFieldType(header)?.icon"-->
+                        <!--                      ></font-awesome-icon>-->
+                        <!--                      <font-awesome-icon-->
+                        <!--                        v-else-->
+                        <!--                        class="icon"-->
+                        <!--                        inverse-->
+                        <!--                        icon="fa-check"-->
+                        <!--                      ></font-awesome-icon>-->
+                        <span class="form-control-sm">{{ getFieldType(header)?.name }}
                           <span class="text-danger"
                                 v-if="getFieldType(header)?.display==='required' || (getFieldType(header)?.controlType?.minlength || 0) >0">*</span>
                         </span>
-                      <font-awesome-icon v-if="getFieldType(header)?.helpContextual" :icon="['fas','circle-question']"
-                                         class="text-black-50 ps-1 small"
-                                         role="button" @click="showHelp(getFieldType(header))" />
 
-                      <font-awesome-icon
-                        v-if="getFieldType(header)?.display !== 'required' && parentDisplayType !== 'readonly' && hideNonRequiredColumns"
-                        role="button" @click.prevent="deleteColumn(i)" class="icon fa-sm"
-                        icon="fa-trash"></font-awesome-icon>
-                    </label>
-                  </template>
-                  <template v-else-if="header?.toLowerCase()!=='type' || tableType!=='Link'">
-                    <div class="input-group-text">
-                      <input v-if="!hideNonRequiredColumns" ref="headerComponent" :value="header" class="form-control"
-                             :disabled="parentDisplayType === 'readonly'" type="text"
-                             @change.stop="(e) => updateColumnName( (e.target as HTMLInputElement).value, i)">
+                        <font-awesome-icon v-if="getFieldType(header)?.helpContextual" :icon="['fas','circle-question']"
+                                           class="text-black-50 ps-1 small"
+                                           role="button" @click="showHelp(getFieldType(header))" />
 
-                      <Multiselect v-else
-                                   ref="headerComponent"
-                                   :allow-absent="true"
-                                   label="value"
-                                   :value="header"
-                                   class="form-control"
-                                   :searchable="true"
-                                   :options="requiredColumnsArr"
-                                   :disabled="parentDisplayType==='readonly' "
-                                   :allow-empty="false"
-                                   :append-to-body="true"
-                                   :create-option="true"
-                                   @input="updateColumnName( $event, i)"
-                                   @remove="updateColumnName( $event, i)"
-                      />
-                      <button v-if="getFieldType(header)?.display !== 'required' && parentDisplayType !== 'readonly'"
-                              class="btn btn-outline-secondary icon" type="button" @click.prevent="deleteColumn(i)">
-                        <font-awesome-icon class="fa-sm" icon="fa-trash"></font-awesome-icon>
-                      </button>
-                    </div>
-                  </template>
-                </div>
-              </th>
-            </template>
+                        <font-awesome-icon
+                          v-if="getFieldType(header)?.display !== 'required' && parentDisplayType !== 'readonly' && hideNonRequiredColumns"
+                          role="button" @click.prevent="deleteColumn(i)" class="icon fa-sm"
+                          icon="fa-trash"></font-awesome-icon>
+                      </label>
+
+                    </template>
+                    <template v-else-if="header?.toLowerCase()!=='type' || tableType!=='Link'">
+                      <div class="input-group-text">
+                        <font-awesome-icon icon="fa-solid fa-grip-horizontal" class="handle icon" />
+
+                        <input v-if="!hideNonRequiredColumns || columnOptions.length === 0" ref="headerComponent" :value="header" class="form-control" style="height: 31px"
+                               :disabled="parentDisplayType === 'readonly'" type="text"
+                               @change.stop="(e) => updateColumnName( (e.target as HTMLInputElement).value, i)">
+
+                        <Multiselect v-else style="height: 31px"
+                                     ref="headerComponent"
+                                     :allow-absent="true"
+                                     label="value"
+                                     :value="header"
+                                     class="form-control"
+                                     :searchable="true"
+                                     :options="columnOptions"
+                                     :disabled="parentDisplayType==='readonly' "
+                                     :allow-empty="false"
+                                     :append-to-body="true"
+                                     :create-option="true"
+                                     @input="updateColumnName( $event, i)"
+                                     @remove="updateColumnName( $event, i)"
+                        />
+                        <font-awesome-icon
+                          v-if="getFieldType(header)?.display !== 'required' && parentDisplayType !== 'readonly'"
+                          role="button" @click.prevent="deleteColumn(i)" class="icon fa-sm"
+                          icon="fa-trash"></font-awesome-icon>
+                      </div>
+                    </template>
+                  </div>
+                </th>
+              </template>
           </draggable>
           </thead>
-          <draggable :disabled="true" v-model="theseRows" item-key="name" tag="tbody"
+          <draggable v-model="theseRows" item-key="name" tag="tbody" handle=".handle"
                      @end="(e : any) => emits('rowsReordered', {oldIndex: e.oldIndex, newIndex: e.newIndex})">
             <template #item="{ element: row, index: index }">
               <tr>
                 <td class="grip">
-                  <font-awesome-icon icon="fa-solid fa-grip-vertical" />
+                  <font-awesome-icon icon="fa-solid fa-grip-vertical" class="handle" />
                 </td>
                 <td v-for="(col, j) in [...headers].filter((_v, i) => i > 0 && i < headers.length - 1 )" :key="j">
                   <Attribute v-if="tableType!=='Link' || col?.toLowerCase()!=='type'" :key="index"
@@ -342,15 +366,22 @@ defineExpose({ errors, thisSection });
 </template>
 
 <style scoped>
-.grip {
-  color: #cccccc;
+.input-group-text {
+  gap: .5rem;
+  flex: 1;
 }
 
 .grip {
+  color: #cccccc;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.handle {
   cursor: grab;
 }
 
-.grip:active {
+.handle:active {
   cursor: grabbing;
 }
 

@@ -183,8 +183,7 @@ import AnnouncementBanner from '@/components/AnnouncementBanner.vue';
 import { cleanAndReorderSubsections } from './templates/cleanUtils';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { Template } from '@/models/Template.model.ts';
-import { SubmissionExposed } from 'components/Submission.vue';
-import { ControlError } from '@/models/Error.model.ts';
+import { ControlError, SectionExpose } from 'components/expose.model.ts';
 
 
 const props = defineProps<{ accession: string }>();
@@ -212,7 +211,7 @@ const { enableSubmission } = useFeatureFlags();
 const showModal = ref(false);
 isManagerUser.value = AuthService?.user?.value?.superuser == true;
 
-const submissionComponent = ref<SubmissionExposed>();
+const submissionComponent = ref<SectionExpose>();
 
 let offCanvasErrors: Offcanvas | null = null;
 let offCanvasJson: Offcanvas | null = null;
@@ -429,7 +428,7 @@ watchEffect(async () => {
     isLoading.value = false;
   } else {
     //TODO: display error
-    console.log('No such submission');
+    console.error('No such submission');
   }
 });
 const updatedSubmission = computed(() =>

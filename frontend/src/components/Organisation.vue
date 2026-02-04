@@ -5,7 +5,7 @@ import axios from 'axios';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { ROR } from '@/models/Organisation.model.ts';
 import { Template } from '@/models/Template.model.ts';
-import { Class } from '@/utils.ts';
+import { Class, ensureArray } from '@/utils.ts';
 
 const model = defineModel<any[]>();
 const props = defineProps<{
@@ -106,7 +106,7 @@ const mapRorItemsToOptionsUnique = (items: ROR.Organisation[] = []) => {
 
 organisations.value = model.value!
   .map((affiliation) => {
-    const org = submission?.value.section.subsections?.filter(
+    const org = submission?.value.section.subsections?.flatMap(ensureArray)?.filter(
       (s) =>
         (s?.type?.toLowerCase() === 'organisation' ||
           s?.type?.toLowerCase() === 'organization') &&

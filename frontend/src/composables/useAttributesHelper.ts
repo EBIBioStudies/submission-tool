@@ -33,8 +33,9 @@ const transformFieldName = (originalFieldName: string) : string => {
  * If missing, inserts a new attribute object with the type's name and an empty value
  * at the corresponding index in the reactive attributes array.
  */
-export const addMissingAttributesGeneral = (attributesRef: Ref<PageTab.Attribute[]>, typesDefinition: Template.Type[]) => {
-  for (let i = 0; i < typesDefinition?.length; i++) {
+export const addMissingAttributesGeneral = (attributesRef: Ref<PageTab.Attribute[] | undefined>, typesDefinition?: Template.Type[]) => {
+  if (!attributesRef.value || !typesDefinition) return;
+  for (let i = 0; i < typesDefinition.length; i++) {
     const typeDefinition = typesDefinition[i];
     // exit if not required
     if (typeDefinition?.display !== 'required') continue;
