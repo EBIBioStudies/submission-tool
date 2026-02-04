@@ -524,7 +524,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
           <div class="p-0" :key="sectionsRefreshKey">
             <!-- Files -->
             <SectionTable
-              v-if="section.files && Array.isArray(section.files)"
+              v-if="section.files && Array.isArray(section.files) && section.files.length > 0"
               :rows="section.files as PageTab.BuildingSection[]"
               :depth="props.depth + 1"
               :sectionType="subSectionTypeMap.get('file')!"
