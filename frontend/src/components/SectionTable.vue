@@ -257,9 +257,10 @@ defineExpose<SectionExpose>({ errors, thisSection });
                 <th :class="{ fixed: i === 0 || i === headers?.length - 1 }">
                   <div v-if="i > 0 && i < headers.length - 1" class="input-group input-group-sm align-items-center">
                     <template v-if="!getFieldType(header)?.createdOnRender">
-
-                      <label class="input-group-text ">
-                        <font-awesome-icon icon="fa-solid fa-grip-horizontal" class="handle icon" v-if="!(fixedFirstColumn && i === 1)"/>
+                      <div class="input-group-text p-0 justify-content-center square h-100" v-if="!(fixedFirstColumn && i === 1)">
+                        <font-awesome-icon icon="fa-grip-horizontal" class="handle icon fa-sm" />
+                      </div>
+                      <label class="input-group-text flex-grow-1">
 
                         <!--                      <font-awesome-icon-->
                         <!--                        v-if="getFieldType(header)?.icon"-->
@@ -281,41 +282,43 @@ defineExpose<SectionExpose>({ errors, thisSection });
                                            class="text-black-50 ps-1 small"
                                            role="button" @click="showHelp(getFieldType(header))" />
 
-                        <font-awesome-icon
-                          v-if="getFieldType(header)?.display !== 'required' && parentDisplayType !== 'readonly' && hideNonRequiredColumns"
-                          role="button" @click.prevent="deleteColumn(i)" class="icon fa-sm"
-                          icon="fa-trash"></font-awesome-icon>
                       </label>
+                      <button class="btn btn-outline-secondary icon square h-100"
+                              v-if="getFieldType(header)?.display !== 'required' && parentDisplayType !== 'readonly' && hideNonRequiredColumns"
+                              @click.prevent="deleteColumn(i)">
+                        <font-awesome-icon  class="fa-sm" icon="fa-trash"></font-awesome-icon>
+                      </button>
 
                     </template>
                     <template v-else-if="header?.toLowerCase()!=='type' || tableType!=='Link'">
-                      <div class="input-group-text">
-                        <font-awesome-icon icon="fa-solid fa-grip-horizontal" class="handle icon" />
-
-                        <input v-if="!hideNonRequiredColumns || columnOptions.length === 0" ref="headerComponent" :value="header" class="form-control" style="height: 31px"
-                               :disabled="parentDisplayType === 'readonly'" type="text"
-                               @change.stop="(e) => updateColumnName( (e.target as HTMLInputElement).value, i)">
-
-                        <Multiselect v-else style="height: 31px"
-                                     ref="headerComponent"
-                                     :allow-absent="true"
-                                     label="value"
-                                     :value="header"
-                                     class="form-control"
-                                     :searchable="true"
-                                     :options="columnOptions"
-                                     :disabled="parentDisplayType==='readonly' "
-                                     :allow-empty="false"
-                                     :append-to-body="true"
-                                     :create-option="true"
-                                     @input="updateColumnName( $event, i)"
-                                     @remove="updateColumnName( $event, i)"
-                        />
-                        <font-awesome-icon
-                          v-if="getFieldType(header)?.display !== 'required' && parentDisplayType !== 'readonly'"
-                          role="button" @click.prevent="deleteColumn(i)" class="icon fa-sm"
-                          icon="fa-trash"></font-awesome-icon>
+                      <div class="input-group-text p-0 justify-content-center square h-100" v-if="!(fixedFirstColumn && i === 1)">
+                        <font-awesome-icon icon="fa-grip-horizontal" class="handle icon fa-sm"/>
                       </div>
+                      <input v-if="!hideNonRequiredColumns || columnOptions.length === 0" ref="headerComponent" :value="header" class="form-control h-100"
+                             :disabled="parentDisplayType === 'readonly'" type="text"
+                             @change.stop="(e) => updateColumnName( (e.target as HTMLInputElement).value, i)">
+
+                      <Multiselect v-else
+                                   ref="headerComponent"
+                                   :allow-absent="true"
+                                   label="value"
+                                   :value="header"
+                                   class="form-control h-100 pe-0"
+                                   :searchable="true"
+                                   :options="columnOptions"
+                                   :disabled="parentDisplayType==='readonly' "
+                                   :allow-empty="false"
+                                   :append-to-body="true"
+                                   :create-option="true"
+                                   @input="updateColumnName( $event, i)"
+                                   @remove="updateColumnName( $event, i)"
+                      />
+
+                      <button class="btn btn-outline-secondary icon square h-100"
+                              v-if="getFieldType(header)?.display !== 'required' && parentDisplayType !== 'readonly'"
+                              @click.prevent="deleteColumn(i)">
+                        <font-awesome-icon  class="fa-sm" icon="fa-trash"></font-awesome-icon>
+                      </button>
                     </template>
                   </div>
                 </th>
@@ -366,10 +369,14 @@ defineExpose<SectionExpose>({ errors, thisSection });
 </template>
 
 <style scoped>
-.input-group-text {
-  gap: .5rem;
-  flex: 1;
+.input-group {
+  height: 41px;
 }
+
+.square {
+  aspect-ratio: 1;
+}
+
 
 .grip {
   color: #cccccc;

@@ -17,6 +17,7 @@ const props = defineProps<{
   sectionSubType?: string,
   parent?: PageTab.BuildingSection,
   startCollapsed?: boolean,
+  fixedFirstColumn?: boolean,
   title?: string,
 }>();
 
@@ -111,13 +112,17 @@ const getCell = (row: PageTab.BuildingSection, col: string): PageTab.BuildingSec
   return attribute as PageTab.BuildingSection;
 };
 
-const reorderColumns = (_event: { newIndex: number, oldIndex: number }) => {
+const reorderColumns = () => {
   const atts = theseRows.value[0].attributes!;
   headers.value.forEach((header, i) => {
     if (header === '') return;
     const index = atts.findIndex((a) => a.name === header);
-    const deleted = atts.splice(index, 1);
-    atts.splice(i - 1, 0, deleted[0]);
+    theseRows.value.forEach(row => {
+      if (!row.attributes) return;
+      const deleted = row.attributes.splice(index, 1);
+      row.attributes.splice(i - 1, 0, deleted[0]);
+    });
+
   });
   emits('columnsReordered');
 };
@@ -345,22 +350,24 @@ defineExpose<SectionExpose>({ errors, thisSection });
         <table class="table table-responsive">
           <thead>
           <draggable
-            :disabled="true"
             v-model="headers"
             :item-key="(key: any) => key"
-            tag="tr"
+            tag="tr" handle=".handle"
             @end.stop="reorderColumns"
           >
             <template #item="{ element: header, index: i }">
               <th :class="{ fixed: i === 0 || i === headers?.length - 1 }">
                 <div
                   v-if="i > 0 && i < headers.length - 1"
-                  class="input-group input-group-sm align-items-center"
+                  class="input-group input-group-sm "
                 >
                   <template v-if="!getFieldType(header)?.createdOnRender">
-                    <label class="input-group-text">
-                        <span class="form-control-sm"
-                        >{{ getFieldType(header)?.name }}
+                    <div class="input-group-text p-0 justify-content-center square h-100" v-if="!(fixedFirstColumn && i === 1)">
+                      <font-awesome-icon icon="fa-grip-horizontal" class="handle icon fa-sm"/>
+                    </div>
+                    <label class="input-group-text flex-grow-1">
+                      <span class="form-control-sm"
+                      >{{ getFieldType(header)?.name }}
                           <span
                             class="text-danger"
                             v-if="
@@ -381,12 +388,15 @@ defineExpose<SectionExpose>({ errors, thisSection });
                         v-if="!getFieldType(header)?.display"
                         role="button"
                         @click.prevent="deleteColumn(i)"
-                        class="icon fa-sm"
+                        class="icon fa-sm square"
                         icon="fa-trash"
                       ></font-awesome-icon>
                     </label>
                   </template>
                   <template v-else>
+                    <div class="input-group-text p-0 justify-content-center square h-100" v-if="!(fixedFirstColumn && i === 1)">
+                      <font-awesome-icon icon="fa-grip-horizontal" class="handle icon fa-sm"/>
+                    </div>
                     <input
                       ref="headerComponent"
                       :value="header"
@@ -400,7 +410,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
                     />
                     <button
                       v-if="!getFieldType(header)?.display"
-                      class="btn btn-outline-secondary icon"
+                      class="btn btn-outline-secondary icon square h-100"
                       type="button"
                       @click.prevent="deleteColumn(i)"
                     >
@@ -416,16 +426,15 @@ defineExpose<SectionExpose>({ errors, thisSection });
           </draggable>
           </thead>
           <draggable
-            :disabled="true"
             v-model="theseRows"
             item-key="name"
-            tag="tbody"
+            tag="tbody" handle=".handle"
             @end="(e: any) => emits('rowsReordered', {oldIndex: e.oldIndex, newIndex: e.newIndex})"
           >
             <template #item="{ element: row, index: index }">
               <tr>
                 <td class="grip">
-                  <font-awesome-icon icon="fa-solid fa-grip-vertical" />
+                  <font-awesome-icon icon="fa-solid fa-grip-vertical" class="handle" />
                 </td>
                 <td
                   v-for="(col, j) in [...headers].filter(
@@ -485,17 +494,25 @@ defineExpose<SectionExpose>({ errors, thisSection });
 </template>
 
 <style scoped>
+.input-group {
+  height: 41px;
+}
+
+.square {
+  aspect-ratio: 1;
+}
+
 .grip {
   color: #cccccc;
   text-align: center;
   vertical-align: middle;
 }
 
-.grip {
+.handle {
   cursor: grab;
 }
 
-.grip:active {
+.handle:active {
   cursor: grabbing;
 }
 

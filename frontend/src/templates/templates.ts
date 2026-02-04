@@ -81,7 +81,6 @@ export const fillTemplate = (section: PageTab.BuildingSection, tmpl: Template.Se
     } else if (field?.controlType?.name === 'select') attr.value = '';
     section.attributes.push(attr);
   }
-  ;
 
   // fill sections
   [...(tmpl?.tableTypes ?? []), ...(tmpl?.sectionTypes ?? [])].forEach((sectionTemplate) => {
