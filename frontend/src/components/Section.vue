@@ -170,6 +170,7 @@ const addSubsection = async (aSection: PageTab.Section, _i: number, type?: Templ
   }
   obj.accno = String(obj.accno) + '-removable';
 
+  if (!obj.type) obj.type = 'Custom section';
   aSection.subsections.push(obj);
 
   // Make sure the map with subsections is updated
