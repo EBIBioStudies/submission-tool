@@ -43,8 +43,6 @@ const theseRows = ref(props.rows);
 const headerMap = new Map<string, PageTab.Attribute[]>();
 const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
 const sectionsRefreshKey = ref(0);
-const colDrag = ref(false);
-const rowDrag = ref(false);
 
 const columnTypes = props?.sectionType?.columnTypes || [];
 
@@ -247,15 +245,15 @@ defineExpose<SectionExpose>({ errors, thisSection });
       </span>
     </div>
     <div v-if="!isCollapsed" :key="sectionsRefreshKey" class="ps-3">
-      <div :class="{ 'table-container': tableType === 'Contacts' }">
+      <div class="table-container">
         <table class="table table-responsive">
           <thead>
           <draggable v-model="headers" :item-key="(key: string) => key" tag="tr" @end.stop="reorderColumns"
-                     handle=".handle" :move="canMove" @start="colDrag = true" @end="colDrag = false" >
+                     handle=".handle" :move="canMove" >
               <template #item="{ element: header, index: i }">
 
                 <th :class="{ fixed: i === 0 || i === headers?.length - 1 }">
-                  <div v-if="i > 0 && i < headers.length - 1" class="input-group input-group-sm align-items-center">
+                  <div v-if="i > 0 && i < headers.length - 1" class="input-group input-group-sm align-items-center flex-nowrap">
                     <template v-if="!getFieldType(header)?.createdOnRender">
                       <div class="input-group-text p-0 justify-content-center square h-100" v-if="!(fixedFirstColumn && i === 1)">
                         <font-awesome-icon icon="fa-grip-horizontal" class="handle icon fa-sm" />
@@ -373,6 +371,10 @@ defineExpose<SectionExpose>({ errors, thisSection });
   height: 41px;
 }
 
+input[type="text"].form-control {
+  min-width: 100px;
+}
+
 .square {
   aspect-ratio: 1;
 }
@@ -412,7 +414,7 @@ th:active {
 
 .table-container {
   width: 100%; /* Set your desired fixed width */
-  overflow-x: scroll; /* Add horizontal scrollbar when content overflows */
+  overflow-x: auto; /* Add horizontal scrollbar when content overflows */
   overflow-y: visible;
   white-space: nowrap; /* Prevent content from wrapping to the next line */
   display: flex;

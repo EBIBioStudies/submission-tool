@@ -359,7 +359,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
               <th :class="{ fixed: i === 0 || i === headers?.length - 1 }">
                 <div
                   v-if="i > 0 && i < headers.length - 1"
-                  class="input-group input-group-sm "
+                  class="input-group input-group-sm flex-nowrap"
                 >
                   <template v-if="!getFieldType(header)?.createdOnRender">
                     <div class="input-group-text p-0 justify-content-center square h-100" v-if="!(fixedFirstColumn && i === 1)">
@@ -496,6 +496,10 @@ defineExpose<SectionExpose>({ errors, thisSection });
 <style scoped>
 .input-group {
   height: 41px;
+}
+
+input[type="text"].form-control {
+  min-width: 100px;
 }
 
 .square {
