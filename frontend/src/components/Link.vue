@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { computed, inject, onMounted, ref, watch } from 'vue';
+import { computed, inject, onMounted, ref, watch, watchEffect } from 'vue';
 import { prefixToLinkMap, SearchLinks } from '@/templates/links';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { Template } from '@/models/Template.model.ts';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { Class } from '@/utils.ts';
+import * as bootstrap from 'bootstrap';
+import { AttributeExpose } from 'components/expose.model.ts';
 
 const props = defineProps<{
   fieldType?: Template.FieldType,
@@ -21,12 +23,12 @@ const filteredListItems = ref<string[]>([]);
 const parentDisplayType = inject('parentDisplayType');
 
 const errors = computed(() => getErrors());
-const getErrors = () => {
-  const _errors = [];
+const getErrors: () => string[] = () => {
+  const _errors = [] as string[];
   if (!isIdLink(thisLink.value) && !isUrl.value) {
     _errors.push('Please enter a valid url or link');
   }
-  return _errors.length ? _errors.join('. ').trim() : null;
+  return _errors;
 };
 
 
@@ -42,6 +44,11 @@ const filterList = () => {
 const removeSuggestions = () => {
   showSuggestions.value = false;
 };
+
+const inputRef = ref<HTMLDivElement>();
+const dropdownRef = ref<HTMLDivElement>();
+const dropdown = computed(() => dropdownRef.value && bootstrap.Dropdown.getOrCreateInstance(dropdownRef.value, {popperConfig: {strategy: 'fixed'}}));
+watchEffect(() => showSuggestions.value ? dropdown.value?.show() : dropdown.value?.hide())
 
 onMounted(async () => {
   const attribute = row.value?.attributes?.find(att => att?.name === 'Type');
@@ -94,17 +101,17 @@ const isIdLink = ((value: string) => /^([\w\s].+):([\w\W]+)$/.test(value));
 
 const isUrl = computed(() => /^(http|https|ftp):\/\/.+$/.test(thisLink.value!));
 
-defineExpose({ errors });
+defineExpose<AttributeExpose>({ errors });
 
 </script>
 
 <template>
-  <div class="w-100 ">
-    <div class="input-group input-group-sm dropdown">
+  <div class="w-100 wrapper">
+    <div class="input-group input-group-sm dropdown" ref="dropdownRef">
       <input
-        type="text"
+        type="text" ref="inputRef"
         :disabled="parentDisplayType==='readonly'"
-        class="form-control text-primary  dropdown-input"
+        class="form-control text-primary dropdown-input"
         :class="props?.class"
         :placeholder="props?.placeholder"
         v-model="thisLink"
@@ -121,7 +128,7 @@ defineExpose({ errors });
                              :icon="['fas','fa-external-link-alt']"></font-awesome-icon>
         </a>
       </div>
-      <div class="dropdown-menu show" v-if="showSuggestions">
+      <div class="dropdown-menu" :style="{width: (dropdownRef?.clientWidth || 200)  - 40 + 'px'}">
         <a
           v-for="(item, index) in filteredListItems"
           :key="index"
@@ -135,12 +142,13 @@ defineExpose({ errors });
 </template>
 
 <style scoped>
+
+.wrapper {
+  min-width: 150px;
+}
+
+
 .dropdown-menu {
-  display: block; /* Make sure the dropdown is always shown when there are filtered items */
-  position: absolute; /* Position the dropdown menu absolutely within its positioned parent */
-  top: 100%; /* Align the top of the dropdown menu with the bottom of the parent container */
-  left: 0;
-  width: calc(100% - 45px);
   z-index: 1000; /* Ensure the dropdown is stacked above other content */
   max-height: 200px;
   overflow-y: auto;

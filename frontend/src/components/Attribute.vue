@@ -35,7 +35,7 @@ const emits = defineEmits<{
 const attributeId = 'attribute-' + getCurrentInstance()!.uid;
 const thisAttribute = ref<PageTab.BuildingSection>(props.attribute);
 const curRow = ref<PageTab.BuildingSection>(props.row!);
-const attributeControl = ref<{ errors?: string[] }>();
+const attributeControl = ref<AttributeExpose>();
 const thisMultiValuedAttribute = ref(
   props.parent?.map((a, i) => { // save the original index -- needed when deleting
     return { index: i, ...a };
@@ -216,8 +216,7 @@ const showHelp = () => {
         icon="fa-check"
       ></font-awesome-icon>
       <span class="text-muted" v-if="fieldType?.display"><span class="attribute-name">{{ fieldType.name }}</span>
-        <span class="text-danger"
-              v-if="fieldType?.display==='required' || minLength > 0">*</span>
+        <span class="text-danger" v-if="fieldType?.display==='required' || minLength > 0">*</span>
       </span>
       <span v-else>
       <input
