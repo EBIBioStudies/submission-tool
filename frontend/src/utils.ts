@@ -16,7 +16,13 @@ interface PromptOptions {
   cancelLabel?: string;
 }
 
-const confirm = (title: string, message: string, {okayLabel = 'Close', isLarge = false, showCancel = true, cancelLabel = 'Cancel', level = 'danger'}: ConfirmOptions = {}): Promise<boolean> => {
+const confirm = (title: string, message: string, {
+  okayLabel = 'Close',
+  isLarge = false,
+  showCancel = true,
+  cancelLabel = 'Cancel',
+  level = 'danger',
+}: ConfirmOptions = {}): Promise<boolean> => {
   const modal = document.createElement('div');
   let isOkay = false;
   modal.id = 'modal-confirm';
@@ -60,7 +66,12 @@ const confirm = (title: string, message: string, {okayLabel = 'Close', isLarge =
   });
 };
 
-const prompt = (title: string, message: string, {okayLabel = 'Close', isLarge = false, showCancel = true, cancelLabel = 'Cancel'}: PromptOptions = {}): Promise<string> => {
+const prompt = (title: string, message: string, {
+  okayLabel = 'Close',
+  isLarge = false,
+  showCancel = true,
+  cancelLabel = 'Cancel',
+}: PromptOptions = {}): Promise<string> => {
   const modal = document.createElement('div');
   modal.id = 'modal-confirm';
   modal.className = 'modal' + (isLarge ? ' modal-lg' : '');
@@ -167,6 +178,21 @@ export const isList = <T>(element: (T | T[])[]): element is T[] => {
 
 export const isString = (value: any): value is string => {
   return typeof value === 'string';
+};
+
+
+export function assert(condition: boolean, message: string): asserts condition {
+  if (!condition) {
+    throw new Error(message);
+  }
+}
+
+export function assertDefined<T>(obj: T | null | undefined, message: string): asserts obj is T {
+  assert(isDefined(obj), message);
+}
+
+export const isClass = (item: Class): item is string => {
+  return typeof item === 'string';
 };
 
 export type Class = string | Record<string, boolean> | (string | Record<string, boolean>)[];

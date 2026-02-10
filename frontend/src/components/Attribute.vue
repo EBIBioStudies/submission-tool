@@ -6,14 +6,13 @@ import DatePicker from 'vue-datepicker-next';
 import 'vue-datepicker-next/index.css';
 import FileFolderSelectModal from '@/components/FileFolderSelectModal.vue';
 import Link from '@/components/Link.vue';
-import utils from '@/utils';
+import utils, { assertDefined } from '@/utils';
 import Reference from '@/components/Reference.vue';
 import Organisation from '@/components/Organisation.vue';
 import Publication from '@/components/Publication.vue';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { Template } from '@/models/Template.model.ts';
 import { isFile } from '@/templates/templates.ts';
-import assert from 'assert';
 
 const hasValidated = inject<boolean>('hasValidated');
 
@@ -58,7 +57,7 @@ function isString(val: any): val is string {
   return val !== null && typeof val === 'string' || val instanceof String;
 }
 
-const getAttributesFromFieldType = (fieldType?: Template.FieldType) : PageTab.Attribute[] => {
+const getAttributesFromFieldType = (fieldType?: Template.FieldType): PageTab.Attribute[] => {
   return fieldType?.controlType?.values?.map((val) =>
     isString(val)
       ? { name: fieldType?.name, value: val }
@@ -114,7 +113,7 @@ const onDeleteTag = (newTag: PageTab.IndexedTag) => {
     name: props.fieldType?.name,
     value: newTag?.value,
     index: newTag?.index,
-  }as PageTab.IndexedTag;
+  } as PageTab.IndexedTag;
   emits('deleteTag', obj);
   return false; // ignore the event, it will be rendered by the parent
 };
@@ -190,8 +189,8 @@ defineExpose<AttributeExpose>(expose);
 
 
 const showHelp = () => {
-  assert(props.fieldType, 'fieldType is required')
-  assert(props.fieldType.helpContextual, 'help contextual is required')
+  assertDefined(props.fieldType, 'fieldType is required');
+  assertDefined(props.fieldType.helpContextual, 'help contextual is required');
   utils.confirm(props.fieldType.name,
     `<p>${props.fieldType.helpContextual?.description}</p>` +
     (!props.fieldType?.helpContextual?.examples ? '' :
