@@ -18,7 +18,7 @@
 <!--:results="searchResults"-->
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import PmidPopUp from './PmidPopUp.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
@@ -26,6 +26,7 @@ import { Template } from '@/models/Template.model.ts';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { PublicationSearchResult } from 'components/PmidPopUp.vue';
 import { Class } from '@/utils.ts';
+import { AttributeControlExpose } from 'components/expose.model.ts';
 
 
 const props = defineProps<{
@@ -79,5 +80,7 @@ function handleClose() {
 }
 
 // Mocking the fetch function, replace with actual API call
+
+defineExpose<AttributeControlExpose>({ errors: computed(() => []) })
 
 </script>

@@ -2,7 +2,7 @@ import { ComputedRef, Ref } from 'vue';
 import { PageTab } from '@/models/PageTab.model.ts';
 
 export interface AttributeControlExpose {
-  errors: ComputedRef<string[]>;
+  errors?: ComputedRef<string[]>;
 }
 
 export interface AttributeExpose {

@@ -177,7 +177,7 @@ const errors = computed(() => {
   if (minLength.value > (`${thisAttribute?.value?.value}`.trim()?.length ?? 0)) {
     _errors.push(`Please enter at least ${minLength.value} characters. `);
   }
-  if (attributeControl?.value?.errors) {
+  if (attributeControl?.value?.errors?.value) {
     _errors.push(...attributeControl.value.errors.value);
   }
   return _errors.length ? _errors.join('. ').trim() : null;
