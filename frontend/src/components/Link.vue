@@ -6,7 +6,7 @@ import { Template } from '@/models/Template.model.ts';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { Class } from '@/utils.ts';
 import * as bootstrap from 'bootstrap';
-import { AttributeExpose } from 'components/expose.model.ts';
+import { AttributeControlExpose } from 'components/expose.model.ts';
 
 const props = defineProps<{
   fieldType?: Template.FieldType,
@@ -101,7 +101,7 @@ const isIdLink = ((value: string) => /^([\w\s].+):([\w\W]+)$/.test(value));
 
 const isUrl = computed(() => /^(http|https|ftp):\/\/.+$/.test(thisLink.value!));
 
-defineExpose<AttributeExpose>({ errors });
+defineExpose<AttributeControlExpose>({ errors });
 
 </script>
 

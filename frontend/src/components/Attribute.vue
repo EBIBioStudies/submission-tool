@@ -13,6 +13,7 @@ import Publication from '@/components/Publication.vue';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { Template } from '@/models/Template.model.ts';
 import { isFile } from '@/templates/templates.ts';
+import { AttributeControlExpose, AttributeExpose } from 'components/expose.model.ts';
 
 const hasValidated = inject<boolean>('hasValidated');
 
@@ -35,7 +36,7 @@ const emits = defineEmits<{
 const attributeId = 'attribute-' + getCurrentInstance()!.uid;
 const thisAttribute = ref<PageTab.BuildingSection>(props.attribute);
 const curRow = ref<PageTab.BuildingSection>(props.row!);
-const attributeControl = ref<AttributeExpose>();
+const attributeControl = ref<AttributeControlExpose>();
 const thisMultiValuedAttribute = ref(
   props.parent?.map((a, i) => { // save the original index -- needed when deleting
     return { index: i, ...a };
@@ -177,14 +178,13 @@ const errors = computed(() => {
     _errors.push(`Please enter at least ${minLength.value} characters. `);
   }
   if (attributeControl?.value?.errors) {
-    _errors.push(...attributeControl?.value?.errors);
+    _errors.push(...attributeControl.value.errors.value);
   }
   return _errors.length ? _errors.join('. ').trim() : null;
 });
 
 
 const expose = { errors, attributeId };
-export type AttributeExpose = typeof expose;
 defineExpose<AttributeExpose>(expose);
 
 
