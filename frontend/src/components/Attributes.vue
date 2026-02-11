@@ -11,6 +11,7 @@ import { ControlError, SectionExpose } from 'components/expose.model.ts';
 const props = defineProps<{
   attributes?: PageTab.DetailedAttribute[],
   fieldTypes?: Template.FieldType[],
+  allowNewAttribute?: boolean,
   isSectionAttribute?: boolean,
 }>();
 const emits = defineEmits<{
@@ -78,7 +79,7 @@ addMissingAttributes();
       </template>
     </div>
 
-    <div v-if="isSectionAttribute" class="branch mt-2">
+    <div v-if="!(allowNewAttribute === false)" class="branch mt-2">
       <button
         v-if="parentDisplayType !== 'readonly'"
         class="btn btn-light btn-small text-black-50"

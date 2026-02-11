@@ -113,6 +113,18 @@ export namespace Template {
     rowAsSection?: boolean;
     singleRow?: boolean;
     allowImport?: boolean;
+    /**
+     * Whether to allow adding new attributes to the section. This is inherited to subsections
+     */
+    allowNewAttribute? : boolean;
+    /**
+     * Whether to allow adding custom subsections. This is inherited to subsections
+     */
+    disableCustomSubsection?: boolean;
+    /**
+     * Whether to allow adding custom table. This is inherited to subsections
+     */
+    disableCustomTable?: boolean;
   }
 
   export interface RootSectionType extends SectionType {

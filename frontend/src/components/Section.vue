@@ -28,6 +28,7 @@ import { SectionExpose } from 'components/expose.model.ts';
 const props = defineProps<{
   section: PageTab.Section;
   sectionType: Template.TableType | string;
+  parentSectionType?: Template.TableType;
   depth: number;
   sectionTypeMap?: Map<string, Template.TableType>;
 }>();
@@ -58,9 +59,19 @@ const thisSection = ref<PageTab.Section>(props.section);
 
 const sectionType = computed(() =>
   isString(props.sectionType)
-    ? props.sectionTypeMap!.get(props.sectionType.toLowerCase())
+    ? props.sectionTypeMap!.get(props.sectionType.toLowerCase())!
     : props.sectionType,
 );
+
+const inheritedSectionType = computed(() => ({
+  allowNewAttribute: props.parentSectionType?.allowNewAttribute,
+  disableCustomSubsection: props.parentSectionType?.disableCustomSubsection,
+  disableCustomTable: props.parentSectionType?.disableCustomTable,
+  ...sectionType.value,
+}));
+
+
+const isRemovable = computed(() => sectionType.value?.display !== 'required' || thisSection.value.accno?.includes('-removable'));
 
 const deleteTag = (msg: PageTab.IndexedTag) => deleteAttribute(msg.index);
 // if (props?.sectionType?.display) {
@@ -453,10 +464,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
           :icon="'fa-caret-' + (isCollapsed ? 'right' : 'down')"
         ></font-awesome-icon>
         <span
-          v-if="
-            typeof props.sectionType !== 'string' ||
-            subSectionTypeMap.has(props.sectionType?.toLowerCase())
-          "
+          v-if="!isRemovable || inheritedSectionType?.disableCustomSubsection"
           class="ms-2"
           :data-bs-toggle="sectionType?.description ? 'tooltip' : false"
           data-bs-html="true"
@@ -480,8 +488,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
       </span>
       <span
         v-if="
-          (sectionType?.display !== 'required' ||
-            thisSection?.accno?.includes('-removable')) &&
+          isRemovable &&
           parentDisplayType !== 'readonly' &&
           sectionType?.name !== 'Study' &&
           !isPublicSubmission
@@ -514,8 +521,9 @@ defineExpose<SectionExpose>({ errors, thisSection });
             :attributes="section.attributes!"
             :fieldTypes="sectionType?.fieldTypes || sectionType?.columnTypes!"
             :isSectionAttribute="
-              subSectionTypeMap.get(sectionType?.name?.toLowerCase() || '')?.rowAsSection == false
+              !(subSectionTypeMap.get(sectionType?.name?.toLowerCase() || '')?.rowAsSection)
             "
+            :allow-new-attribute="inheritedSectionType.allowNewAttribute"
             @deleteAttribute="deleteAttribute"
             @createTag="createTag"
             @deleteTag="deleteTag"
@@ -594,6 +602,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
                   subSectionTypeMap.get(subsection?.type?.toLowerCase()) ||
                   subsection?.type?.toLowerCase()
                 "
+                :parentSectionType="inheritedSectionType"
                 :depth="props.depth + 1"
                 :sectionTypeMap="subSectionTypeMap"
                 @delete="deleteSubSection(section.subsections as PageTab.BuildingSection[], i)"
@@ -620,7 +629,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
               />
             </div>
             <SubsectionMenu
-              :sectionType="sectionType"
+              :sectionType="inheritedSectionType"
               @newSection="(type?: Template.SectionType) => addSubsection(section, 1, type)"
               @newTable="(type?: Template.SectionType) => addTable(section, 1, type)"
             ></SubsectionMenu>
