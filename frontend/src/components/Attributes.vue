@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, ref } from 'vue';
+import { computed, inject, Ref, ref } from 'vue';
 import Attribute from '@/components/Attribute.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { addMissingAttributesGeneral } from '@/composables/useAttributesHelper';
@@ -25,7 +25,7 @@ const duplicateAttributes = attributeList.value?.filter(
     array.find((v) => v.name === value.name) !== value && value.name !== '',
 );
 const attributeRefs = ref<AttributeExpose[]>();
-const parentDisplayType = inject('parentDisplayType');
+const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
 
 const processed = (attribute: PageTab.DetailedAttribute) => duplicateAttributes?.includes(attribute);
 

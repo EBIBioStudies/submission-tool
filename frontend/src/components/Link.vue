@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, onMounted, ref, watch, watchEffect } from 'vue';
+import { computed, inject, onMounted, Ref, ref, watch, watchEffect } from 'vue';
 import { prefixToLinkMap, SearchLinks } from '@/templates/links';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { Template } from '@/models/Template.model.ts';
@@ -20,7 +20,7 @@ const thisLink = ref<string>('');
 const showSuggestions = ref(false);
 const row = ref(props.row);
 const filteredListItems = ref<string[]>([]);
-const parentDisplayType = inject('parentDisplayType');
+const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
 
 const errors = computed(() => getErrors());
 const getErrors: () => string[] = () => {

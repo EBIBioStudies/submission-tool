@@ -15,7 +15,7 @@ import { Template } from '@/models/Template.model.ts';
 import { isFile } from '@/templates/templates.ts';
 import { AttributeControlExpose, AttributeExpose } from 'components/expose.model.ts';
 
-const hasValidated = inject<boolean>('hasValidated');
+const hasValidated = inject<Ref<boolean>>('hasValidated');
 
 const props = defineProps<{
   attribute: PageTab.BuildingSection,
@@ -43,10 +43,10 @@ const thisMultiValuedAttribute = ref(
   })?.filter(a => a.name === thisAttribute.value.name && a?.value) || [],
 );
 const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
-const editDateMode = inject('readOnlyEditDateMode');
-const isManagerUser = inject('isManagerUser');
-const isPublicSubmission = inject('isPublicSubmission');
-const collectionName = inject('collectionName');
+const editDateMode = inject<Ref<boolean>>('readOnlyEditDateMode');
+const isManagerUser = inject<Ref<boolean>>('isManagerUser');
+const isPublicSubmission = inject<Ref<boolean>>('isPublicSubmission');
+const collectionName = inject<Ref<string>>('collectionName');
 
 const display = computed(() => {
   return props?.fieldType?.display || parentDisplayType?.value || 'optional';

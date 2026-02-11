@@ -167,7 +167,7 @@
 </style>
 
 <script setup lang="ts">
-import { computed, onMounted, provide, ref, watch, watchEffect } from 'vue';
+import { computed, onMounted, provide, Ref, ref, watch, watchEffect } from 'vue';
 
 import Default from './templates/Default.v2.json';
 import Submission from './components/Submission.vue';
@@ -193,7 +193,7 @@ const isSaving = ref(true);
 const hasValidated = ref(false);
 const success = ref(false);
 const serverErrorMessage = ref('');
-const displayType = ref('');
+const displayType = ref<Ref<Template.DisplayType>>();
 const editDateMode = ref(false);
 const isLoading = ref(false);
 const isManagerUser = ref(false);

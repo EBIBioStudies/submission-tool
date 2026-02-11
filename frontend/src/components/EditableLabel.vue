@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { inject, nextTick, ref } from 'vue';
+import { inject, nextTick, Ref, ref } from 'vue';
+import { Template } from '@/models/Template.model.ts';
 
 interface EditableData {
   type: string;
@@ -14,14 +15,14 @@ interface Props {
 // Props
 const props = defineProps<Props>();
 
-const parentDisplayType = inject<string>('parentDisplayType');
+const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
 const inputRef = ref<HTMLInputElement | null>(null);
 
 const isEditing = ref(false);
 const editableValue = ref<EditableData>(props.data);
 
 const toggleEdit = (event: MouseEvent) => {
-  if (!props.isEditable || parentDisplayType === 'readonly')
+  if (!props.isEditable || parentDisplayType?.value === 'readonly')
     return;
   isEditing.value = true;
   nextTick(() => {
@@ -43,7 +44,7 @@ const saveEdit = () => {
     <!-- Display the label or input based on `isEditing` -->
     <div v-if="!isEditing && parentDisplayType !== 'readonly'" @click="toggleEdit" class="label">
       {{editableValue.type}}
-      <font-awesome-icon v-if="props.isEditable && parentDisplayType !== 'readonly'" :icon="['far', 'edit']"  class="pe-2"/>
+      <font-awesome-icon v-if="props.isEditable" :icon="['far', 'edit']"  class="pe-2"/>
     </div>
     <input
       v-else

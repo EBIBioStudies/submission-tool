@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { ComponentPublicInstance, computed, getCurrentInstance, inject, onMounted, ref } from 'vue';
+import { ComponentPublicInstance, computed, getCurrentInstance, inject, onMounted, Ref, ref } from 'vue';
 import FileTree from './FileTree.vue';
 import { Modal } from 'bootstrap';
 import axios from 'axios';
@@ -9,6 +9,7 @@ import { PageTab } from '@/models/PageTab.model.ts';
 import type { Node } from '@/models/FileTreeNode.model.ts';
 import { Class } from '@/utils.ts';
 import { FileService, UploadProgress } from '@/services/FileService.ts';
+import { Template } from '@/models/Template.model.ts';
 
 const props = defineProps<{
   file: PageTab.File | PageTab.Attribute,
@@ -30,7 +31,7 @@ const currentUpload = ref<UploadProgress | null>(null);
 
 const errorMessage = ref('');
 const route = useRoute();
-const parentDisplayType = inject('parentDisplayType');
+const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
 
 const path = [] as string[];
 
