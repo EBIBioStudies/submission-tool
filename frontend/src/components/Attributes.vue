@@ -5,8 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { addMissingAttributesGeneral } from '@/composables/useAttributesHelper';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { Template } from '@/models/Template.model.ts';
-import { AttributeExpose } from '@/components/Attribute.vue';
-import { ControlError, SectionExpose } from 'components/expose.model.ts';
+import { AttributeExpose, ControlError, SectionExpose } from 'components/expose.model.ts';
 
 const props = defineProps<{
   attributes?: PageTab.DetailedAttribute[],
