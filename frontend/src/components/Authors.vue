@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, UnwrapRef } from 'vue';
 import SectionTable from '@/components/SectionTable.vue';
 import { addMissingAttributesGeneral } from '@/composables/useAttributesHelper';
 import { Template } from '@/models/Template.model.ts';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { ensureArray } from '@/utils.ts';
+import { SectionExpose } from 'components/expose.model.ts';
 
 const props = defineProps<{
   section: PageTab.Section,
@@ -75,7 +76,7 @@ const authors = computed(() => {
   );
 });
 
-const authorTableRef = ref();
+const authorTableRef = ref<UnwrapRef<SectionExpose>>();
 const authorRefreshKey = ref(0);
 const OnDeleteOrg = (o: PageTab.Organisation) => {
   if (o?.accno === '') return;
@@ -254,9 +255,9 @@ const refresh = () => {
   return false;
 };
 
-const errors = computed(() => authorTableRef?.value?.errors);
+const errors = computed(() => authorTableRef?.value?.errors || []);
 
-defineExpose({ errors });
+defineExpose<SectionExpose>({ errors });
 </script>
 
 <template>

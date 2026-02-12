@@ -167,7 +167,7 @@
 </style>
 
 <script setup lang="ts">
-import { computed, onMounted, provide, Ref, ref, watch, watchEffect } from 'vue';
+import { computed, onMounted, provide, ref, UnwrapRef, watch, watchEffect } from 'vue';
 
 import Default from './templates/Default.v2.json';
 import Submission from './components/Submission.vue';
@@ -193,7 +193,7 @@ const isSaving = ref(true);
 const hasValidated = ref(false);
 const success = ref(false);
 const serverErrorMessage = ref('');
-const displayType = ref<Ref<Template.DisplayType>>();
+const displayType = ref<Template.DisplayType>();
 const editDateMode = ref(false);
 const isLoading = ref(false);
 const isManagerUser = ref(false);
@@ -211,7 +211,7 @@ const { enableSubmission } = useFeatureFlags();
 const showModal = ref(false);
 isManagerUser.value = AuthService?.user?.value?.superuser == true;
 
-const submissionComponent = ref<SectionExpose>();
+const submissionComponent = ref<UnwrapRef<SectionExpose>>();
 
 let offCanvasErrors: Offcanvas | null = null;
 let offCanvasJson: Offcanvas | null = null;
@@ -264,7 +264,7 @@ function collectMessages(node: MessageNode) {
 const finalSubmitDraft = async (option?: string) => {
   showModal.value = false;
   hasValidated.value = true;
-  validationErrors.value = submissionComponent.value?.errors.value || [];
+  validationErrors.value = submissionComponent.value?.errors || [];
 
   if (validationErrors.value.length) {
     offCanvasErrors!.show();
@@ -479,6 +479,7 @@ watch(updatedSubmission, async (json) => {
 const expandAndFocus = async (el: HTMLElement) => {
   let p = el.parentElement!;
   while (p.localName != 'body') { // walk up the ancestors and expand
+    console.log(p);
     if (p.classList.contains('section-block') && p.classList.contains('collapsed')) {
       (p.querySelector('.section-title') as HTMLElement).click();
     }

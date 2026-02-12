@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed, inject, Ref, ref } from 'vue';
+import { computed, inject, Ref, ref, UnwrapRef } from 'vue';
 import Attribute from '@/components/Attribute.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { addMissingAttributesGeneral } from '@/composables/useAttributesHelper';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { Template } from '@/models/Template.model.ts';
 import { AttributeExpose, ControlError, SectionExpose } from 'components/expose.model.ts';
+import { isDefined } from '@/utils.ts';
 
 const props = defineProps<{
   attributes?: PageTab.DetailedAttribute[],
@@ -24,7 +25,7 @@ const duplicateAttributes = attributeList.value?.filter(
   (value, _index, array) =>
     array.find((v) => v.name === value.name) !== value && value.name !== '',
 );
-const attributeRefs = ref<AttributeExpose[]>();
+const attributeRefs = ref<UnwrapRef<AttributeExpose>[]>([]);
 const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
 
 const processed = (attribute: PageTab.DetailedAttribute) => duplicateAttributes?.includes(attribute);
@@ -41,20 +42,15 @@ const addMissingAttributes = () => {
   addMissingAttributesGeneral(attributeList, props.fieldTypes);
 };
 
-const errors = computed(() => {
-  const _errors: ControlError<AttributeExpose>[] = [];
-  // validate subsections
-  attributeRefs?.value?.forEach((a) => {
-    const err = a.errors.value;
-    if (err)
-      _errors.push({
-        errorMessage: err,
-        control: a,
-        element: document.getElementById(a.attributeId)!,
-      });
-  });
-  return _errors;
-});
+const errors = computed(() => attributeRefs.value
+  .filter(att => isDefined(att.errors))
+  .map(att => ({
+    errorMessage: att.errors,
+    control: att,
+    element: document.getElementById(att.attributeId)!,
+  }) as ControlError<UnwrapRef<AttributeExpose>>),
+);
+
 defineExpose<SectionExpose>({ errors });
 
 addMissingAttributes();

@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { computed, inject, nextTick, ref, Ref } from 'vue';
+import { computed, inject, nextTick, ref, Ref, UnwrapRef } from 'vue';
 import draggable from 'vuedraggable';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Attribute from '@/components/Attribute.vue';
-import utils from '@/utils';
+import utils, { isDefined } from '@/utils';
 import EditableLabel from '@/components/EditableLabel.vue';
 import Multiselect from '@vueform/multiselect';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { Template } from '@/models/Template.model.ts';
-import { AttributeExpose } from 'components/Attribute.vue';
-import { SectionExpose } from 'components/expose.model.ts';
+import { AttributeExpose, ControlError, SectionExpose } from 'components/expose.model.ts';
 
 
 const props = defineProps<{
@@ -193,17 +192,17 @@ const isCollapsed = ref(
     : props.startCollapsed);
 const toggle = () => (isCollapsed.value = !isCollapsed.value);
 
-const attributeRefs = ref<AttributeExpose[]>();
+const attributeRefs = ref<UnwrapRef<AttributeExpose>[]>([]);
 const headerComponent = ref([]);
 
-const errors = computed(() => {
-  const _errors: { errorMessage: string, control: AttributeExpose, element: HTMLElement }[] = [];
-  attributeRefs.value?.forEach((a) => {
-    const err = a.errors.value; // ToDO check .value is needed
-    if (err) _errors.push({ errorMessage: err, control: a, element: document.getElementById(a.attributeId)! });
-  });
-  return _errors;
-});
+const errors = computed(() => attributeRefs.value
+  .filter(att => isDefined(att.errors))
+  .map(att => ({
+    errorMessage: att.errors,
+    control: att,
+    element: document.getElementById(att.attributeId)!,
+  }) as ControlError<UnwrapRef<AttributeExpose>>),
+);
 
 const showHelp = (header: Template.SectionType) => {
   if (!header) return; // Ensure header is defined to avoid runtime errors

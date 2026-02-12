@@ -9,6 +9,7 @@ import {
   onMounted,
   ref,
   Ref,
+  UnwrapRef,
 } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Attributes from '@/components/Attributes.vue';
@@ -22,8 +23,8 @@ import Authors from '@/components/Authors.vue';
 import { Tooltip } from 'bootstrap';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { Template } from '@/models/Template.model.ts';
-import Attribute from '@/components/Attribute.vue';
 import { SectionExpose } from 'components/expose.model.ts';
+import Annotations from '@/components/Annotations.vue';
 
 const props = defineProps<{
   section: PageTab.Section;
@@ -33,27 +34,32 @@ const props = defineProps<{
   sectionTypeMap?: Map<string, Template.TableType>;
 }>();
 
-const emits = defineEmits<{
+defineEmits<{
   delete: [msg?: { index: number }];
   addTable: [msg: { index: number, section: PageTab.Section, instance: Template.SectionType }];
 }>();
 
 const componentInstance = getCurrentInstance();
 
-const attributesComponent = ref<ComponentPublicInstance<typeof Attribute>>();
+const attributesComponent = ref<UnwrapRef<SectionExpose> & ComponentPublicInstance>();
+const annotationsComponent = ref<UnwrapRef<SectionExpose> & ComponentPublicInstance>();
+const attributes = ref<HTMLDivElement>();
+
 
 const subsectionsRef = ref<HTMLDivElement[]>();
 const sectionTablesRef = ref<HTMLDivElement[]>();
-const sectionFilesRef = ref<ComponentPublicInstance<typeof SectionTable>>();
-const sectionLinksRef = ref<ComponentPublicInstance<typeof SectionTable>>();
+const sectionFilesRef = ref<UnwrapRef<SectionExpose> & ComponentPublicInstance>();
+const sectionLinksRef = ref<UnwrapRef<SectionExpose> & ComponentPublicInstance>();
+
+
 const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
 const isPublicSubmission = inject<ComputedRef<boolean>>('isPublicSubmission');
 const collectionName = inject<Ref<string>>('collectionName');
 
-const errSecRefs = ref<SectionExpose[]>([]);
-const errSecTableRefs = ref<SectionExpose[]>([]);
-const errSpecialSecTableRefs = ref<SectionExpose[]>([]);
-const authorComponent = ref<typeof Authors>();
+const errSecRefs = ref<UnwrapRef<SectionExpose>[]>([]);
+const errSecTableRefs = ref<UnwrapRef<SectionExpose>[]>([]);
+const errSpecialSecTableRefs = ref<UnwrapRef<SectionExpose>[]>([]);
+const authorComponent = ref<UnwrapRef<SectionExpose> & ComponentPublicInstance>();
 
 const thisSection = ref<PageTab.Section>(props.section);
 
@@ -322,8 +328,8 @@ const addAttribute = async () => {
   attributesRefreshKey.value += 1;
   await nextTick();
   const added = [
-    ...attributesComponent.value!.$el.querySelectorAll('.attribute-name'), // TODO check is valid
-  ].pop();
+    ...attributes.value!.querySelectorAll<HTMLElement>('.attribute-name'), // TODO check is valid
+  ].pop()!;
   added.scrollIntoView();
   added.focus();
 };
@@ -398,22 +404,20 @@ const updateColumnName = (subsection: PageTab.BuildingSection[], update: { old: 
 };
 
 const NOT_RENDERABLE = new Set(['author', 'organisation', 'organization']);
-const canRender = (sec?: PageTab.BuildingSection | PageTab.BuildingSection[]): boolean => {
+const canRender = (sec?: PageTab.BuildingSection | PageTab.BuildingSection[] | undefined): boolean => {
   if (!sec || Array.isArray(sec)) return true;
   return !NOT_RENDERABLE.has(sec?.type?.toLowerCase()!);
 };
 
 const errors = computed(() => {
-  let _errors = [
-    ...(authorComponent.value?.errors ?? []),
-    ...attributesComponent.value?.errors,
+
+  const _errors = [
+    ...(authorComponent.value?.errors || []),
+    ...(attributesComponent.value?.errors || []),
+    ...(annotationsComponent.value?.errors || []),
+    ...(sectionFilesRef.value?.errors || []),
+    ...(sectionLinksRef.value?.errors || []),
   ];
-  if (sectionFilesRef) {
-    _errors = [..._errors, ...(sectionFilesRef?.value?.errors ?? [])];
-  }
-  if (sectionLinksRef) {
-    _errors = [..._errors, ...(sectionLinksRef?.value?.errors ?? [])];
-  }
   // validate subsections
   [
     ...errSpecialSecTableRefs.value,
@@ -421,7 +425,7 @@ const errors = computed(() => {
     ...errSecTableRefs.value,
   ].forEach((subsec) => {
     if (!canRender(subsec.thisSection)) return;
-    _errors = [..._errors, ...subsec?.errors];
+    _errors.push(...subsec?.errors);
   });
 
   return _errors;
@@ -515,20 +519,21 @@ defineExpose<SectionExpose>({ errors, thisSection });
       <div :class="{ 'visually-hidden': isCollapsed }">
         <div class="has-child-section ms-3 slide-in">
           <!-- attributes -->
-          <Attributes
-            :key="attributesRefreshKey"
-            ref="attributesComponent"
-            :attributes="section.attributes!"
-            :fieldTypes="sectionType?.fieldTypes || sectionType?.columnTypes!"
-            :isSectionAttribute="
-              !(subSectionTypeMap.get(sectionType?.name?.toLowerCase() || '')?.rowAsSection)
-            "
-            :allow-new-attribute="inheritedSectionType.allowNewAttribute"
-            @deleteAttribute="deleteAttribute"
-            @createTag="createTag"
-            @deleteTag="deleteTag"
-            @newAttribute="addAttribute"
-          />
+          <div ref="attributes">
+            <Attributes v-if="!sectionType.annotationsType"
+                        :key="attributesRefreshKey"
+                        ref="attributesComponent"
+                        :attributes="section.attributes!"
+                        :fieldTypes="sectionType?.fieldTypes || sectionType?.columnTypes!"
+                        :isSectionAttribute="!(subSectionTypeMap.get(sectionType?.name?.toLowerCase() || '')?.rowAsSection)"
+                        :allow-new-attribute="inheritedSectionType.allowNewAttribute"
+                        @deleteAttribute="deleteAttribute"
+                        @createTag="createTag"
+                        @deleteTag="deleteTag"
+                        @newAttribute="addAttribute"
+            />
+          </div>
+
 
           <div class="p-0" :key="sectionsRefreshKey">
             <!-- Files -->
