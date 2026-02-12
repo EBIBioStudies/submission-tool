@@ -45,7 +45,7 @@
           hidden="hidden"
           multiple
           type="file"
-          @change.stop="(e) => uploadFiles(e.target.files)"
+          @change.stop="(e) => uploadFiles((e.target as HTMLInputElement).files, false)"
         />
         <label
           class="btn btn-primary btn-sm me-2"
@@ -61,11 +61,10 @@
           hidden="hidden"
           mozdirectory
           msdirectory
-          multiple="multiple"
           odirectory
           type="file"
           webkitdirectory
-          @change.stop="(e) => uploadFiles(e.target.files, true)"
+          @change.stop="(e) => uploadFiles((e.target as HTMLInputElement).files, true)"
         />
         <button
           class="btn btn-secondary btn-sm me-2 mb-2"
@@ -100,113 +99,113 @@
         class="table table-sm align-middle table-hover"
       >
         <thead>
-          <tr>
-            <th></th>
-            <th class="w-100" role="button" @click.prevent="flipSort('name')">
-              Name
-              <font-awesome-icon
-                :class="{ grayed: sortKey !== 'name' }"
-                :icon="sorterIcon('name')"
-                class="fa-sm"
-              ></font-awesome-icon>
-            </th>
-            <th
-              class="text-end text-nowrap pe-4"
-              role="button"
-              @click.prevent="flipSort('size')"
-            >
-              Size
-              <font-awesome-icon
-                :class="{ grayed: sortKey !== 'size' }"
-                :icon="sorterIcon('size')"
-                class="fa-sm"
-              ></font-awesome-icon>
-            </th>
-            <th style="width: 100px" class="text-center">Actions</th>
-          </tr>
+        <tr>
+          <th></th>
+          <th class="w-100" role="button" @click.prevent="flipSort('name')">
+            Name
+            <font-awesome-icon
+              :class="{ grayed: sortKey !== 'name' }"
+              :icon="sorterIcon('name')"
+              class="fa-sm"
+            ></font-awesome-icon>
+          </th>
+          <th
+            class="text-end text-nowrap pe-4"
+            role="button"
+            @click.prevent="flipSort('size')"
+          >
+            Size
+            <font-awesome-icon
+              :class="{ grayed: sortKey !== 'size' }"
+              :icon="sorterIcon('size')"
+              class="fa-sm"
+            ></font-awesome-icon>
+          </th>
+          <th style="width: 100px" class="text-center">Actions</th>
+        </tr>
         </thead>
         <tbody>
-          <tr v-for="file in sortedFiles" :key="file.path + '/' + file.name">
-            <td class="text-end pointer">
-              <font-awesome-icon
+        <tr v-for="file in sortedFiles" :key="file.path + '/' + file.name">
+          <td class="text-end pointer">
+            <font-awesome-icon
+              v-if="file.type.toLowerCase() === 'dir'"
+              class="fa-sm text-primary"
+              icon="fa-solid fa-folder"
+              @click.stop="navigate(file.path, file.name)"
+            ></font-awesome-icon>
+          </td>
+          <td class="hover-container">
+            <template v-if="renamingFileKey !== file.path + '/' + file.name">
+              <a
                 v-if="file.type.toLowerCase() === 'dir'"
-                class="fa-sm text-primary"
-                icon="fa-solid fa-folder"
+                :ref="(el) => (labelRefs[file.path + '/' + file.name] = el)"
+                class="pointer"
                 @click.stop="navigate(file.path, file.name)"
+              >
+                {{ file.name }}
+              </a>
+              <span
+                v-else
+                :ref="(el) => (labelRefs[file.path + '/' + file.name] = el)"
+              >{{ file.name }}</span
+              >
+              <font-awesome-icon
+                class="hover-content fa-fw btn btn-link text-primary p-0 align-text-top"
+                icon="fa-regular fa-pen-to-square"
+                title="Rename"
+                @click="startRenaming(file)"
               ></font-awesome-icon>
-            </td>
-            <td class="hover-container">
-              <template v-if="renamingFileKey !== file.path + '/' + file.name">
-                <a
-                  v-if="file.type.toLowerCase() === 'dir'"
-                  :ref="(el) => (labelRefs[file.path + '/' + file.name] = el)"
-                  class="pointer"
-                  @click.stop="navigate(file.path, file.name)"
-                >
-                  {{ file.name }}
-                </a>
-                <span
-                  v-else
-                  :ref="(el) => (labelRefs[file.path + '/' + file.name] = el)"
-                  >{{ file.name }}</span
-                >
-                <font-awesome-icon
-                  class="hover-content fa-fw btn btn-link text-primary p-0 align-text-top"
-                  icon="fa-regular fa-pen-to-square"
-                  title="Rename"
-                  @click="startRenaming(file)"
-                ></font-awesome-icon>
-              </template>
-              <div class="position-relative" v-else>
-                <input
-                  ref="renamingInput"
-                  v-model="renamingFileName"
-                  class="w-100"
-                  @blur="endRenaming(file, true)"
-                  @keyup.enter="endRenaming(file, false)"
-                />
-                <div
-                  class="alert alert-warning w-100 position-absolute"
-                  role="alert"
-                  v-if="renamingMessage !== null"
-                >
-                  {{ renamingMessage }}
-                </div>
+            </template>
+            <div class="position-relative" v-else>
+              <input
+                ref="renamingInput"
+                v-model="renamingFileName"
+                class="w-100"
+                @blur="endRenaming(file, true)"
+                @keyup.enter="endRenaming(file, false)"
+              />
+              <div
+                class="alert alert-warning w-100 position-absolute"
+                role="alert"
+                v-if="renamingMessage !== null"
+              >
+                {{ renamingMessage }}
               </div>
-            </td>
-            <td class="text-end pe-4">
+            </div>
+          </td>
+          <td class="text-end pe-4">
               <span
                 class="text-nowrap"
                 :title="file.size.toLocaleString() + ' bytes'"
                 v-if="file.type.toLowerCase() !== 'dir'"
-                >{{ utils.humanFileSize(file.size) }}</span
+              >{{ utils.humanFileSize(file.size) }}</span
               >
-            </td>
-            <td>
-              <div class="btn-group w-100">
-                <font-awesome-icon
-                  v-if="file.type.toLowerCase() !== 'dir'"
-                  class="fa-fw btn btn-link text-primary"
-                  icon="fa-download"
-                  title="Download"
-                  @click.stop="downloadFile(file)"
-                ></font-awesome-icon>
-                <font-awesome-icon
-                  v-else
-                  class="fa-fw btn btn-link text-primary"
-                  icon="fa-regular fa-file-lines"
-                  title="Download File List"
-                  @click.stop="downloadFileList(file)"
-                ></font-awesome-icon>
-                <font-awesome-icon
-                  class="fa-fw btn btn-link text-danger"
-                  icon="fa-regular fa-trash-can"
-                  title="Delete"
-                  @click.stop="deleteFile(file)"
-                ></font-awesome-icon>
-              </div>
-            </td>
-          </tr>
+          </td>
+          <td>
+            <div class="btn-group w-100">
+              <font-awesome-icon
+                v-if="file.type.toLowerCase() !== 'dir'"
+                class="fa-fw btn btn-link text-primary"
+                icon="fa-download"
+                title="Download"
+                @click.stop="downloadFile(file)"
+              ></font-awesome-icon>
+              <font-awesome-icon
+                v-else
+                class="fa-fw btn btn-link text-primary"
+                icon="fa-regular fa-file-lines"
+                title="Download File List"
+                @click.stop="downloadFileList(file)"
+              ></font-awesome-icon>
+              <font-awesome-icon
+                class="fa-fw btn btn-link text-danger"
+                icon="fa-regular fa-trash-can"
+                title="Delete"
+                @click.stop="deleteFile(file)"
+              ></font-awesome-icon>
+            </div>
+          </td>
+        </tr>
         </tbody>
       </table>
     </div>
@@ -220,8 +219,8 @@
           </div>
           <div class="modal-body">
             <div class="text-center pb-2">
-              {{ currentUpload.progress === 100 ? 'Saving' : 'Uploading' }}
-              {{ currentUpload.name }} ...
+              {{ currentUpload?.progress === 100 ? 'Saving' : 'Uploading' }}
+              {{ currentUpload?.name }} ...
             </div>
             <div
               aria-label="Example with label"
@@ -234,12 +233,12 @@
               <div
                 :class="{
                   'progress-bar-striped  progress-bar-animated':
-                    currentUpload.progress === 100,
+                    currentUpload?.progress === 100,
                 }"
-                :style="{ width: currentUpload.progress + '%' }"
+                :style="{ width: currentUpload?.progress + '%' }"
                 class="progress-bar"
               >
-                {{ currentUpload.progress }}%
+                {{ currentUpload?.progress }}%
               </div>
             </div>
           </div>
@@ -248,7 +247,7 @@
               class="btn btn-danger"
               data-bs-dismiss="modal"
               type="button"
-              @click.stop="currentUploadAbortController?.abort()"
+              @click.stop="abortController?.abort()"
             >
               Cancel
             </button>
@@ -261,127 +260,78 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import router from './router';
-import AuthService from './services/AuthService';
-import { computed, nextTick, ref, watchEffect, onBeforeUnmount } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watchEffect } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import utils from './utils.js';
-import axios from 'axios';
-import { Modal } from 'bootstrap';
+import utils from './utils';
 import TransferHelpModal from './components/TransferHelpModal.vue';
+import { FileItem, FileService, UploadProgress, ValidationResult } from '@/services/FileService.ts';
+import { Modal } from 'bootstrap';
 
-const props = defineProps(['paths']);
-const files = ref([]);
+interface Props {
+  paths: string | string[];
+}
+
+
+const props = defineProps<Props>();
+const files = ref<FileItem[]>([]);
 const loading = ref(false);
-const currentUpload = ref({ name: '', progress: 0 });
-const sortKey = ref('size');
-const sortDirection = ref(1);
-const fetchAbortController = ref(new AbortController());
-const currentUploadAbortController = ref(null);
+const currentUpload = ref<UploadProgress | null>(null);
+const uploadModal = ref<Modal>();
+const sortKey = ref<'name' | 'size'>('size');
+const sortDirection = ref<1 | -1>(1);
+const fetchAbortController = ref<AbortController>(new AbortController());
+const abortController = ref<AbortController>(new AbortController());
 
-const renamingFileKey = ref(null);
-const renamingFileName = ref(null);
+const renamingFileKey = ref<string | null>(null);
+const renamingFileName = ref<string>('');
 const renamingOngoing = ref(false);
-const renamingInput = ref(null);
-const labelRefs = {};
-const renamingMessage = ref(null);
+const renamingInput = ref<HTMLInputElement[] | null>(null);
+const labelRefs: Record<string, any> = {};
+const renamingMessage = ref<string | null>(null);
 
-//TODO: Get these constants from config
-const HARD_UPLOAD_SIZE_LIMIT = 30; // in GBs;
-const MAX_UPLOAD_SIZE = 1024; // in MBs;
-const MAX_UPLOAD_FILE_COUNT = 1000;
-const KB = 1024;
-const MB = KB * 1024;
-const GB = MB * 1024;
-
-const currentPath = computed(() =>
-  props.paths === '' ? [''] : ['', ...props.paths],
-);
-const sortedFiles = computed(() =>
-  files.value?.sort(
-    (
-      a,
-      b, // sort on type before name
-    ) =>
-      sortDirection.value *
-      (sortKey.value === 'name'
-        ? `${a?.type}-${a?.name}`.localeCompare(`${b?.type}-${b?.name}`)
-        : (a?.type === 'DIR' ? -1 : a?.size) -
-          (b?.type === 'DIR' ? -1 : b?.size)),
-  ),
-);
+const currentPath = computed(() => props.paths === '' ? [''] : ['', ...(Array.isArray(props.paths) ? props.paths : [props.paths])]);
+const sortedFiles = computed(() => files.value?.sort((a, b) => // sort on type before name
+  sortDirection.value * (sortKey.value === 'name' ? `${a?.type}-${a?.name}`.localeCompare(`${b?.type}-${b?.name}`)
+    : (a?.type === 'DIR' ? -1 : a?.size) - (b?.type === 'DIR' ? -1 : b?.size)),
+));
 
 const toastMessage = ref('');
 const showToast = ref(false);
 
 onBeforeUnmount(() => {
   fetchAbortController.value.abort();
-  currentUploadAbortController.value?.abort();
+  abortController.value?.abort();
   loading.value = false;
-
-  // Clean up Bootstrap modal
-  const modalElement = document.getElementById('uploadModal');
-  if (modalElement) {
-    const modalInstance = Modal.getInstance(modalElement);
-    if (modalInstance) {
-      modalInstance.dispose();
-    }
-  }
 });
 
-const triggerToast = (message, duration = 3000) => {
+const triggerToast = (message: string, duration = 3000) => {
   toastMessage.value = message;
   showToast.value = true;
   setTimeout(() => (showToast.value = false), duration); // auto-hide after 3 seconds
 };
 
-const sorterIcon = (key) =>
-  sortKey.value === key
-    ? sortDirection.value === 1
-      ? 'fa-sort-up'
-      : 'fa-sort-down'
-    : 'fa-sort';
-const flipSort = (key) => {
+const sorterIcon = (key: 'name' | 'size'): string => sortKey.value === key ? sortDirection.value === 1 ? 'fa-sort-up' : 'fa-sort-down' : 'fa-sort';
+const flipSort = (key: 'name' | 'size') => {
   if (sortKey.value === key) {
-    sortDirection.value *= -1;
+    sortDirection.value = sortDirection.value === 1 ? -1 : 1;
   } else {
     sortKey.value = key;
     sortDirection.value = 1;
   }
 };
 
-const fetchFiles = async () => {
-  if (!AuthService.isAuthenticated()) return;
-
-  loading.value = true;
-  fetchAbortController.value = new AbortController();
-  const path = props.paths && props.paths !== '' ? props.paths.join('/') : '';
-
-  try {
-    const response = await axios.post(
-      '/api/files/user/query',
-      { path },
-      { signal: fetchAbortController.value.signal },
-    );
-    files.value = response.data.map((file) => ({
-      ...file,
-      path: file.path === 'user' ? '' : file.path.replace(/^user\/?/, ''),
-    }));
-  } catch (error) {
-    // Ignore abort errors - these are intentional cancellations
-    if (error.code === 'ERR_CANCELED' || error.name === 'AbortError') {
-      return;
-    }
-    console.error('Failed to fetch files:', error);
-  } finally {
-    loading.value = false;
-  }
-};
+const fetchFiles = async() => {
+  files.value = await FileService.fetchFiles(currentPath.value.slice(1), loading);
+}
 
 watchEffect(fetchFiles);
 
-const navigate = async (path, name) => {
+onMounted(() => uploadModal.value = new Modal('#uploadModal'))
+watchEffect(() => currentUpload.value ? uploadModal.value?.show() : uploadModal.value?.hide())
+
+const navigate = async (path: string, name: string) => {
   path = path.split('/').map(encodeURIComponent).filter(Boolean).join('/');
   const fullPath = ['/files', path, name].filter(Boolean).join('/');
   const currentPathStr = ['/files', ...currentPath.value]
@@ -395,84 +345,30 @@ const navigate = async (path, name) => {
   }
 };
 
-const downloadFile = (file) => {
-  axios
-    .post(
-      '/api/files/user/download',
-      {
-        path: file.path,
-        fileName: file.name,
-      },
-      {
-        responseType: 'blob',
-      },
-    )
-    .then((response) => {
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(response.data);
-      a.setAttribute('download', file.name);
-      a.click();
-    })
-    .catch((error) => {
-      console.error('Download failed:', error);
-    });
+
+const uploadFiles = async (uploads: FileList | null, isFolderUpload: boolean) => {
+  await FileService.uploadFiles(uploads, isFolderUpload, currentPath.value, files.value, currentUpload, abortController);
+  await fetchFiles();
 };
 
-const downloadFileList = (file) => {
-  const downloadPath = ['/filelist', file.path, file.name]
-    .filter(Boolean)
-    .join('/');
-  axios({ url: downloadPath, responseType: 'blob' }).then((response) => {
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(response.data);
-    a.setAttribute('download', file.name + '.tsv');
-    a.click();
-  });
-};
-
-const deleteFile = async (file) => {
-  if (
-    !(await utils.confirm(
-      'Delete File',
-      `Do you want to delete ${file.name}?`,
-      { okayLabel: 'Delete' },
-    ))
-  )
-    return;
-  const body = {
-    path: file.path,
-    fileName: file.name,
-  };
-  try {
-    loading.value = true;
-    await axios.post('/api/files/user/delete', body);
-    await fetchFiles(); // refresh file list
+const deleteFile = async (file: FileItem) => {
+  if (await FileService.deleteFile(file, loading)) {
     triggerToast(`✅ "${file.name}" deleted successfully.`);
-  } catch (error) {
-    console.error('Failed to delete file:', error);
+    await fetchFiles();
   }
 };
 
-const renameFile = async (file, newName) => {
-  if (file.name === newName) return true;
-  const body = {
-    path: file.path,
-    originalName: file.name,
-    newName,
-  };
-
-  try {
-    await axios.post('/api/files/user/rename', body, { responseType: 'json' });
-    await fetchFiles(); // refresh file list
-    return true;
-  } catch (error) {
-    console.error('Failed to rename file:', error);
-    renamingMessage.value = error.response.data.log.message;
-    return false;
-  }
+const renameFile = async (file: FileItem, newName: string): Promise<boolean> => {
+  await FileService.renameFile(file, newName, renamingMessage);
+  await fetchFiles();
+  return true;
 };
 
-const startRenaming = (file) => {
+const downloadFile = (file: FileItem) => FileService.downloadFile(file);
+const downloadFileList = (file: FileItem) => FileService.downloadFileList(file);
+
+
+const startRenaming = (file: FileItem) => {
   const fileKey = file.path + '/' + file.name;
   renamingFileKey.value = fileKey;
   renamingFileName.value = file.name;
@@ -484,7 +380,7 @@ const focusRenamingInput = () => {
   nextTick(() => renamingInput.value?.[0]?.focus());
 };
 
-const endRenaming = async (file, forceClose = false) => {
+const endRenaming = async (file: FileItem, forceClose = false) => {
   if (renamingOngoing.value) return;
   const newName = renamingFileName.value;
 
@@ -493,7 +389,7 @@ const endRenaming = async (file, forceClose = false) => {
     : checkFileName(newName);
 
   if (!check.valid) {
-    renamingMessage.value = check.message;
+    renamingMessage.value = check.message ?? null;
     return;
   }
 
@@ -515,7 +411,7 @@ const endRenaming = async (file, forceClose = false) => {
   }
 };
 
-const checkFileName = (name) => {
+const checkFileName = (name: string): ValidationResult => {
   if (!name) return { valid: false, message: 'File name cannot be empty' };
   if (name.includes('/'))
     return { valid: false, message: 'File name cannot contain "/"' };
@@ -529,17 +425,17 @@ const checkFileName = (name) => {
   };
 };
 
-const checkFolderName = (name) => {
+const checkFolderName = (name: string): ValidationResult => {
   if (!name) return { valid: false, message: 'Folder name cannot be empty' };
   if (name.includes('/'))
     return { valid: false, message: 'Folder name cannot contain "/"' };
   return { valid: true };
 };
 
-const isFolder = (file) => file.type.toLowerCase() === 'dir';
+const isFolder = (file: FileItem): boolean => file.type.toLowerCase() === 'dir';
 
-const checkExtension = async (oldName, newName) => {
-  const [oldExt, newExt] = [oldName, newName].map((n) => n.split('.').at(-1));
+const checkExtension = async (oldName: string, newName: string): Promise<boolean> => {
+  const [oldExt, newExt] = [oldName, newName].map(n => n.split('.').at(-1));
   if (oldExt !== newExt) {
     return utils.confirm(
       'Extension changed',
@@ -552,155 +448,6 @@ const checkExtension = async (oldName, newName) => {
     );
   }
   return true;
-};
-
-const uploadFile = (file) => {
-  currentUploadAbortController.value = new AbortController();
-  const formData = new FormData();
-
-  // Attach the file
-  formData.append('files', file);
-
-  // Attach JSON as a string under key 'filePath'
-  formData.append(
-    'filePath',
-    currentPath.value
-      .slice(1)
-      .map((a) => decodeURIComponent(a))
-      .join('/'),
-  );
-
-  return axios.post(`/api/files/user/upload`, formData, {
-    signal: currentUploadAbortController.value.signal,
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-    onUploadProgress: function (progressEvent) {
-      currentUpload.value.progress = Math.round(
-        (progressEvent.loaded / progressEvent.total) * 100,
-      );
-    }.bind(this),
-  });
-};
-
-const uploadFiles = async (uploads, isFolderUpload) => {
-  let filesToUpload = Array.from(uploads);
-
-  if (filesToUpload.find((file) => file.size / GB > HARD_UPLOAD_SIZE_LIMIT)) {
-    await utils.confirm(
-      `Upload error`,
-      `You are trying to upload at least one file larger than ${HARD_UPLOAD_SIZE_LIMIT} GB.<br>This is not supported by this web interface.<br>Please use FTP/Aspera for such large files transfer.`,
-      { showCancel: false },
-    );
-    return;
-  }
-
-  // warn when files are large or more than a threshold
-  const largeFiles = filesToUpload.filter(
-    (file) => file.size / MB > MAX_UPLOAD_SIZE,
-  );
-  if (largeFiles.length > 0 || filesToUpload.length > MAX_UPLOAD_FILE_COUNT) {
-    const proceed = await utils.confirm(
-      `Upload warning`,
-      `For uploading files larger than ${MAX_UPLOAD_SIZE} MB or more than ${MAX_UPLOAD_FILE_COUNT} files, using FTP/Aspera is recommended. Do you still want to continue?`,
-      { okayLabel: `Yes`, cancelLabel: 'No, cancel' },
-    );
-    if (!proceed) return;
-  }
-
-  // warn overwrite
-  const fileNames = files.value.map((f) => f.name);
-  const overlap = filesToUpload
-    .map((file) =>
-      isFolderUpload
-        ? file?.webkitRelativePath.substring(
-            0,
-            file?.webkitRelativePath.indexOf('/'),
-          )
-        : file.name,
-    )
-    .filter((name) => fileNames.includes(name));
-
-  if (overlap.length > 0) {
-    const overlapString =
-      overlap.length === 1
-        ? overlap[0] + '?'
-        : overlap.length + ' files? (' + overlap.join(', ') + ')';
-    const proceed = await utils.confirm(
-      `Overwrite files?`,
-      isFolderUpload
-        ? 'This may overwrite existing files in the folder. Do you want to go ahead?'
-        : `Do you want to overwrite ${overlapString}`,
-      { okayLabel: `Yes, overwrite`, cancelLabel: 'No, cancel' },
-    );
-    if (!proceed) return;
-  }
-
-  // filter hidden files
-  const hiddenFiles = filesToUpload.filter((file) => file.name.startsWith('.'));
-  if (hiddenFiles.length > 0) {
-    // Count filenames to avoid repeating several times the same name
-    const counter = hiddenFiles
-      .map((file) => file.name)
-      .reduce(
-        (acc, name) => (acc[name] ? acc[name]++ : (acc[name] = 1)) && acc,
-        {},
-      );
-    // Sort by how many time file names appear, and then by their name
-    const fileNamesCounts = Object.entries(counter).sort(
-      ([nameA, countA], [nameB, countB]) =>
-        countB - countA || nameA.localeCompare(nameB),
-    );
-    // Only display the top 3 kind of hidden filenames
-    const examples =
-      fileNamesCounts.length > 3
-        ? fileNamesCounts.slice(0, 3)
-        : fileNamesCounts;
-
-    const introDisplay =
-      hiddenFiles.length > 1
-        ? `Do you want to include these <b>${hiddenFiles.length}</b> hidden files?`
-        : `Do you want to include this hidden file?`;
-    let examplesDisplay = examples
-      .map(
-        ([name, count]) =>
-          `<li>${count > 1 ? `<b>${count} x </b> ` : ''} ${name}</li>`,
-      )
-      .join('');
-    if (examples.length !== fileNamesCounts.length)
-      examplesDisplay += '<li>...</li>';
-
-    const filter = await utils.confirm(
-      `Upload hidden files?`,
-      `${introDisplay} <ul>${examplesDisplay}</ul>`,
-      {
-        okayLabel: `Skip hidden files (${filesToUpload.length - hiddenFiles.length} files)`,
-        cancelLabel: `Include all files (${filesToUpload.length} files)`,
-        level: 'primary',
-      },
-    );
-    if (filter)
-      filesToUpload = filesToUpload.filter(
-        (file) => !file.name.startsWith('.'),
-      );
-  }
-
-  const uploadModal = new Modal('#uploadModal');
-  uploadModal.show();
-
-  for (let i = 0; i < filesToUpload.length; i++) {
-    const file = filesToUpload[i];
-    currentUpload.value.name = file.name;
-    await uploadFile(file)
-      .then((r) => {
-        if (r?.message === 'canceled') i = filesToUpload.length;
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-  }
-  location.reload();
-  return false;
 };
 </script>
 

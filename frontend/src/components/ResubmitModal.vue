@@ -1,10 +1,13 @@
-<script setup>
+<script setup lang="ts">
 import { ref, defineEmits } from "vue";
 
 const selectedOption = ref("noFilesUpdated"); // Default selected option
 
 // Emits events to the parent component
-const emit = defineEmits(["hide", "resubmit"]);
+const emit = defineEmits<{
+  hide: [],
+  resubmit: [string]
+}>();
 
 const hide = () => {
   emit("hide");
@@ -14,7 +17,7 @@ const resubmit = () => {
   emit("resubmit", selectedOption.value);
 };
 
-const stopPropagation = (event) => {
+const stopPropagation = (event: Event) => {
   event.stopPropagation(); // Prevent event from bubbling to parent
 };
 </script>

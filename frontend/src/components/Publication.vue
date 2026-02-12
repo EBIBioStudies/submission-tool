@@ -17,26 +17,34 @@
 </template>
 <!--:results="searchResults"-->
 
-<script setup>
-import {inject, ref} from 'vue';
+<script setup lang="ts">
+import { computed, ref } from 'vue';
 import PmidPopUp from './PmidPopUp.vue';
-import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
-import {faSearch} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { faSearch } from '@fortawesome/free-solid-svg-icons';
+import { Template } from '@/models/Template.model.ts';
+import { PageTab } from '@/models/PageTab.model.ts';
+import { PublicationSearchResult } from 'components/PmidPopUp.vue';
+import { Class } from '@/utils.ts';
+import { AttributeControlExpose } from 'components/expose.model.ts';
 
 
-const props = defineProps(['fieldType','pmid', 'class', 'placeholder', 'row'])
+const props = defineProps<{
+  fieldType?: Template.FieldType,
+  pmid: PageTab.Tag,
+  class?: Class,
+  placeholder?: string,
+  row?: PageTab.DetailedAttribute[]
+}>()
 const pmidQuery = ref(props.pmid);
 const row = ref(props.row);
 const showPopup = ref(false);
-const loading = ref(false);
-// const searchResults = ref([]);
-const parentDisplayType = inject('parentDisplayType')
 
 function openPopupAndSearch() {
     showPopup.value = true;
 }
 
-function handleSelect(selectedItem) {
+function handleSelect(selectedItem: PublicationSearchResult) {
   pmidQuery.value.value = selectedItem.id;
   if(Array.isArray(row.value)){
     row.value.forEach(item => {
@@ -72,5 +80,7 @@ function handleClose() {
 }
 
 // Mocking the fetch function, replace with actual API call
+
+defineExpose<AttributeControlExpose>({ errors: computed(() => []) })
 
 </script>

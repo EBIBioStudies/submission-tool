@@ -1,6 +1,28 @@
 import { Modal } from 'bootstrap';
+import { ComponentPublicInstance } from 'vue';
 
-const confirm = (title, message, {okayLabel = 'Close', isLarge = false, showCancel = true, cancelLabel = 'Cancel', level = 'danger'} = {}) => {
+interface ConfirmOptions {
+  okayLabel?: string;
+  isLarge?: boolean;
+  showCancel?: boolean;
+  cancelLabel?: string;
+  level?: 'danger' | 'primary' | 'secondary' | 'success' | 'warning' | 'info';
+}
+
+interface PromptOptions {
+  okayLabel?: string;
+  isLarge?: boolean;
+  showCancel?: boolean;
+  cancelLabel?: string;
+}
+
+const confirm = (title: string, message: string, {
+  okayLabel = 'Close',
+  isLarge = false,
+  showCancel = true,
+  cancelLabel = 'Cancel',
+  level = 'danger',
+}: ConfirmOptions = {}): Promise<boolean> => {
   const modal = document.createElement('div');
   let isOkay = false;
   modal.id = 'modal-confirm';
@@ -28,23 +50,28 @@ const confirm = (title, message, {okayLabel = 'Close', isLarge = false, showCanc
     isOkay = true;
     thisModal.hide();
   };
-  document.querySelector('#bs-confirm-okay').addEventListener('click', () => accept());
-  modal.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && e.target.id !== 'bs-confirm-cancel') {
+  document.querySelector('#bs-confirm-okay')!.addEventListener('click', () => accept());
+  modal.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key === 'Enter' && (e.target as HTMLElement).id !== 'bs-confirm-cancel') {
       accept();
     }
   });
 
-  return new Promise((resolve, reject) => {
-    modal.addEventListener('hide.bs.modal', (e) => {
-      document.body.querySelector('.modal-backdrop').remove();
+  return new Promise<boolean>((resolve) => {
+    modal.addEventListener('hide.bs.modal', () => {
+      document.body.querySelector('.modal-backdrop')?.remove();
       modal.remove();
       resolve(isOkay);
     });
   });
 };
 
-const prompt = (title, message, {okayLabel = 'Close', isLarge = false, showCancel = true, cancelLabel = 'Cancel'} = {}) => {
+const prompt = (title: string, message: string, {
+  okayLabel = 'Close',
+  isLarge = false,
+  showCancel = true,
+  cancelLabel = 'Cancel',
+}: PromptOptions = {}): Promise<string> => {
   const modal = document.createElement('div');
   modal.id = 'modal-confirm';
   modal.className = 'modal' + (isLarge ? ' modal-lg' : '');
@@ -70,24 +97,21 @@ const prompt = (title, message, {okayLabel = 'Close', isLarge = false, showCance
   `;
   const thisModal = new Modal(modal);
   thisModal.show();
-  document.body.querySelector('#prompt').focus();
-  document.querySelector('#bs-confirm-okay').addEventListener('click', (e) => {
+  (document.body.querySelector('#prompt') as HTMLInputElement)?.focus();
+  document.querySelector('#bs-confirm-okay')!.addEventListener('click', () => {
     thisModal.hide();
   });
-  const closePrompt = () => {
-    thisModal.hide();
-  };
-  return new Promise((resolve, reject) => {
-    modal.addEventListener('hide.bs.modal', (e) => {
-      const value = document.body.querySelector('#prompt').value;
-      document.body.querySelector('.modal-backdrop').remove();
+  return new Promise<string>((resolve) => {
+    modal.addEventListener('hide.bs.modal', () => {
+      const value = (document.body.querySelector('#prompt') as HTMLInputElement)?.value || '';
+      document.body.querySelector('.modal-backdrop')?.remove();
       modal.remove();
       resolve(value);
     });
   });
 };
 
-const isOrcidValid = (orcid) => {
+const isOrcidValid = (orcid: string | undefined): boolean => {
   if (!orcid)
     return false;
   const orcidFormatRegex = /\d{4}-\d{4}-\d{4}-\d{3}[\dX]/gi;
@@ -113,7 +137,7 @@ const isOrcidValid = (orcid) => {
  *
  * @return Formatted string.
  */
-const humanFileSize = (bytes, si = true, dp = 2) => {
+const humanFileSize = (bytes: number, si = true, dp = 2): string => {
   const thresh = si ? 1000 : 1024;
 
   if (Math.abs(bytes) < thresh) return bytes + ' B';
@@ -132,4 +156,43 @@ const humanFileSize = (bytes, si = true, dp = 2) => {
   return bytes.toFixed(dp) + ' ' + units[u];
 };
 
+export const ensureArray = <T>(arr: T[] | T): T[] => Array.isArray(arr) ? arr : [arr];
+export const isDefined = <T>(nullable: T | null | undefined): nullable is T => nullable !== null && nullable !== undefined;
+
 export default { confirm, prompt, isOrcidValid, humanFileSize };
+
+export type { ConfirmOptions, PromptOptions };
+
+
+export const isElement = (item: HTMLElement | ComponentPublicInstance): item is HTMLElement => {
+  return item instanceof HTMLElement;
+};
+
+export const isTable = <T>(element: (T | T[])[]): element is T[][] => {
+  return element[0] && Array.isArray(element[0]);
+};
+
+export const isList = <T>(element: (T | T[])[]): element is T[] => {
+  return !isTable(element);
+};
+
+export const isString = (value: any): value is string => {
+  return typeof value === 'string';
+};
+
+
+export function assert(condition: boolean, message: string): asserts condition {
+  if (!condition) {
+    throw new Error(message);
+  }
+}
+
+export function assertDefined<T>(obj: T | null | undefined, message: string): asserts obj is T {
+  assert(isDefined(obj), message);
+}
+
+export const isClass = (item: Class): item is string => {
+  return typeof item === 'string';
+};
+
+export type Class = string | Record<string, boolean> | (string | Record<string, boolean>)[];

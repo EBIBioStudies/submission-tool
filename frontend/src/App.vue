@@ -58,11 +58,12 @@
   </template>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import AuthService from './services/AuthService';
 import ImpersonateModal from './components/ImpersonateModal.vue';
+import * as bootstrap from 'bootstrap';
 
 const router = useRouter();
 const basePath = import.meta.env.VITE_BASE_URL || '/';
@@ -83,14 +84,14 @@ onMounted(async () => {
   } finally {
     authLoading.value = false;  // Always unblock (even on error)
   }
-  
+
   // UI init after auth
   await nextTick();
   const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
   [...popoverTriggerList].forEach(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
-  
-  if (window.ebiFrameworkRunDataProtectionBanner !== undefined) {
-    window.ebiFrameworkRunDataProtectionBanner('other');
+
+  if ((window as any).ebiFrameworkRunDataProtectionBanner !== undefined) {
+    (window as any).ebiFrameworkRunDataProtectionBanner('other');
   }
 });
 </script>

@@ -1,11 +1,5 @@
-<script setup>
-
-import FileFolderSelectModal from "./components/FileFolderSelectModal.vue";
+<script setup lang="ts">
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import {ref} from "vue";
-
-const attr = {path:'/user/structures.svg'};
-const filePath = ref(attr.path)
 </script>
 
 <template>

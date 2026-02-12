@@ -38,9 +38,9 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {ref} from "vue";
-import AuthService from "./services/AuthService";
+import AuthService, { LoginCredentials } from './services/AuthService';
 import {useRouter} from "vue-router";
 import AnnouncementBanner from '@/components/AnnouncementBanner.vue'
 
@@ -49,7 +49,7 @@ const username = ref('');
 const password = ref('');
 const invalidUsername = ref(false);
 const invalidPassword = ref(false);
-const errorMessage = ref(null);
+const errorMessage = ref<string | null>(null);
 
 const defaultErrorMessage = 'Unexpected Error - Please try again and if the problem persists, drop an email to <a href="mailto:biostudies@ebi.ac.uk">biostudies@ebi.ac.uk</a>';
 
@@ -59,7 +59,7 @@ const validatePassword = () => invalidPassword.value = !password.value;
 const doLogin = async () => {
   if (invalidUsername.value || !invalidPassword) return;
   try {
-    const credentials = {
+    const credentials: LoginCredentials = {
       login: username.value,
       password: password.value,
     };
@@ -69,7 +69,7 @@ const doLogin = async () => {
     } else {
       errorMessage.value = defaultErrorMessage
     }
-  } catch (error) {
+  } catch (error: any) {
     errorMessage.value = error?.response?.status === 401 ? 'Invalid username or password' : error?.response?.data?.log?.message || defaultErrorMessage;
   }
 }

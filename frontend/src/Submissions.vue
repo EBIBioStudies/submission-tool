@@ -3,7 +3,7 @@
     <div>
       <AnnouncementBanner />
     </div>
-    <NewSubmission @select="(e) => console.log(e)"></NewSubmission>
+    <NewSubmission @select="(e: any) => console.log(e)"></NewSubmission>
     <div class="d-flex justify-content-center">
       <span class="ps-1" :class="{ invisible: !isLoading }"
       ><font-awesome-icon class="fa-spin" icon="fa-solid fa-spinner"
@@ -151,7 +151,7 @@
   />
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, watchEffect } from 'vue';
 import AuthService from './services/AuthService';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
@@ -162,29 +162,39 @@ import NewSubmission from '@/components/NewSubmission.vue';
 import SubmissionErrorsModal from '@/components/SubmissionErrorsModal.vue';
 import utils from '@/utils';
 import AnnouncementBanner from '@/components/AnnouncementBanner.vue';
+
+export interface SubmissionSummary {
+  accno: string,
+  displayAccNo: string,
+  title: string,
+  mtime: string,
+  rtime: string,
+  status: 'PROCESSING' | 'PROCESSED' | 'INVALID',
+  errors: string[],
+  newSubmission: boolean
+}
 //init ci/cd test
-const accession = ref('');
-const submissions = ref([]);
+const submissions = ref<SubmissionSummary[]>([]);
 const offset = ref(0);
 const pageLength = ref(15);
 const showNext = ref(false);
 const isLoading = ref(true);
 const accessionToSearch = ref('');
-const serverListingSubsErrorMessage = ref('');
+const serverListingSubsErrorMessage = ref<string | null>(null);
 
 const showModal = ref(false);
-const currentErrors = ref([]);
+const currentErrors = ref<string[]>([]);
 
-const showErrors = (errors) => {
+const showErrors = (errors: string[]) => {
   currentErrors.value = errors;
   showModal.value = true;
 };
 
-const getAccNoToDisplay = (submission) => {
+const getAccNoToDisplay = (submission: SubmissionSummary) => {
   return submission.displayAccNo ? submission.displayAccNo : submission.accno;
 };
 
-const canDelete = (submission) => {
+const canDelete = (submission: SubmissionSummary) => {
   return (
     (['S-'].some((prefix) => submission.accno.indexOf(prefix) >= 0) &&
       new Date(submission?.rtime).getTime() > Date.now() &&
@@ -192,7 +202,7 @@ const canDelete = (submission) => {
     AuthService.user?.value?.superuser
   );
 };
-const deleteSubmission = async (accno) => {
+const deleteSubmission = async (accno: string) => {
   if (
     !(await utils.confirm(
       'Delete draft',
@@ -243,7 +253,7 @@ watchEffect(async () => {
     submissions.value = response.data.slice(0, pageLength.value);
     showNext.value = response.data.length === pageLength.value + 1;
 
-  } catch (error) {
+  } catch (error: any) {
     serverListingSubsErrorMessage.value =
       error?.log?.message || error?.message || 'Problem in listing submissions';
   } finally {
@@ -251,13 +261,9 @@ watchEffect(async () => {
   }
 });
 
-const edit = (accno) => {
-  router.push(`/edit/${accno}`);
-};
+const edit = (accno: string) => router.push(`/edit/${accno}`);
 
-const open = (accno) => {
-  window.open(`${window.config.frontendUrl}/studies/${accno}`);
-};
+const open = (accno: string) => window.open(`${window.config.frontendUrl}/studies/${accno}`);
 
 /**
  * Prompts the user to search for an accession.

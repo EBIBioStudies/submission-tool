@@ -40,7 +40,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {VueRecaptcha} from "vue-recaptcha";
 import {computed, ref} from 'vue';
 import axios from "axios";
@@ -57,13 +57,9 @@ const validEmail = computed(() => {
   const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return regex.test(email.value);
 });
-const validCaptcha = computed(() => {
-  return recaptchaToken.value !== '';
-});
+const validCaptcha = computed(() => recaptchaToken.value !== '');
 
-const onCaptchaVerified = (response) => {
-  recaptchaToken.value = response;
-};
+const onCaptchaVerified = (response: string) => recaptchaToken.value = response;
 
 const submitData = async () => {
   hasError.value = false;
@@ -76,9 +72,9 @@ const submitData = async () => {
       'instanceKey':instanceKey
     };
     try {
-      const response = await axios.post(`/api/auth/password/reset`, parameters);
+      await axios.post(`/api/auth/password/reset`, parameters);
       success.value = true;
-    } catch (error) {
+    } catch (error: any) {
       hasError.value = true;
       errorMessage.value = error?.response?.data?.log?.message || 'Unknown Error';
     }

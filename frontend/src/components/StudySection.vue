@@ -1,16 +1,22 @@
-<script setup>
+<script setup lang="ts">
 import Section from './Section.vue';
-import { computed, provide, ref } from 'vue';
-// import Authors from "@/components/Authors.vue";
+import { computed, ref, UnwrapRef } from 'vue';
+import { PageTab } from '@/models/PageTab.model.ts';
+import { Template } from '@/models/Template.model.ts';
+import { SectionExpose } from 'components/expose.model.ts';
 
-const props = defineProps(['section', 'sectionType']);
-const sectionComponent = ref(null)
-// const authorComponent = ref(null)
-const errors = computed(() => [...sectionComponent.value.errors])
-defineExpose({errors});
+defineProps<{
+  section: PageTab.Section;
+  sectionType: Template.SectionType;
+}>();
+const sectionComponent = ref<UnwrapRef<SectionExpose>>();
+
+const errors = computed(() => sectionComponent.value?.errors || []);
+
+
+defineExpose<SectionExpose>({ errors });
 </script>
 
 <template>
-<!--  <Authors :section="section" :sectionType="sectionType?.tableTypes?.find( (s) => s.name.toLowerCase() === 'contact')" ref="authorComponent"/>-->
-  <Section :section="section" :sectionType="sectionType" :depth="0" ref="sectionComponent"/>
+  <Section :section="section" :sectionType="sectionType" :depth="0" ref="sectionComponent" />
 </template>

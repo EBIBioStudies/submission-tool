@@ -21,7 +21,10 @@
           "name": "largetext",
           "minlength": 25
         },
-        "asyncValueValidatorName": "forStudyTitle"
+        "asyncValueValidatorName": "forStudyTitle",
+        "helpContextual": {
+          "description": "Provide a brief summary of dataset contents"
+        }
       },
       {
         "name": "ReleaseDate",
@@ -43,6 +46,9 @@
         "controlType": {
           "name": "largetext",
           "minlength": 50
+        },
+        "helpContextual": {
+          "description": "Describe how the data are structured and how a potential consumer might use them. Be as descriptive as necessary."
         }
       },
       {
@@ -145,6 +151,7 @@
       }
     ],
     "annotationsType": {
+      "name": "Annotation",
       "title": "Annotation",
       "description": "Provide any additional details that may help discover or interpret the study.",
       "icon": "fa-tag",
@@ -266,7 +273,7 @@
       },
       {
         "name": "Link",
-        "description": "Provide pointers to data held in external databases or to related information on the web. Compact URIs from <a target=\"_blank\" href=\"https://www.ebi.ac.uk/miriam/main/collections\">Identifiers.org</a> are supported. </br>URLs must include the scheme, e.g. \"http://\".",
+        "description": "Provide pointers to data held in external databases or to related information on the web. Compact URIs from <a target=\"_blank\" href=\"https://www.ebi.ac.uk/miriam/main/collections\">Identifiers.org</a> are supported. </br>URLs must include the scheme, e.g. \"https://\". <br> Do not forget to link to code that you used to produce the data files, and/or that will help the data consumers to understand the data.",
         "icon": "fa-link",
         "uniqueCols": true,
         "allowImport": true,
