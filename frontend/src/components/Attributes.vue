@@ -10,7 +10,7 @@ import { isDefined } from '@/utils.ts';
 
 const props = defineProps<{
   attributes?: PageTab.DetailedAttribute[],
-  fieldTypes?: Template.FieldType[],
+  fieldTypes?: Template.Type[],
   allowNewAttribute?: boolean,
   isSectionAttribute?: boolean,
 }>();

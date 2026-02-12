@@ -24,6 +24,7 @@ const props = defineProps<{
   row?: PageTab.Section,
   isTableAttribute?: boolean,
   isSectionAttribute?: boolean,
+  nameOptions?: string[],
 }>();
 const emits = defineEmits<{
   createTag: [PageTab.Tag],
@@ -184,8 +185,7 @@ const errors = computed(() => {
 });
 
 
-const expose = { errors, attributeId };
-defineExpose<AttributeExpose>(expose);
+defineExpose<AttributeExpose>({ errors, attributeId });
 
 
 const showHelp = () => {
@@ -215,7 +215,17 @@ const showHelp = () => {
         inverse
         icon="fa-check"
       ></font-awesome-icon>
-      <span class="text-muted" v-if="fieldType?.display"><span class="attribute-name">{{ fieldType.name }}</span>
+      <span v-if="nameOptions?.length" class="w-100">
+        <Multiselect class="form-control attribute-name"
+                     :options="nameOptions"
+                     v-model="thisAttribute.name"
+                     :create-option="true"
+                     :searchable="true"
+                     :allow-absent="true"
+                     :can-clear="true"
+        />
+      </span>
+      <span class="text-muted" v-else-if="fieldType?.display"><span class="attribute-name">{{ fieldType.name }}</span>
         <span class="text-danger" v-if="fieldType?.display==='required' || minLength > 0">*</span>
       </span>
       <span v-else>

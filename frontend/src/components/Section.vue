@@ -533,6 +533,15 @@ defineExpose<SectionExpose>({ errors, thisSection });
                         @deleteTag="deleteTag"
                         @newAttribute="addAttribute"
             />
+
+            <!-- Annotations -->
+            <Annotations v-else
+                         ref="annotationsComponent"
+                         :section="section"
+                         :annotation="sectionType.annotationsType"
+                         @new-annotation="addAttribute"
+                         @delete-annotation="deleteAttribute"
+            />
           </div>
 
 

@@ -16,8 +16,8 @@ export namespace PageTab {
 
   export type Attribute =
     DetailedAttribute
-    | ReferenceAttribute
-    | Tag
+    & ReferenceAttribute
+    & Tag
 
   export interface File {
     path: string;
