@@ -70,6 +70,7 @@ const sectionType = computed(() =>
 );
 
 const inheritedSectionType = computed(() => ({
+  allowRename: props.parentSectionType?.allowRename,
   allowNewAttribute: props.parentSectionType?.allowNewAttribute,
   disableCustomSubsection: props.parentSectionType?.disableCustomSubsection,
   disableCustomTable: props.parentSectionType?.disableCustomTable,
@@ -78,6 +79,7 @@ const inheritedSectionType = computed(() => ({
 
 
 const isRemovable = computed(() => sectionType.value?.display !== 'required' || thisSection.value.accno?.includes('-removable'));
+const isRenamable = computed(() => sectionType.value?.allowRename || thisSection.value.accno?.includes('-custom'));
 
 const deleteTag = (msg: PageTab.IndexedTag) => deleteAttribute(msg.index);
 // if (props?.sectionType?.display) {
@@ -180,14 +182,13 @@ const addSubsection = async (aSection: PageTab.Section, _i: number, type?: Templ
   if (type != null) fillTemplate(obj, type);
   else {
     obj.accno =
-      (props.section.accno ?? Date.now()) +
+      (props.section.accno?.replace('-custom', '') ?? Date.now()) +
       '-' +
       (props.section.subsections!.length + 1);
-    obj.type = '';
+    obj.type = 'Custom section';
+    obj.accno = String(obj.accno) + '-custom';
   }
   obj.accno = String(obj.accno) + '-removable';
-
-  if (!obj.type) obj.type = 'Custom section';
   aSection.subsections.push(obj);
 
   // Make sure the map with subsections is updated
@@ -468,7 +469,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
           :icon="'fa-caret-' + (isCollapsed ? 'right' : 'down')"
         ></font-awesome-icon>
         <span
-          v-if="!isRemovable || inheritedSectionType?.disableCustomSubsection"
+          v-if="!isRenamable"
           class="ms-2"
           :data-bs-toggle="sectionType?.description ? 'tooltip' : false"
           data-bs-html="true"

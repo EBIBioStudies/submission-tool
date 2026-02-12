@@ -42,9 +42,15 @@ export namespace Template {
 
     minlength?: number;
 
+    /**
+     * On single `select` controls, whether to show a "create new" option at the top of the list.
+     */
     createOption?: boolean;
     allowPast?: boolean;
     allowFolders?: boolean;
+    /**
+     * On `select` controls, whether to allow adding new values
+     */
     enableValueAdd?: boolean;
     multiple?: boolean;
   }
@@ -125,6 +131,11 @@ export namespace Template {
      * Whether to allow adding custom table. This is inherited to subsections
      */
     disableCustomTable?: boolean;
+
+    /**
+     * Whether to allow renaming the type of the section (which is displayed as label). This is inherited to subsections
+     */
+    allowRename? : boolean;
   }
 
   export interface RootSectionType extends SectionType {

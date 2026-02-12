@@ -9,6 +9,9 @@
       []
     ],
     "name": "Study",
+    "allowNewAttribute": false,
+    "disableCustomSubsection": true,
+    "disableCustomTable": true,
     "fieldTypes": [
       {
         "name": "Title",
@@ -549,16 +552,6 @@
                 "display": "required"
               }
             ]
-          },
-          {
-            "name": "Software",
-            "icon": "fa-comment",
-            "rowAsSection": false,
-            "controlType": {
-              "name": "text",
-              "placeholder": "If manufacturer’s software was used for data processing, the name and version of software."
-            },
-            "display": "optional"
           }
         ]
       },
@@ -569,11 +562,11 @@
         "minRequired": 0,
         "icon": "fa-file-invoice",
         "sectionExample": "Additional instrument information that could help users to reproduce the measurements",
+        "description": "Provide any additional details that could help users to reproduce the measurements. Select from the list, or add your own.",
         "display": "desirable",
         "annotationsType": {
           "name": "Additional instrument details",
           "title": "Additional instrument details",
-          "description": "Provide any additional details that could help users to reproduce the measurements. Select from the list, or add your own.",
           "icon": "fa-tag",
           "display": "desirable",
           "singleRow": true,

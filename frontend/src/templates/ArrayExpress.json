@@ -5,6 +5,9 @@
   "display": "readonly",
   "sectionType": {
     "name": "Study",
+    "allowNewAttribute": false,
+    "disableCustomSubsection": true,
+    "disableCustomTable": true,
     "displayAnnotations": true,
     "display": "readonly",
     "banner": {
