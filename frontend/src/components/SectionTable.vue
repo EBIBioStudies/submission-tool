@@ -241,6 +241,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
                              size="sm" @click="$emit('delete')"
                              @click.stop=""></font-awesome-icon>
         </span>
+        <span class="text-danger" v-if="sectionType?.display==='required' || (sectionType?.minRequired || 0) > 0">*</span>
       </span>
     </div>
     <div v-if="!isCollapsed" :key="sectionsRefreshKey" class="ps-3">
