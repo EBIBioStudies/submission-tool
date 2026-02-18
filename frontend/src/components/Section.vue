@@ -326,7 +326,7 @@ const addAttribute = async () => {
   const added = [
     ...attributes.value!.querySelectorAll<HTMLElement>('.attribute-name'), // TODO check is valid
   ].pop()!;
-  added.scrollIntoView();
+  added.scrollIntoView({behavior: 'smooth', block: 'center' , inline: 'center' });
   added.focus();
 };
 
