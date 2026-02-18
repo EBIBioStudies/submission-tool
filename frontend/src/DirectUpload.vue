@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref, onBeforeUnmount } from 'vue';
-import AuthService from "@/services/AuthService.js";
+import AuthService from "@/services/AuthService";
 import axios from "axios";
 import { from, Subject, Observable } from 'rxjs';
 import { map, mergeAll, last, takeUntil, catchError } from 'rxjs/operators';

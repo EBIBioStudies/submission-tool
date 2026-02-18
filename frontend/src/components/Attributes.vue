@@ -1,52 +1,89 @@
-<script setup>
-import { computed, inject, ref } from 'vue';
-import Attribute from './Attribute.vue';
+<script setup lang="ts">
+import { computed, inject, Ref, ref, UnwrapRef } from 'vue';
+import Attribute from '@/components/Attribute.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { addMissingAttributesGeneral } from '@/composables/useAttributesHelper';
+import { PageTab } from '@/models/PageTab.model.ts';
+import { Template } from '@/models/Template.model.ts';
+import { AttributeExpose, ControlError, SectionExpose } from 'components/expose.model.ts';
+import { isDefined } from '@/utils.ts';
 
-const props = defineProps(['attributes', 'fieldTypes', 'isSectionAttribute']);
-const emits = defineEmits([
-  'deleteAttribute',
-  'createTag',
-  'deleteTag',
-  'newAttribute',
-]);
+const props = defineProps<{
+  attributes?: PageTab.DetailedAttribute[],
+  fieldTypes?: Template.Type[],
+  annotationsType?: Template.AnnotationType,
+  allowNewAttribute?: boolean,
+  isSectionAttribute?: boolean,
+}>();
+const emits = defineEmits<{
+  deleteAttribute: [attribute: PageTab.DetailedAttribute]
+  createTag: [obj: PageTab.Tag]
+  deleteTag: [obj: PageTab.IndexedTag]
+  newAttribute: []
+}>();
 const attributeList = ref(props.attributes);
 const duplicateAttributes = attributeList.value?.filter(
-  (value, index, array) =>
-    array.find((v, i) => v.name === value.name) !== value && value.name !== '',
+  (value, _index, array) =>
+    array.find((v) => v.name === value.name) !== value && value.name !== '',
 );
-const attributeRefs = ref([]);
-const parentDisplayType = inject('parentDisplayType');
+const attributeRefs = ref<UnwrapRef<AttributeExpose>[]>([]);
+const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
 
-const processed = (attribute) => duplicateAttributes.includes(attribute);
+const processed = (attribute: PageTab.DetailedAttribute) => duplicateAttributes?.includes(attribute);
 
-const getFieldType = (attribute) => {
-  const fieldType = props?.fieldTypes?.find(
-    (f) => f.name?.toLowerCase() === attribute?.name?.toLowerCase(),
-  );
-  return fieldType ? fieldType : props?.attributes?.length > 1 ? attribute : '';
+const getFieldType = (attribute: PageTab.DetailedAttribute): Template.FieldType | undefined => {
+  // First check in regular fieldTypes
+  const fieldType = props?.fieldTypes?.find((f) => f.name?.toLowerCase() === attribute?.name?.toLowerCase());
+  if (fieldType) return fieldType;
+
+  // Then check in annotationsType.columnTypes
+  if (props?.annotationsType?.columnTypes) {
+    const annotationType = props.annotationsType.columnTypes.find(
+      (f) => f.name?.toLowerCase() === attribute?.name?.toLowerCase()
+    );
+    if (annotationType) return annotationType as Template.FieldType;
+  }
+
+  return undefined;
+};
+
+// Get list of annotation names for dropdown selection (only for custom attributes)
+const nameOptions = computed(() => {
+  if (!props.annotationsType?.columnTypes) return [];
+  return props.annotationsType.columnTypes.map(c => c.name);
+});
+
+// Check if attribute matches a regular fieldType (not annotation)
+const isRegularAttribute = (attribute: PageTab.DetailedAttribute): boolean => {
+  return props?.fieldTypes?.some(
+    (f) => f.name?.toLowerCase() === attribute?.name?.toLowerCase()
+  ) ?? false;
+};
+
+// Check if an attribute should show name options
+// Only show for attributes that don't match fieldTypes (i.e., they are annotations or custom)
+const shouldShowNameOptions = (attribute: PageTab.DetailedAttribute): boolean => {
+  // If no annotations type defined, don't show options
+  if (!props.annotationsType) return false;
+
+  // Show nameOptions only if it doesn't match a regular fieldType
+  return !isRegularAttribute(attribute);
 };
 
 const addMissingAttributes = () => {
   addMissingAttributesGeneral(attributeList, props.fieldTypes);
 };
 
-const errors = computed(() => {
-  const _errors = [];
-  // validate subsections
-  attributeRefs?.value.forEach((a) => {
-    const err = a.errors;
-    if (err)
-      _errors.push({
-        errorMessage: err,
-        control: a,
-        element: document.getElementById(a.attributeId),
-      });
-  });
-  return _errors;
-});
-defineExpose({ errors });
+const errors = computed(() => attributeRefs.value
+  .filter(att => isDefined(att.errors))
+  .map(att => ({
+    errorMessage: att.errors,
+    control: att,
+    element: document.getElementById(att.attributeId)!,
+  }) as ControlError<UnwrapRef<AttributeExpose>>),
+);
+
+defineExpose<SectionExpose>({ errors });
 
 addMissingAttributes();
 </script>
@@ -58,18 +95,19 @@ addMissingAttributes();
         <Attribute
           :key="index"
           ref="attributeRefs"
-          :attribute="attribute"
-          :field-type="getFieldType(attribute)"
+          :attribute="attribute as PageTab.BuildingSection"
+          :field-type="getFieldType(attribute)!"
           :parent="attributeList"
+          :nameOptions="shouldShowNameOptions(attribute) ? nameOptions : undefined"
           @createTag="(v) => emits('createTag', v)"
-          :isSectionAttribute="isSectionAttribute"
-          @deleteAttribute="(v) => emits('deleteAttribute', index)"
+          :isSectionAttribute="isSectionAttribute && isRegularAttribute(attribute)"
+          @deleteAttribute="() => emits('deleteAttribute', attribute)"
           @deleteTag="(v) => emits('deleteTag', v)"
         />
       </template>
     </div>
 
-    <div v-if="isSectionAttribute" class="branch mt-2">
+    <div v-if="!(allowNewAttribute === false)" class="branch mt-2">
       <button
         v-if="parentDisplayType !== 'readonly'"
         class="btn btn-light btn-small text-black-50"

@@ -2,7 +2,7 @@
   <teleport to="body">
     <div class="fixed-top text-end col">
       <font-awesome-icon icon="fas fa-user-secret" class="p-2 link-dark" type="button"
-                         @click="offCanvasJson.show();"></font-awesome-icon>
+                         @click="offCanvasJson!.show();"></font-awesome-icon>
     </div>
   </teleport>
 
@@ -10,29 +10,29 @@
     <div class="spinner"></div>
   </div>
 
-  <div v-else-if="success" className="card">
-    <div className="card-body">
-      <h2 className="card-title ng-star-inserted">
-        <i aria-hidden="true" className="fa fa-check-circle"></i> Study <span
-        className="ng-star-inserted">submitted</span>
+  <div v-else-if="success" class="card">
+    <div class="card-body">
+      <h2 class="card-title ng-star-inserted">
+        <i aria-hidden="true" class="fa fa-check-circle"></i> Study <span
+        class="ng-star-inserted">submitted</span>
       </h2>
-      <p className="card-text mb-1 ng-star-inserted"> The study has been submitted to the BioStudies database and is now
+      <p class="card-text mb-1 ng-star-inserted"> The study has been submitted to the BioStudies database and is now
         being processed. </p>
-      <div className="mt-3 ng-star-inserted">
-        <h5>Please note <i className="far fa-hand-point-down"></i></h5>
+      <div class="mt-3 ng-star-inserted">
+        <h5>Please note <i class="far fa-hand-point-down"></i></h5>
         <ul>
-          <li className="mb-3">
+          <li class="mb-3">
             <mark>Data processing time depends on the number and size of your files.</mark>
           </li>
-          <li className="mb-3">
+          <li class="mb-3">
             <mark>
               If there are any further validation errors, they will be available from the Submissions list page
             </mark>
           </li>
-          <li className="mb-3">
+          <li class="mb-3">
             <mark>On successful processing you will receive the study accession number by e-mail.</mark>
           </li>
-          <li className="mb-3">
+          <li class="mb-3">
             <mark>
               The study will remain private and accessible only via login until the release date in the Western European
               Time Zone.
@@ -40,10 +40,10 @@
           </li>
         </ul>
       </div>
-      <div className="mt-3 ng-star-inserted">
+      <div class="mt-3 ng-star-inserted">
         <strong>
           <a target="_blank" href="http://europepmc.org/abstract/MED/26700850"> Citing the BioStudies database <i
-            className="fa fa-fw fa-external-link-square"></i></a>
+            class="fa fa-fw fa-external-link-square"></i></a>
         </strong>
         <p>Sarkans U, Gostev M, Athar A, et al. <a href="http://doi.org/10.1093/nar/gkx965">The BioStudies database-one
           stop shop for all data supporting a life sciences study. </a><i>Nucleic Acids Res.</i>
@@ -64,7 +64,7 @@
     <div v-else>
       <div class="card ng-star-inserted">
         <div class="card-body st-edit-status-message">
-          <h2 v-if="displayType !== 'readonly' && !submission.newSubmission" class="card-title ng-star-inserted">Edit
+          <h2 v-if="displayType !== 'readonly' && !submission?.newSubmission" class="card-title ng-star-inserted">Edit
             submission</h2>
           <h2 v-else class="card-title ng-star-inserted">New submission</h2>
           <p class="card-text ng-star-inserted"> Please fill in the form below. The
@@ -103,8 +103,8 @@
     </div>
     <div class="row">
       <div class="col-1"></div>
-      <div class="col-10">
-        <Submission :submission="submission" :template="template" :accession="props.accession"
+      <div class="col-10" v-if="submission && template">
+        <Submission :submission="submission!" :template="template!" :accession="props.accession"
                     ref="submissionComponent" />
       </div>
       <div class="col-1"></div>
@@ -166,10 +166,10 @@
 }
 </style>
 
-<script setup>
-import { computed, onMounted, provide, ref, watch, watchEffect } from 'vue';
+<script setup lang="ts">
+import { computed, onMounted, provide, ref, UnwrapRef, watch, watchEffect } from 'vue';
 
-import Default from './templates/Default.json';
+import Default from './templates/Default.v2.json';
 import Submission from './components/Submission.vue';
 import ResubmitModal from './components/ResubmitModal.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
@@ -180,17 +180,20 @@ import utils from '@/utils';
 import AuthService from './services/AuthService';
 import { useFeatureFlags } from '@/composables/useFeatureFlags';
 import AnnouncementBanner from '@/components/AnnouncementBanner.vue';
-import { cleanAndReorderSubsections } from './templates/cleanUtils.js';
+import { cleanAndReorderSubsections } from './templates/cleanUtils';
+import { PageTab } from '@/models/PageTab.model.ts';
+import { Template } from '@/models/Template.model.ts';
+import { ControlError, SectionExpose } from 'components/expose.model.ts';
 
 
-const props = defineProps(['accession']);
-const submission = ref({});
-const template = ref({});
+const props = defineProps<{ accession: string }>();
+const submission = ref<PageTab.LocalSubmission>();
+const template = ref<Template.TemplateDefinition>();
 const isSaving = ref(true);
 const hasValidated = ref(false);
 const success = ref(false);
 const serverErrorMessage = ref('');
-const displayType = ref('');
+const displayType = ref<Template.DisplayType>();
 const editDateMode = ref(false);
 const isLoading = ref(false);
 const isManagerUser = ref(false);
@@ -208,11 +211,11 @@ const { enableSubmission } = useFeatureFlags();
 const showModal = ref(false);
 isManagerUser.value = AuthService?.user?.value?.superuser == true;
 
-const submissionComponent = ref({});
+const submissionComponent = ref<UnwrapRef<SectionExpose>>();
 
-let offCanvasErrors = null;
-let offCanvasJson = null;
-let validationErrors = ref([]);
+let offCanvasErrors: Offcanvas | null = null;
+let offCanvasJson: Offcanvas | null = null;
+let validationErrors = ref<ControlError[]>([]);
 
 
 const submitDraftPopUp = () => {
@@ -226,11 +229,11 @@ const submitDraftPopUp = () => {
 const publicSubmission = computed(() => {
   if (!isSubmittedSubmission.value)
     return false;
-  const releaseAttr = submission.value.attributes.find(attr => attr?.name === 'ReleaseDate');
+  const releaseAttr = submission.value!.attributes?.find(attr => attr?.name === 'ReleaseDate');
   if (!releaseAttr || !releaseAttr.value) return false;
 
   const releaseDate = new Date(releaseAttr.value);
-  if (isNaN(releaseDate)) {
+  if (isNaN(releaseDate.getTime())) {
     console.warn('Invalid release date:', releaseAttr.value);
     return false;
   }
@@ -239,7 +242,8 @@ const publicSubmission = computed(() => {
 provide('isPublicSubmission', publicSubmission);
 
 
-function collectMessages(node) {
+type MessageNode = {message:string, subnodes?: MessageNode[]}
+function collectMessages(node: MessageNode) {
   if (!node) return [];
 
   const messages = [];
@@ -257,24 +261,24 @@ function collectMessages(node) {
   return messages;
 }
 
-const finalSubmitDraft = async (option) => {
+const finalSubmitDraft = async (option?: string) => {
   showModal.value = false;
   hasValidated.value = true;
-  validationErrors.value = submissionComponent.value?.errors;
+  validationErrors.value = submissionComponent.value?.errors || [];
 
   if (validationErrors.value.length) {
-    offCanvasErrors.show();
+    offCanvasErrors!.show();
     return;
   }
 
-  offCanvasErrors.hide();
+  offCanvasErrors!.hide();
   isLoading.value = true;
 
   try {
     // 1. Clean and reorder the section in-place
 
-    if (submission.value.newSubmission) {
-      submission.value.section = cleanAndReorderSubsections(submission.value.section);
+    if (submission.value!.newSubmission) {
+      submission.value!.section = cleanAndReorderSubsections(submission.value!.section);
     }
 
     // 2. Save the updated draft synchronously
@@ -302,7 +306,7 @@ const finalSubmitDraft = async (option) => {
       success.value = false;
     }
 
-  } catch (error) {
+  } catch (error: any) {
     success.value = false;
     const allMessages = collectMessages(error?.response?.data?.log).join(' -- ');
     serverErrorMessage.value =
@@ -330,9 +334,9 @@ onMounted(() => {
   offCanvasJson = Offcanvas.getOrCreateInstance('#offcanvasJson', { 'backdrop': false });
 });
 
-function deduplicateReleaseDate(submissionJson) {
+function deduplicateReleaseDate(submissionJson: PageTab.LocalSubmission) {
   const seen = new Set();
-  const keepFirst = (attrs = []) =>
+  const keepFirst = (attrs: PageTab.Attribute[] = []) =>
     attrs.filter(attr => {
       if (attr?.name !== 'ReleaseDate') return true;
       if (seen.has('ReleaseDate')) return false;
@@ -347,39 +351,37 @@ function deduplicateReleaseDate(submissionJson) {
 watchEffect(async () => {
   if (props.accession) {
     // load from existing data
-    const response = await axios.get(
-      `/api/submissions/drafts/${props.accession}`,
-    );
-
+    isLoading.value = true;
+    const response = await axios.get(`/api/submissions/drafts/${props.accession}`);
     const data = await response.data;
-    const submissionJson = data?.content;
+    const submissionJson = data?.content as PageTab.LocalSubmission;
     submissionJson['displayKey'] = data?.displayKey;
     submissionJson['newSubmission'] = data?.newSubmission;
     isSubmittedSubmission.value = displayType?.value !== 'readonly' && !data?.newSubmission;
 
     collectionName.value = submissionJson.attributes?.find(
       (n) => n?.name?.toLowerCase() === 'attachto',
-    )?.value;
+    )?.value || '';
 
     // insert the release date as needed
     deduplicateReleaseDate(submissionJson);
 
     // Now optionally insert if still missing in one place
     const submissionHas = submissionJson.attributes.some(attr => attr?.name === 'ReleaseDate');
-    const sectionHas = submissionJson.section.attributes.some(attr => attr?.name === 'ReleaseDate');
+    const sectionHas = submissionJson.section.attributes?.some(attr => attr?.name === 'ReleaseDate');
 
     if (!submissionHas && sectionHas) {
-      const releaseDate = submissionJson.section.attributes.find(attr => attr.name === 'ReleaseDate');
+      const releaseDate = submissionJson.section.attributes?.find(attr => attr.name === 'ReleaseDate');
       if (releaseDate) submissionJson.attributes.splice(2, 0, releaseDate);
     } else if (submissionHas && !sectionHas) {
       const releaseDate = submissionJson.attributes.find(attr => attr.name === 'ReleaseDate');
-      if (releaseDate) submissionJson.section.attributes.splice(1, 0, releaseDate);
+      if (releaseDate) submissionJson.section.attributes?.splice(1, 0, releaseDate);
     } else if (!submissionHas && !sectionHas) {
       const releaseDate = { name: 'ReleaseDate' };
       submissionJson.attributes.splice(2, 0, releaseDate);
-      submissionJson.section.attributes.splice(1, 0, releaseDate);
+      submissionJson.section.attributes?.splice(1, 0, releaseDate);
     } else if (submissionHas && sectionHas) {
-      const sectionDate = submissionJson.section.attributes.find(attr => attr.name === 'ReleaseDate');
+      const sectionDate = submissionJson.section.attributes!.find(attr => attr.name === 'ReleaseDate')!;
       submissionJson.attributes.splice(2, 1, sectionDate);
     }
 
@@ -390,7 +392,7 @@ watchEffect(async () => {
     if (!submissionTitle && studySectionTitle) {
       submissionJson?.attributes.splice(0, 0, studySectionTitle);
     } else if (submissionTitle && !studySectionTitle) {
-      submissionJson?.section?.attributes.splice(0, 0, submissionTitle);
+      submissionJson?.section?.attributes?.splice(0, 0, submissionTitle);
     } else if (submissionTitle && studySectionTitle) {
       const index = submissionJson?.attributes?.findIndex((attr) => attr.name === 'Title');
       submissionJson?.attributes?.splice(index, 1, studySectionTitle);
@@ -417,14 +419,16 @@ watchEffect(async () => {
         (t) => t?.title?.toLowerCase() === collection?.value?.toLowerCase() + '.v1',
       );
     }
-    template.value = tmpl ?? Default;
+    template.value = tmpl ?? Default as Template.TemplateDefinition;
     if (template.value?.display === 'readonly') {
       displayType.value = 'readonly';
       editDateMode.value = true;
     }
+
+    isLoading.value = false;
   } else {
     //TODO: display error
-    console.log('No such submission');
+    console.error('No such submission');
   }
 });
 const updatedSubmission = computed(() =>
@@ -432,12 +436,12 @@ const updatedSubmission = computed(() =>
 );
 
 let lastUpdated = Date.now();
-let pendingSave = null;
+let pendingSave: ReturnType<typeof setTimeout> ;
 
-watch(updatedSubmission, async (sub) => {
-  const draft = JSON.parse(updatedSubmission.value);
+watch(updatedSubmission, async (json) => {
+  const draft = JSON.parse(json) as PageTab.Submission;
   // Sync ReleaseDate from section to submission.attributes if both exist
-  const sectionDateAttr = draft?.section?.attributes.find(a => a.name === 'ReleaseDate');
+  const sectionDateAttr = draft?.section?.attributes?.find(a => a.name === 'ReleaseDate');
   const submissionDateIdx = draft?.attributes.findIndex(a => a.name === 'ReleaseDate');
 
   if (sectionDateAttr && sectionDateAttr.value && submissionDateIdx !== -1) {
@@ -468,22 +472,23 @@ watch(updatedSubmission, async (sub) => {
     }
   }, 1002);
   lastUpdated = Date.now();
-  document.getElementById('json').innerText = JSON.stringify(draft, null, 2);
+  document.getElementById('json')!.innerText = JSON.stringify(draft, null, 2);
 });
 
 
-const expandAndFocus = async (el) => {
-  let p = el.parentElement;
+const expandAndFocus = async (el: HTMLElement) => {
+  let p = el.parentElement!;
   while (p.localName != 'body') { // walk up the ancestors and expand
+    console.log(p);
     if (p.classList.contains('section-block') && p.classList.contains('collapsed')) {
-      await p.querySelector('.section-title').click();
+      (p.querySelector('.section-title') as HTMLElement).click();
     }
-    p = p.parentElement;
+    p = p.parentElement!;
   }
-  await el.scrollIntoView();
+  el.scrollIntoView();
 };
 
-const getErrorAttName = (error) => {
+const getErrorAttName = (error: { errorMessage: string; element: { id: any; }; }) => {
   if (error?.errorMessage) {
     const index = error?.errorMessage?.toLowerCase()?.indexOf('required'); // Find "required" case-insensitively
     if (index !== -1) {

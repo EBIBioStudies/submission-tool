@@ -2,24 +2,27 @@ import './assets/main.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap';
 import router from './router';
-import {library} from '@fortawesome/fontawesome-svg-core';
-import {fas} from '@fortawesome/free-solid-svg-icons';
-import {far} from '@fortawesome/free-regular-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { fas } from '@fortawesome/free-solid-svg-icons';
+import { far } from '@fortawesome/free-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
-import {createApp, reactive, ref} from 'vue';
+import { createApp } from 'vue';
+import type { InternalAxiosRequestConfig } from 'axios';
 import App from './App.vue';
-import AuthService from "./services/AuthService";
-import axios from "axios";
+import AuthService from './services/AuthService';
+import axios from 'axios';
+import { vTooltip } from '@/directives/tooltip.directive.ts';
 
 const baseURL = import.meta.env.VITE_BASE_URL || '/';
 library.add(fas);
 library.add(far);
 const app = createApp(App);
+app.directive('tooltip', vTooltip)
 app.use(router);
 app.component('font-awesome-icon', FontAwesomeIcon);
-axios.interceptors.request.use(config => {
-    if(config.url.startsWith('/')) { // pass token only to backend
+axios.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+    if (config.url?.startsWith('/')) { // pass token only to backend
       config.headers['x-session-token'] = AuthService.user?.value?.sessid;
     }
     return config; //TODO: fix url if app is not deployed on root context path

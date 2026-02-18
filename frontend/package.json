@@ -39,6 +39,8 @@
   "devDependencies": {
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/vue": "^8.1.0",
+    "@types/bootstrap": "^5.2.10",
+    "@types/node": "^25.0.9",
     "@vitejs/plugin-vue": "^5.0.4",
     "@vue/test-utils": "^2.4.6",
     "autoprefixer": "^10.4.19",
@@ -53,11 +55,13 @@
     "jsdom": "^26.1.0",
     "postcss": "^8.4.14",
     "prettier": "^3.2.5",
+    "typescript": "^5.9.3",
     "vite": "^5.2.3",
     "vitest": "^3.2.4",
+    "vue-tsc": "^3.2.2",
     "vue3-snapshot-serializer": "^2.13.0"
   },
   "engines": {
-  "node": ">=18.0.0 <=21.x"
-}
+    "node": ">=18.0.0 <=21.x"
+  }
 }

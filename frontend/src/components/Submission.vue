@@ -1,18 +1,24 @@
-<script setup>
+<script setup lang="ts">
 import StudySection from './StudySection.vue';
-import { computed, ref } from 'vue';
+import { computed, ref, UnwrapRef } from 'vue';
+import { PageTab } from '@/models/PageTab.model.ts';
+import { Template } from '@/models/Template.model.ts';
+import { SectionExpose } from 'components/expose.model.ts';
 
-const props = defineProps(['submission', 'template', 'accession']);
-const studyComponent = ref(null);
-const errors = computed(() => studyComponent.value.errors);
+const props = defineProps<{
+  submission: PageTab.LocalSubmission;
+  template: Template.TemplateDefinition;
+  accession: string;
+}>();
+
+const studyComponent = ref<UnwrapRef<SectionExpose>>();
+const errors = computed(() => studyComponent.value?.errors || []);
 const doi = computed(() => props.submission?.attributes?.find(a => a.name.toLowerCase() === 'doi')?.value);
 let baseURL = import.meta.env.VITE_BASE_URL?.replace(/\/$/, '') || '';
 
-const getAccNoToDisplay = (submission) => {
-  return submission.displayKey ? submission.displayKey: submission.accno
-}
+const getAccNoToDisplay = (submission: PageTab.LocalSubmission) => submission.displayKey ? submission.displayKey : submission.accno
 
-defineExpose({ errors }); 
+defineExpose<SectionExpose>({ errors });
 </script>
 
 <template>

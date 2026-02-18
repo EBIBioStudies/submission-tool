@@ -8,7 +8,26 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   return {
-    plugins: [vue()],
+    plugins: [
+      vue(),
+      {
+        name: 'config-endpoint',
+        configureServer(server) {
+          server.middlewares.use((req, res, next) => {
+            if (req.url === '/biostudies/submissions/config') {
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({
+                instanceKey: env.VITE_INSTANCE_KEY,
+                recaptchaKey: env.VITE_RECAPTCHA_KEY,
+                frontendUrl: env.VITE_FRONTEND_URL
+              }));
+            } else {
+              next();
+            }
+          });
+        }
+      }
+    ],
     base: env.VITE_BASE_URL || '/',
     resolve: {
       alias: {
@@ -24,22 +43,13 @@ export default defineConfig(({ mode }) => {
           target: env.VITE_BACKEND_URL,
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/biostudies\/submissions\/api/, '')
+        },
+        '/biostudies/submissions/ror/organizations' : {
+          target: "https://api.ror.org",
+          changeOrigin: true,
+          rewrite: (path) => path.replace('/biostudies/submissions/ror/organizations', '/v2/organizations')
         }
       }
-    },
-    configureServer(server) {
-      server.middlewares.use((req, res, next) => {
-        if (req.url === '/biostudies/submissions/config') {
-          res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify({
-            instanceKey: env.VITE_INSTANCE_KEY,
-            recaptchaKey: env.VITE_RECAPTCHA_KEY,
-            frontendUrl: env.VITE_FRONTEND_URL
-          }));
-        } else {
-          next();
-        }
-      });
     }
   };
 });

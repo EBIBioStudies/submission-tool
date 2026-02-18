@@ -6,8 +6,12 @@ import BioImagesv4 from '@/templates/BioImages.v4.json';
 import BioImagesv5 from '@/templates/BioImages.v5.json';
 import MicrobioRaman from '@/templates/MicrobioRaman.json';
 import BioImagesMIFAv1 from '@/templates/BioImages.MIFA.v1.json';
+import { PageTab } from '@/models/PageTab.model.ts';
+import { Template } from '@/models/Template.model.ts';
+import isValueObject = Template.isValueObject;
+import ValueObject = Template.ValueObject;
 
-export const allTemplates = [
+export const allTemplates: Template.TemplateDefinition[] = [
   BioImagesv5,
   BioImagesv4,
   BioImagesv1,
@@ -16,7 +20,7 @@ export const allTemplates = [
   ArrayExpress,
   BioImagesMIFAv1,
   Default,
-];
+] as Template.TemplateDefinition[];
 
 function getRandomSuffix(length = 4) {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -27,7 +31,7 @@ function getRandomSuffix(length = 4) {
   return result;
 }
 
-function normalizeAccno(name) {
+function normalizeAccno(name: string | null | undefined): string {
   return (name || 'n')
     .trim()
     .toLowerCase()
@@ -37,56 +41,58 @@ function normalizeAccno(name) {
     .replace(/^-+|-+$/g, '');     // trim dashes
 }
 
-export const activeTemplates = [
+export const activeTemplates: Template.TemplateDefinition[] = [
   // Keep the same order that we want these templates to appear in the new submission dialogue
   // Higher versions should be kept on top
   BioImagesv5,
   Defaultv2,
   MicrobioRaman,
-  BioImagesMIFAv1
-];
+  BioImagesMIFAv1,
+] as Template.TemplateDefinition[];
 
 let id = 0;
 
+type Link = PageTab.Link & {type: 'Link'};
+type File = PageTab.File & {type: 'File'};
+
+export const isLink = (section: PageTab.Section): section is Link => section.type?.toLowerCase() === 'link';
+export const isFile = (section: PageTab.Section): section is File => (section as File).type?.toLowerCase() === 'file';
+
 // fill attributes and subsections of a given section according to the given template
-export const fillTemplate = (section, tmpl) => {
+export const fillTemplate = (section: PageTab.BuildingSection, tmpl: Template.SectionType | Template.TableType) => {
   section.type = tmpl.name;
   const normalized = normalizeAccno(tmpl.name);
   const prefix = normalized.length <= 5 ? normalized : normalized.substring(0, 4);
   section.accno = `${prefix}-${id}-${getRandomSuffix(4)}`;
   id += 1;
-  if(section.type === 'Link'){
-    section.url = ''
-  }
-  if(section.type === 'File'){
-    section.path = ''
-  }
+  if (isLink(section)) section.url = '';
+  if (isFile(section)) section.path = '';
   // fill attributes
   section.attributes = [];
-  for (const field of [...(tmpl?.fieldTypes ?? []), ...(tmpl?.columnTypes ?? [])]) {
-    if(field.name === 'Link' || field.name==='File')
-      continue;
-    const attr = { name: field.name };
+  for (const field of [...(tmpl?.fieldTypes ?? []), ...('columnTypes' in tmpl ? tmpl.columnTypes! : [])]) {
+    if (field.name === 'Link' || field.name === 'File') continue;
+    const attr = { name: field.name } as PageTab.DetailedAttribute;
+
     if (field?.controlType?.defaultValue) {
       attr.value = field?.controlType?.defaultValue;
-      if (field?.controlType?.values?.filter((value) => value?.valqual != null).length) {
-        attr.valqual = field?.controlType?.values?.find((v) => v.value === attr.value)?.valqual;
+      if (field?.controlType?.values?.find((value) => (value as ValueObject)?.valqual != null)) {
+        attr.valqual = field?.controlType?.values?.filter(isValueObject).find((v) => v.value === attr.value)?.valqual;
       }
     } else if (field?.controlType?.name === 'select') attr.value = '';
     section.attributes.push(attr);
-  };
+  }
 
   // fill sections
   [...(tmpl?.tableTypes ?? []), ...(tmpl?.sectionTypes ?? [])].forEach((sectionTemplate) => {
     if (sectionTemplate?.name === 'Contact') return;
     const subsection = { type: sectionTemplate.name };
-    if (subsection.type?.toLowerCase() === 'file') {
+    if (isFile(subsection)) {
       if (!section.files) section.files = [];
       section.files.push(subsection);
-    } else if (subsection.type?.toLowerCase() === 'link') {
+    } else if (isLink(subsection)) {
       if (!section.links) section.links = [];
       section.links.push(subsection);
-    }else {
+    } else {
       if (!section.subsections) section.subsections = [];
       section.subsections.push(subsection);
     }
