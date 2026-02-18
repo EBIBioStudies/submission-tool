@@ -72,12 +72,7 @@ export namespace Template {
     createdOnRender?: boolean;
   }
 
-  export interface AnnotationType extends Type {
-    columnTypes: ColumnType[];
 
-    singleRow?: boolean;
-    allowImport?: boolean;
-  }
 
   export interface FieldType extends Type {
     asyncValueValidatorName?: 'forFileList' | 'forStudyTitle';
@@ -102,6 +97,9 @@ export namespace Template {
     allowCustomCols?: boolean;
     displayAnnotations?: boolean;
     hideColumns?: boolean;
+  }
+
+  export interface AnnotationType extends TableType {
   }
 
   export interface SectionType extends Type {

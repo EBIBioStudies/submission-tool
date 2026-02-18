@@ -11,11 +11,12 @@ import { isDefined } from '@/utils.ts';
 const props = defineProps<{
   attributes?: PageTab.DetailedAttribute[],
   fieldTypes?: Template.Type[],
+  annotationsType?: Template.AnnotationType,
   allowNewAttribute?: boolean,
   isSectionAttribute?: boolean,
 }>();
 const emits = defineEmits<{
-  deleteAttribute: [index: number]
+  deleteAttribute: [attribute: PageTab.DetailedAttribute]
   createTag: [obj: PageTab.Tag]
   deleteTag: [obj: PageTab.IndexedTag]
   newAttribute: []
@@ -31,11 +32,42 @@ const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType')
 const processed = (attribute: PageTab.DetailedAttribute) => duplicateAttributes?.includes(attribute);
 
 const getFieldType = (attribute: PageTab.DetailedAttribute): Template.FieldType | undefined => {
-  // const fieldType = props?.fieldTypes?.find(
-  //   (f) => f.name?.toLowerCase() === attribute?.name?.toLowerCase(),
-  // );
-  // return fieldType ? fieldType : props?.attributes?.length > 1 ? attribute : '';
-  return props?.fieldTypes?.find((f) => f.name?.toLowerCase() === attribute?.name?.toLowerCase());
+  // First check in regular fieldTypes
+  const fieldType = props?.fieldTypes?.find((f) => f.name?.toLowerCase() === attribute?.name?.toLowerCase());
+  if (fieldType) return fieldType;
+
+  // Then check in annotationsType.columnTypes
+  if (props?.annotationsType?.columnTypes) {
+    const annotationType = props.annotationsType.columnTypes.find(
+      (f) => f.name?.toLowerCase() === attribute?.name?.toLowerCase()
+    );
+    if (annotationType) return annotationType as Template.FieldType;
+  }
+
+  return undefined;
+};
+
+// Get list of annotation names for dropdown selection (only for custom attributes)
+const nameOptions = computed(() => {
+  if (!props.annotationsType?.columnTypes) return [];
+  return props.annotationsType.columnTypes.map(c => c.name);
+});
+
+// Check if attribute matches a regular fieldType (not annotation)
+const isRegularAttribute = (attribute: PageTab.DetailedAttribute): boolean => {
+  return props?.fieldTypes?.some(
+    (f) => f.name?.toLowerCase() === attribute?.name?.toLowerCase()
+  ) ?? false;
+};
+
+// Check if an attribute should show name options
+// Only show for attributes that don't match fieldTypes (i.e., they are annotations or custom)
+const shouldShowNameOptions = (attribute: PageTab.DetailedAttribute): boolean => {
+  // If no annotations type defined, don't show options
+  if (!props.annotationsType) return false;
+
+  // Show nameOptions only if it doesn't match a regular fieldType
+  return !isRegularAttribute(attribute);
 };
 
 const addMissingAttributes = () => {
@@ -66,9 +98,10 @@ addMissingAttributes();
           :attribute="attribute as PageTab.BuildingSection"
           :field-type="getFieldType(attribute)!"
           :parent="attributeList"
+          :nameOptions="shouldShowNameOptions(attribute) ? nameOptions : undefined"
           @createTag="(v) => emits('createTag', v)"
-          :isSectionAttribute="isSectionAttribute"
-          @deleteAttribute="() => emits('deleteAttribute', index)"
+          :isSectionAttribute="isSectionAttribute && isRegularAttribute(attribute)"
+          @deleteAttribute="() => emits('deleteAttribute', attribute)"
           @deleteTag="(v) => emits('deleteTag', v)"
         />
       </template>

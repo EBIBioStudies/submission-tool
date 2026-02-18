@@ -24,7 +24,6 @@ import { Tooltip } from 'bootstrap';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { Template } from '@/models/Template.model.ts';
 import { SectionExpose } from 'components/expose.model.ts';
-import Annotations from '@/components/Annotations.vue';
 
 const props = defineProps<{
   section: PageTab.Section;
@@ -42,9 +41,7 @@ defineEmits<{
 const componentInstance = getCurrentInstance();
 
 const attributesComponent = ref<UnwrapRef<SectionExpose> & ComponentPublicInstance>();
-const annotationsComponent = ref<UnwrapRef<SectionExpose> & ComponentPublicInstance>();
 const attributes = ref<HTMLDivElement>();
-
 
 const subsectionsRef = ref<HTMLDivElement[]>();
 const sectionTablesRef = ref<HTMLDivElement[]>();
@@ -130,9 +127,7 @@ const specialSectionMap = computed(() => {
   const curMap = new Map<string, PageTab.Section[]>();
   sectionType.value?.tableTypes?.forEach((tbType) => {
     const combined = getSectionsWithRowsAsSections(tbType.name);
-    if (combined?.length) {
-      curMap.set(tbType.name, combined);
-    }
+    if (combined?.length) curMap.set(tbType.name, combined);
   });
   return curMap;
 });
@@ -220,7 +215,7 @@ const findAddedSection = (type?: string) => {
   let added;
   if (type === 'Link') added = sectionLinksRef.value;
   else if (type === 'File') added = sectionFilesRef.value;
-  else if (type == 'Contact') added = authorComponent.value;
+  else if (type === 'Contact') added = authorComponent.value;
   if (added) return added.$el;
 
   if (type)
@@ -335,9 +330,12 @@ const addAttribute = async () => {
   added.focus();
 };
 
-const deleteAttribute = async (index: number) => {
+const deleteAttribute = async (attribute: PageTab.DetailedAttribute) => {
   if (parentDisplayType!.value === 'readonly') return;
-  thisSection.value.attributes?.splice(index, 1);
+  const index = thisSection.value.attributes?.indexOf(attribute);
+  if (index !== undefined && index >= 0) {
+    thisSection.value.attributes?.splice(index, 1);
+  }
   attributesRefreshKey.value += 1;
 };
 
@@ -415,7 +413,6 @@ const errors = computed(() => {
   const _errors = [
     ...(authorComponent.value?.errors || []),
     ...(attributesComponent.value?.errors || []),
-    ...(annotationsComponent.value?.errors || []),
     ...(sectionFilesRef.value?.errors || []),
     ...(sectionLinksRef.value?.errors || []),
   ];
@@ -490,6 +487,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
             :data="thisSection"
           />
         </span>
+        <span class="text-danger" v-if="sectionType?.display==='required' || (sectionType?.minRequired || 0) > 0">*</span>
       </span>
       <span
         v-if="
@@ -519,29 +517,21 @@ defineExpose<SectionExpose>({ errors, thisSection });
     <transition name="slide">
       <div :class="{ 'visually-hidden': isCollapsed }">
         <div class="has-child-section ms-3 slide-in">
-          <!-- attributes -->
+          <!-- attributes (includes both regular attributes and annotations) -->
           <div ref="attributes">
-            <Attributes v-if="!sectionType.annotationsType"
-                        :key="attributesRefreshKey"
+            <Attributes :key="attributesRefreshKey"
                         ref="attributesComponent"
                         :attributes="section.attributes!"
                         :fieldTypes="sectionType?.fieldTypes || sectionType?.columnTypes!"
-                        :isSectionAttribute="!(subSectionTypeMap.get(sectionType?.name?.toLowerCase() || '')?.rowAsSection)"
-                        :allow-new-attribute="inheritedSectionType.allowNewAttribute"
+                        :annotationsType="sectionType?.displayAnnotations ? sectionType?.annotationsType : undefined"
+                        :is-section-attribute="!(subSectionTypeMap.get(sectionType?.name?.toLowerCase() || '')?.rowAsSection)"
+                        :allow-new-attribute="inheritedSectionType.allowNewAttribute || !!(sectionType?.displayAnnotations && sectionType?.annotationsType)"
                         @deleteAttribute="deleteAttribute"
                         @createTag="createTag"
                         @deleteTag="deleteTag"
                         @newAttribute="addAttribute"
             />
 
-            <!-- Annotations -->
-            <Annotations v-else
-                         ref="annotationsComponent"
-                         :section="section"
-                         :annotation="sectionType.annotationsType"
-                         @new-annotation="addAttribute"
-                         @delete-annotation="deleteAttribute"
-            />
           </div>
 
 

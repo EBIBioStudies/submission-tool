@@ -160,13 +160,6 @@
       "allowImport": false,
       "columnTypes": [
         {
-          "name": "AttachTo",
-          "controlType": {
-            "name": "text"
-          },
-          "display": "readonly"
-        },
-        {
           "name": "Experimental design",
           "controlType": {
             "name": "text"
