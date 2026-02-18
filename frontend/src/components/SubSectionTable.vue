@@ -6,8 +6,7 @@ import Attribute from '@/components/Attribute.vue';
 import utils, { ensureArray } from '@/utils';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { Template } from '@/models/Template.model.ts';
-import { AttributeExpose } from 'components/Attribute.vue';
-import { ControlError, SectionExpose } from 'components/expose.model.ts';
+import { AttributeExpose, ControlError, SectionExpose } from 'components/expose.model.ts';
 
 
 const props = defineProps<{
