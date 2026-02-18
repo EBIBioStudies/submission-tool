@@ -78,7 +78,7 @@ const inheritedSectionType = computed(() => ({
 const isRemovable = computed(() => sectionType.value?.display !== 'required' || thisSection.value.accno?.includes('-removable'));
 const isRenamable = computed(() => sectionType.value?.allowRename || thisSection.value.accno?.includes('-custom'));
 
-const deleteTag = (msg: PageTab.IndexedTag) => deleteAttribute(msg.index);
+const deleteTag = (msg: PageTab.IndexedTag) => deleteAttribute(msg);
 // if (props?.sectionType?.display) {
 //   provide('parentDisplayType', props?.sectionType?.display)
 // }
