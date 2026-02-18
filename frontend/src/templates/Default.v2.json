@@ -58,7 +58,8 @@
         "helpText": "Add organism",
         "helpLink": "help#new-item-dropdown",
         "controlType": {
-          "name": "select",
+          "name": "ontology",
+          "ontology": "NCBITaxon",
           "multiple": true,
           "values": [
             "Homo sapiens (human)",
@@ -176,14 +177,20 @@
         {
           "name": "Organ",
           "controlType": {
-            "name": "text"
+            "name": "ontology",
+            "ontology": "uberon",
+            "multiple": true,
+            "enableValueAdd": true
           },
           "display": "optional"
         },
         {
           "name": "Cell type",
           "controlType": {
-            "name": "text"
+            "name": "ontology",
+            "ontology": "cl",
+            "multiple": true,
+            "enableValueAdd": true
           },
           "display": "optional"
         }

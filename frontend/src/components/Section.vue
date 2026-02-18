@@ -330,16 +330,16 @@ const addAttribute = async () => {
   added.focus();
 };
 
-const deleteAttribute = async (attribute: PageTab.DetailedAttribute) => {
+const deleteAttribute = async (del: PageTab.DetailedAttribute) => {
   if (parentDisplayType!.value === 'readonly') return;
-  const index = thisSection.value.attributes?.indexOf(attribute);
+  const index = thisSection.value.attributes?.findIndex(att => att.name === del.name && att.value === del.value );
   if (index !== undefined && index >= 0) {
     thisSection.value.attributes?.splice(index, 1);
   }
   attributesRefreshKey.value += 1;
 };
 
-const createTag = (msg: PageTab.Tag) => {
+const createTag = (msg: PageTab.DetailedAttribute) => {
   if (parentDisplayType!.value === 'readonly') return;
   thisSection.value.attributes = thisSection.value.attributes || [];
   // insert next to the last attribute with the same name
@@ -351,12 +351,17 @@ const createTag = (msg: PageTab.Tag) => {
     lastIndex === -1 ? thisSection.value.attributes.length : lastIndex;
 
   // fill in the value if it's the last tag -- add a new one otherwise
-  if (thisSection.value.attributes[lastIndex].value === '') {
-    thisSection.value.attributes[lastIndex].value = msg.value;
+  const lastAttribute = thisSection.value.attributes[lastIndex];
+  if (lastAttribute?.value === undefined || lastAttribute?.value === '') {
+    lastAttribute.value = msg.value;
+    lastAttribute.valqual = msg.valqual;
+    lastAttribute.nmqual = msg.nmqual;
   } else {
     thisSection.value.attributes.splice(lastIndex + 1, 0, {
       name: msg.name,
       value: msg.value,
+      valqual: msg.valqual,
+      nmqual: msg.nmqual,
     });
   }
   attributesRefreshKey.value += 1;

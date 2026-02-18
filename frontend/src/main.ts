@@ -12,11 +12,13 @@ import type { InternalAxiosRequestConfig } from 'axios';
 import App from './App.vue';
 import AuthService from './services/AuthService';
 import axios from 'axios';
+import { vTooltip } from '@/directives/tooltip.directive.ts';
 
 const baseURL = import.meta.env.VITE_BASE_URL || '/';
 library.add(fas);
 library.add(far);
 const app = createApp(App);
+app.directive('tooltip', vTooltip)
 app.use(router);
 app.component('font-awesome-icon', FontAwesomeIcon);
 axios.interceptors.request.use((config: InternalAxiosRequestConfig) => {

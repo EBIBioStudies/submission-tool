@@ -16,6 +16,7 @@ export namespace Template {
     | 'orcid'
     | 'org'
     | 'date'
+    | 'ontology'
     | string
 
 
@@ -41,6 +42,11 @@ export namespace Template {
     type?: 'section' | 'table';
 
     minlength?: number;
+
+    /**
+     * The OLS ontology id to search into if the control type is ontology
+     */
+    ontology?: string;
 
     /**
      * On single `select` controls, whether to show a "create new" option at the top of the list.

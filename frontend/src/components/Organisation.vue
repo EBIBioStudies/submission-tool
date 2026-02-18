@@ -7,7 +7,7 @@ import { ROR } from '@/models/Organisation.model.ts';
 import { Template } from '@/models/Template.model.ts';
 import { Class, ensureArray } from '@/utils.ts';
 
-const model = defineModel<any[]>();
+const model = defineModel<PageTab.ReferenceAttribute[]>();
 const props = defineProps<{
   class?: Class,
   fieldType: Template.FieldType
@@ -24,8 +24,7 @@ const emits = defineEmits<{
 const organisations = ref<Option[]>([]);
 const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
 
-
-const updateOptions = async (query: string) => {
+const updateOptions = async (query: string): Promise<Option[]> => {
   if (!query || query.length < 3) return [];
   return axios<ROR.Organisations>({
     url: `ror/organizations?query=${query}`,
@@ -49,7 +48,7 @@ type Option = { value: string, label?: string, baseLabel?: string, locationName?
 // If more than one organization shares the same base label (acronym + display name),
 
 // append the location name to the label to make each entry distinguishable.
-const mapRorItemsToOptionsUnique = (items: ROR.Organisation[] = []) => {
+const mapRorItemsToOptionsUnique = (items: ROR.Organisation[] = []) : Option[] => {
   // Map<label, option[]>
   const optionsByLabel = new Map<string, Option[]>();
 

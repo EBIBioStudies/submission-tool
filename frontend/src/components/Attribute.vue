@@ -13,7 +13,8 @@ import Publication from '@/components/Publication.vue';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { Template } from '@/models/Template.model.ts';
 import { isFile } from '@/templates/templates.ts';
-import { AttributeControlExpose, AttributeExpose } from 'components/expose.model.ts';
+import { AttributeControlExpose, AttributeExpose } from '@/components/expose.model.ts';
+import Ontology from '@/components/Ontology.vue';
 
 const hasValidated = inject<Ref<boolean>>('hasValidated');
 
@@ -70,7 +71,7 @@ const getAttributesFromFieldType = (fieldType?: Template.FieldType): PageTab.Att
 const getAttributesNotInFieldType = (fieldType?: Template.FieldType, parent?: PageTab.Attribute[]) => {
   return parent?.filter(
     (a) =>
-      a.name.toLowerCase() === props.attribute.name?.toLowerCase() &&
+      a.name?.toLowerCase() === props.attribute.name?.toLowerCase() &&
       fieldType?.controlType?.values?.filter((val) => {
         const v = isString(val) ? val : val.value;
         return v.toLowerCase() === props.attribute.name?.toLowerCase();
@@ -104,8 +105,8 @@ const isTag = (val: any): val is PageTab.Tag => {
 };
 
 const onCreateTag = (newTag: string | PageTab.Tag) => {
-  // TODO: handle valqual
-  const obj = { name: props.attribute.name!, value: isTag(newTag) ? newTag.value : newTag };
+  const obj = { ...(isTag(newTag) ? newTag : { value: newTag }), name: props.attribute.name! };
+  console.log(obj);
   emits('createTag', obj);
   return false; // ignore the event, it will be rendered by the parent
 };
@@ -277,6 +278,17 @@ const showHelp = () => {
       @change="onChangeSelect"
     >
     </Multiselect>
+
+    <!-- Ontology -- must be handled before tags -->
+    <Ontology
+      v-else-if="fieldType?.controlType?.name === 'ontology'"
+      v-model="thisMultiValuedAttribute"
+      :class="{'is-invalid':!!(errors && hasValidated)}"
+      :fieldType="fieldType"
+      @create-term="onCreateTag"
+      @delete-term="onDeleteTag"
+    >
+    </Ontology>
 
     <!-- organisation -- must be handled before tags -->
     <Organisation
