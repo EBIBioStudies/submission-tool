@@ -127,6 +127,13 @@ const filePath = ref(attr.path);
               </button>
               and following the instructions.
             </p>
+            <p>
+              Please note that there are limits on file names - see
+              <a href="https://www.ebi.ac.uk/biostudies/submit#file-types"
+                >Which file types can I submit?</a
+              >
+              for the list of allowed characters.
+            </p>
           </dd>
           <dt id="help-start" class="border-bottom">
             <h4>3. Starting a new submission</h4>
