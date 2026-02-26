@@ -46,7 +46,38 @@ export namespace Template {
     /**
      * The OLS ontology id to search into if the control type is ontology
      */
-    ontology?: string;
+    ontology?: string[];
+    /**
+     * Whether to include obsolete terms in ontology search
+     */
+    obsoletes?: boolean,
+    /**
+     * Set to true to only return terms that are in a defining ontology e.g. Only return matches to gene ontology terms in the gene ontology, and exclude ontologies where those terms are also referenced
+     */
+    local?: boolean,
+    /**
+     * Set to true to only accept leaf terms (exclude all intermediary nodes)
+     */
+    isLeaf?: boolean
+    /**
+     * Set to true to only accept exact matching terms
+     */
+    exact?: boolean
+    /**
+     * If true, an empty ontology search is translated to "*" to see all options with pagination when no text is precised
+     */
+    defaultAll?: boolean;
+    /**
+     * Root term IRIs of the query. Any terms not having one of these roots in their ancestry will be discarded.
+     * @example ["http://purl.obolibrary.org/obo/UBERON_0002365", "http://purl.obolibrary.org/obo/UBERON_0002530"]
+     */
+    allChildrenOf?: string[];
+    /**
+     * Size of the page to query
+     */
+    pageSize?: number;
+
+
 
     /**
      * On single `select` controls, whether to show a "create new" option at the top of the list.
