@@ -134,6 +134,11 @@ const filePath = ref(attr.path);
               >
               for the list of allowed characters.
             </p>
+            <p>
+              Having thousands of files in the same directory will negatively
+              affect the submission system performance. If you have a large
+              number of files, please organize them into directories.
+            </p>
           </dd>
           <dt id="help-start" class="border-bottom">
             <h4>3. Starting a new submission</h4>
