@@ -56,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineEmits, ref, watchEffect, watch, nextTick } from 'vue';
+import { ref, watchEffect, watch, nextTick } from 'vue';
 
 const props = defineProps<{ pmid?: string }>();
 

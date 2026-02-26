@@ -127,7 +127,8 @@
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
       </div>
       <div class="offcanvas-body">
-        <p v-if="validationErrors?.filter((e) => e.control.errors).length">Please fix these errors before submitting.
+        <div v-if="validationErrors?.filter((e) => e.control.errors).length">
+          <p>Please fix these errors before submitting.</p>
           <ul class="list-group">
             <template v-for="error in validationErrors">
               <li v-if="error?.control?.errors?.length" role="button" class="list-group-item list-group-item-action"
@@ -138,8 +139,8 @@
               </li>
             </template>
           </ul>
-        </p>
-        <p v-else>
+        </div>
+        <div v-else>
           <div class="pb-2">
             <font-awesome-icon icon="check" class="text-success" />
             All good to go!
@@ -149,7 +150,7 @@
               Submit
             </button>
           </div>
-        </p>
+        </div>
       </div>
     </div>
 
@@ -242,7 +243,8 @@ const publicSubmission = computed(() => {
 provide('isPublicSubmission', publicSubmission);
 
 
-type MessageNode = {message:string, subnodes?: MessageNode[]}
+type MessageNode = { message: string, subnodes?: MessageNode[] }
+
 function collectMessages(node: MessageNode) {
   if (!node) return [];
 
@@ -352,7 +354,12 @@ watchEffect(async () => {
   if (props.accession) {
     // load from existing data
     isLoading.value = true;
-    const response = await axios.get(`/api/submissions/drafts/${props.accession}`);
+    const response = await axios.get(`/api/submissions/drafts/${props.accession}`)
+      .catch(err => console.error('Failed to load draft:', err));
+    if (!response) {
+      isLoading.value = false;
+      return;
+    }
     const data = await response.data;
     const submissionJson = data?.content as PageTab.LocalSubmission;
     submissionJson['displayKey'] = data?.displayKey;
@@ -436,7 +443,7 @@ const updatedSubmission = computed(() =>
 );
 
 let lastUpdated = Date.now();
-let pendingSave: ReturnType<typeof setTimeout> ;
+let pendingSave: ReturnType<typeof setTimeout>;
 
 watch(updatedSubmission, async (json) => {
   const draft = JSON.parse(json) as PageTab.Submission;
