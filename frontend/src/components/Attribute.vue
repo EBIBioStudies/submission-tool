@@ -224,6 +224,7 @@ const showHelp = () => {
                      :searchable="true"
                      :allow-absent="true"
                      :can-clear="true"
+                     :append-to-body="true"
         />
       </span>
       <span class="text-muted" v-else-if="fieldType?.display"><span class="attribute-name">{{ fieldType.name }}</span>
