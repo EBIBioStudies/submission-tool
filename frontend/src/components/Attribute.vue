@@ -100,13 +100,9 @@ const onChangeSelect = (newValue: PageTab.DetailedAttribute, control: Multiselec
   thisAttribute.value.valqual = selected?.valqual;
 };
 
-const isTag = (val: any): val is PageTab.Tag => {
-  return val !== null && typeof val === 'object' && 'name' in val && 'value' in val;
-};
 
 const onCreateTag = (newTag: string | PageTab.Tag) => {
-  const obj = { ...(isTag(newTag) ? newTag : { value: newTag }), name: props.attribute.name! };
-  console.log(obj);
+  const obj = { ...(typeof newTag === 'object' ? newTag : { value: newTag }), name: props.attribute.name! };
   emits('createTag', obj);
   return false; // ignore the event, it will be rendered by the parent
 };
