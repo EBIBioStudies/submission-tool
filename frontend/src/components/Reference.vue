@@ -61,5 +61,6 @@ function refreshOptions() {
     :options="options"
     track-by="value"
     @open="refreshOptions"
+    :append-to-body="true"
   />
 </template>
