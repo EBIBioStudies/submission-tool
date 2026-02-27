@@ -339,7 +339,7 @@ const deleteAttribute = async (del: PageTab.DetailedAttribute) => {
   attributesRefreshKey.value += 1;
 };
 
-const createTag = (msg: PageTab.DetailedAttribute) => {
+const createTag = (msg: PageTab.IndexedTag) => {
   if (parentDisplayType!.value === 'readonly') return;
   thisSection.value.attributes = thisSection.value.attributes || [];
   // insert next to the last attribute with the same name
@@ -352,7 +352,7 @@ const createTag = (msg: PageTab.DetailedAttribute) => {
 
   // fill in the value if it's the last tag -- add a new one otherwise
   const lastAttribute = thisSection.value.attributes[lastIndex];
-  if (lastAttribute?.value === undefined || lastAttribute?.value === '') {
+  if (msg.replace || lastAttribute?.value === undefined || lastAttribute?.value === '') {
     lastAttribute.value = msg.value;
     lastAttribute.valqual = msg.valqual;
     lastAttribute.nmqual = msg.nmqual;

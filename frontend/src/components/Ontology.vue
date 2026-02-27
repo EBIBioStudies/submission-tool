@@ -16,7 +16,7 @@ const props = defineProps<{
 }>();
 
 const emits = defineEmits<{
-  deleteTerm: [PageTab.Tag],
+  deleteTerm: [PageTab.IndexedTag],
   createTerm: [PageTab.Tag],
 }>();
 
@@ -25,8 +25,6 @@ const mulitple = computed(() => controlType.value?.multiple ?? false);
 const ontology = computed(() => controlType.value?.ontology);
 const selectedEntries = ref<Option[] | Option | undefined>([]);
 const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
-
-console.log('enable value add', controlType.value?.enableValueAdd);
 
 let lastQuery = '';
 const allOptions = ref<Option[]>([]);
@@ -79,11 +77,10 @@ if (!mulitple.value) selectedEntries.value = selectedEntries.value.at(0);
 
 type Option = { value: PageTab.DetailedAttribute, label: string, definition?: string };
 
-const idToURL = (id: string) => `https://www.ebi.ac.uk/ols4/ontologies/${ontology.value}/classes?obo_id=${id.replace('_',':')}`;
+const idToURL = (id: string) => `https://www.ebi.ac.uk/ols4/ontologies/${ontology.value}/classes?obo_id=${id.replace('_', ':')}`;
 
 const onSelect = async (e: any) => {
-  if (!mulitple.value && model.value[0]) emits('deleteTerm', model.value[0]);
-  emits('createTerm', e.value);
+  emits('createTerm', {...e.value, replace: !mulitple.value});
   return false;
 };
 
@@ -127,7 +124,8 @@ watch(infiniteTrigger, el => new IntersectionObserver(([entry]) => {
                @select="onSelect"
   >
     <template v-slot:option="{option}">
-      <Let :value="option.value.valqual?.find((qual: PageTab.Tag) => qual.name === 'TermId')?.value" v-slot="{ value: id }">
+      <Let :value="option.value.valqual?.find((qual: PageTab.Tag) => qual.name === 'TermId')?.value"
+           v-slot="{ value: id }">
         <div v-tooltip="{ title: option.definition, placement: 'left' }">
           <span class="me-1">{{ option.label }}</span>
           <a v-if="id" :href="idToURL(id)" class="term">{{ id }}</a>

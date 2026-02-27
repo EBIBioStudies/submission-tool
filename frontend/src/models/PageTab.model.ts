@@ -65,7 +65,7 @@ export namespace PageTab {
     & Partial<ReferenceAttribute>
     & { type: string };
 
-  export type IndexedTag = PageTab.Tag & { index: number }
+  export type IndexedTag = PageTab.DetailedAttribute & { index: number, replace?: boolean }
   export type Organisation = PageTab.Section & { authorIndex: number, value: string };
 
   // export namespace Extended {
