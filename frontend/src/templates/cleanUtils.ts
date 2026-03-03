@@ -85,6 +85,15 @@ function cleanStudyComponentAssociations(section: PageTab.Section) {
   return section;
 }
 
+function cleanLinks(section: PageTab.Section): PageTab.Section {
+  if (section.links && Array.isArray(section.links)) {
+    section.links = section.links.filter(link => link && link.url && link.url.trim() !== '')
+  }
+  if (!section.links?.length) delete section.links;
+  return section;
+}
+
+
 export function cleanAndReorderSubsections(section: PageTab.Section) {
   if (!section || typeof section !== 'object') return section;
 
@@ -92,6 +101,7 @@ export function cleanAndReorderSubsections(section: PageTab.Section) {
     section = cleanTopLevelAttributes(section);
     section = cleanSubsectionAttributes(section);
     section = cleanStudyComponentAssociations(section);
+    section = cleanLinks(section);
     section = groupSubsections(section);
   } catch (err) {
     console.warn('Cleaning failed:', err);
