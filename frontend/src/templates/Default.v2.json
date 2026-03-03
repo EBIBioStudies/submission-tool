@@ -60,7 +60,7 @@
         "controlType": {
           "name": "ontology",
           "ontology": ["NCBITaxon"],
-          "multiple": true,
+          "multiple": true
         }
       },
       {
