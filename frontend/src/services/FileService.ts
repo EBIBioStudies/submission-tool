@@ -31,7 +31,7 @@ export interface UploadProgress {
 
 export namespace FileService {
   export const fetchFiles = async (path: string[], loading?: Ref<boolean>): Promise<FileItem[]> => {
-    let files = [] as FileItem[]
+    let files = [] as FileItem[];
     if (!AuthService.isAuthenticated()) return files;
 
     if (loading) loading.value = true;
@@ -47,7 +47,7 @@ export namespace FileService {
       files = response.data.map(file => ({
         ...file,
         path: file.path === 'user' ? '' : file.path.replace(/^user\/?/, ''),
-      }))
+      }));
     } catch (error: any) {
       // Ignore abort errors - these are intentional cancellations
       if (error.code === 'ERR_CANCELED' || error.name === 'AbortError') {
@@ -123,7 +123,6 @@ export namespace FileService {
   };
 
 
-
   const uploadFile = (file: File, path: string[], progress: Ref<UploadProgress | null>, abortController?: Ref<AbortController>) => {
 
     const formData = new FormData();
@@ -155,7 +154,7 @@ export namespace FileService {
   export const uploadFiles = async (uploads: FileList | null, isFolderUpload: boolean, path: string[], currentFiles: FileItem[], progress: Ref<UploadProgress | null>, abortController?: Ref<AbortController>) => {
     if (!uploads) return false;
 
-    if (abortController) abortController.value = new AbortController()
+    if (abortController) abortController.value = new AbortController();
 
     let filesToUpload: File[] = Array.from(uploads);
 
@@ -237,13 +236,9 @@ export namespace FileService {
           ? `Do you want to include these <b>${hiddenFiles.length}</b> hidden files?`
           : `Do you want to include this hidden file?`;
       let examplesDisplay = examples
-        .map(
-          ([name, count]) =>
-            `<li>${count > 1 ? `<b>${count} x </b> ` : ''} ${name}</li>`,
-        )
+        .map(([name, count]) => `<li>${count > 1 ? `<b>${count} x </b> ` : ''} ${name}</li>`)
         .join('');
-      if (examples.length !== fileNamesCounts.length)
-        examplesDisplay += '<li>...</li>';
+      if (examples.length !== fileNamesCounts.length) examplesDisplay += '<li>...</li>';
 
       const filter = await utils.confirm(
         `Upload hidden files?`,
