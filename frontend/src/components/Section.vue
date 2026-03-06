@@ -317,22 +317,22 @@ const refreshSection = async () => {
   sectionsRefreshKey.value += 1;
 };
 
-const addAttribute = async () => {
+const addAttribute = async (name?: string = '') => {
   if (parentDisplayType?.value === 'readonly') return;
   thisSection.value.attributes = thisSection.value.attributes || [];
-  thisSection.value.attributes.push({ name: '', value: '' });
+  thisSection.value.attributes.push({ name, value: '' });
   attributesRefreshKey.value += 1;
   await nextTick();
   const added = [
     ...attributes.value!.querySelectorAll<HTMLElement>('.attribute-name'), // TODO check is valid
   ].pop()!;
-  added.scrollIntoView({behavior: 'smooth', block: 'center' , inline: 'center' });
+  added.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
   added.focus();
 };
 
 const deleteAttribute = async (del: PageTab.DetailedAttribute) => {
   if (parentDisplayType!.value === 'readonly') return;
-  const index = thisSection.value.attributes?.findIndex(att => att.name === del.name && att.value === del.value );
+  const index = thisSection.value.attributes?.findIndex(att => att.name === del.name && att.value === del.value);
   if (index !== undefined && index >= 0) {
     thisSection.value.attributes?.splice(index, 1);
   }
@@ -492,7 +492,8 @@ defineExpose<SectionExpose>({ errors, thisSection });
             :data="thisSection"
           />
         </span>
-        <span class="text-danger" v-if="sectionType?.display==='required' || (sectionType?.minRequired || 0) > 0">*</span>
+        <span class="text-danger"
+              v-if="sectionType?.display==='required' || (sectionType?.minRequired || 0) > 0">*</span>
       </span>
       <span
         v-if="
@@ -529,7 +530,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
                         :attributes="section.attributes!"
                         :fieldTypes="sectionType?.fieldTypes || sectionType?.columnTypes!"
                         :annotationsType="sectionType?.displayAnnotations ? sectionType?.annotationsType : undefined"
-                        :is-section-attribute="!(subSectionTypeMap.get(sectionType?.name?.toLowerCase() || '')?.rowAsSection)"
+                        :is-section-attribute="subSectionTypeMap.get(sectionType?.name?.toLowerCase())?.rowAsSection == false"
                         :allow-new-attribute="inheritedSectionType.allowNewAttribute || !!(sectionType?.displayAnnotations && sectionType?.annotationsType)"
                         @deleteAttribute="deleteAttribute"
                         @createTag="createTag"

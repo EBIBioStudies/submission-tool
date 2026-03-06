@@ -21,11 +21,10 @@ const hasValidated = inject<Ref<boolean>>('hasValidated');
 const props = defineProps<{
   attribute: PageTab.BuildingSection,
   fieldType?: Template.FieldType,
-  parent?: (PageTab.DetailedAttribute)[], // TODO confirm type
+  parent?: (PageTab.DetailedAttribute)[],
   row?: PageTab.Section,
   isTableAttribute?: boolean,
   isSectionAttribute?: boolean,
-  nameOptions?: string[],
 }>();
 const emits = defineEmits<{
   createTag: [PageTab.Tag],
@@ -212,18 +211,7 @@ const showHelp = () => {
         inverse
         icon="fa-check"
       ></font-awesome-icon>
-      <span v-if="nameOptions?.length" class="w-100">
-        <Multiselect class="form-control attribute-name"
-                     :options="nameOptions"
-                     v-model="thisAttribute.name"
-                     :create-option="true"
-                     :searchable="true"
-                     :allow-absent="true"
-                     :can-clear="true"
-                     :append-to-body="true"
-        />
-      </span>
-      <span class="text-muted" v-else-if="fieldType?.display"><span class="attribute-name">{{ fieldType.name }}</span>
+      <span class="text-muted" v-if="fieldType?.display"><span class="attribute-name">{{ fieldType.name }}</span>
         <span class="text-danger" v-if="fieldType?.display==='required' || minLength > 0">*</span>
       </span>
       <span v-else>
@@ -444,11 +432,12 @@ const showHelp = () => {
       :required="fieldType?.display==='required' || minLength > 0"
     />
 
-
     <!-- delete icon -->
     <div
       class="input-group-text btn-group-vertical"
-      v-if="(!fieldType?.display && !props.isTableAttribute) || (display !== 'required' && display!=='readonly' && !props.isTableAttribute && !props.isSectionAttribute)"
+      v-if="
+      (!fieldType?.display && !props.isTableAttribute) ||
+      (display !== 'required' && display!=='readonly' && !props.isTableAttribute && !props.isSectionAttribute)"
     >
       <font-awesome-icon
         class="icon fa-sm"

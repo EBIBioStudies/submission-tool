@@ -48,7 +48,7 @@ const enabled = computed(() =>canAddTable.value || canAddSection.value)
       </li>
       <li v-for="(type) in sectionType?.tableTypes">
         <a class="dropdown-item btn" @click="emits('newTable', type)">
-          <font-awesome-icon class="icon fa-fw" :icon="type.icon && type.icon!=='' ? type.icon : 'fa-table'"></font-awesome-icon>
+          <font-awesome-icon class="icon fa-fw" :icon="type.icon || 'fa-table'"></font-awesome-icon>
           {{ type.name }}</a>
       </li>
       <li v-if="canAddTable && canAddSection">
@@ -60,7 +60,7 @@ const enabled = computed(() =>canAddTable.value || canAddSection.value)
       </li>
       <li v-for="(type) in props?.sectionType?.sectionTypes">
         <a class="dropdown-item btn" @click="emits('newSection', type)">
-          <font-awesome-icon class="icon fa-fw" :icon="type.icon && type.icon!=='' ? type.icon : 'fa-caret-right'"></font-awesome-icon>
+          <font-awesome-icon class="icon fa-fw" :icon="type.icon || 'fa-caret-right'"></font-awesome-icon>
           {{ type.name }}</a>
       </li>
     </ul>

@@ -19,7 +19,7 @@ const emits = defineEmits<{
   deleteAttribute: [attribute: PageTab.DetailedAttribute]
   createTag: [obj: PageTab.Tag]
   deleteTag: [obj: PageTab.IndexedTag]
-  newAttribute: []
+  newAttribute: [type?: string]
 }>();
 const attributeList = ref(props.attributes);
 const duplicateAttributes = attributeList.value?.filter(
@@ -39,7 +39,7 @@ const getFieldType = (attribute: PageTab.DetailedAttribute): Template.FieldType 
   // Then check in annotationsType.columnTypes
   if (props?.annotationsType?.columnTypes) {
     const annotationType = props.annotationsType.columnTypes.find(
-      (f) => f.name?.toLowerCase() === attribute?.name?.toLowerCase()
+      (f) => f.name?.toLowerCase() === attribute?.name?.toLowerCase(),
     );
     if (annotationType) return annotationType as Template.FieldType;
   }
@@ -47,28 +47,28 @@ const getFieldType = (attribute: PageTab.DetailedAttribute): Template.FieldType 
   return undefined;
 };
 
-// Get list of annotation names for dropdown selection (only for custom attributes)
-const nameOptions = computed(() => {
-  if (!props.annotationsType?.columnTypes) return [];
-  return props.annotationsType.columnTypes.map(c => c.name);
-});
+const nonPresentAttributes = computed(() =>
+  [
+    ...props.fieldTypes?.filter(f => !props.attributes?.some(a => a.name === f.name)) || [],
+    ...props.annotationsType?.columnTypes?.filter(f => !props.attributes?.some(a => a.name === f.name)) || [],
+    ...props.allowNewAttribute ? [{ name: '' }] : [],
+  ],
+);
+
 
 // Check if attribute matches a regular fieldType (not annotation)
 const isRegularAttribute = (attribute: PageTab.DetailedAttribute): boolean => {
   return props?.fieldTypes?.some(
-    (f) => f.name?.toLowerCase() === attribute?.name?.toLowerCase()
+    (f) => f.name?.toLowerCase() === attribute?.name?.toLowerCase(),
   ) ?? false;
 };
 
-// Check if an attribute should show name options
-// Only show for attributes that don't match fieldTypes (i.e., they are annotations or custom)
-const shouldShowNameOptions = (attribute: PageTab.DetailedAttribute): boolean => {
-  // If no annotations type defined, don't show options
-  if (!props.annotationsType) return false;
 
-  // Show nameOptions only if it doesn't match a regular fieldType
-  return !isRegularAttribute(attribute);
-};
+const singleOptionHandle = (e: Event) => {
+  if (nonPresentAttributes.value.length !== 1) return;
+  e.preventDefault();
+  emits('newAttribute', nonPresentAttributes.value[0].name)
+}
 
 const addMissingAttributes = () => {
   addMissingAttributesGeneral(attributeList, props.fieldTypes);
@@ -98,7 +98,6 @@ addMissingAttributes();
           :attribute="attribute as PageTab.BuildingSection"
           :field-type="getFieldType(attribute)!"
           :parent="attributeList"
-          :nameOptions="shouldShowNameOptions(attribute) ? nameOptions : undefined"
           @createTag="(v) => emits('createTag', v)"
           :isSectionAttribute="isSectionAttribute && isRegularAttribute(attribute)"
           @deleteAttribute="() => emits('deleteAttribute', attribute)"
@@ -107,18 +106,28 @@ addMissingAttributes();
       </template>
     </div>
 
-    <div v-if="!(allowNewAttribute === false)" class="branch mt-2">
-      <button
-        v-if="parentDisplayType !== 'readonly'"
-        class="btn btn-light btn-small text-black-50"
-        @click="$emit('newAttribute')"
-      >
-        <font-awesome-icon
-          :icon="['fas', 'plus']"
-          class="icon fa-fw"
-        ></font-awesome-icon>
-        <i>New Attribute</i>
-      </button>
-    </div>
+    <template v-if="parentDisplayType !== 'readonly'">
+      <div v-if="nonPresentAttributes" class="branch mt-2">
+
+        <div class="btn btn-light btn-small text-black-50" data-bs-toggle="dropdown" @click="singleOptionHandle">
+          <font-awesome-icon
+            :icon="['fas', 'plus']"
+            class="icon fa-fw"
+          ></font-awesome-icon>
+          <i>New Attribute</i>
+
+          <ul class="dropdown-menu">
+            <li v-for="(attribute, i) in nonPresentAttributes" :key="i"
+                @click="$emit('newAttribute', attribute.name)"
+                class="dropdown-item btn">
+              <font-awesome-icon class="icon fa-fw" :icon="attribute.icon || 'fa-circle-dot'"></font-awesome-icon>
+              <span v-if="attribute.name">{{ attribute.name }}</span>
+              <i v-else>Custom attribute</i>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </template>
+
   </div>
 </template>
