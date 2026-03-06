@@ -174,7 +174,12 @@ export namespace Template {
   }
 
   export interface RootSectionType extends SectionType {
-    banner?: { src: string, alt?: string, backgroundColor?: string, contactUs?: { text: string } };
+    banner?: {
+      src: string,
+      alt?: string,
+      backgroundColor?: string,
+      contactUs?: { text: string }
+    };
   }
 
   export interface TemplateDefinition extends SectionType {

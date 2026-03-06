@@ -1,10 +1,12 @@
-{
-  "name": "Default",
+import { Template } from '@/models/Template.model.ts';
+
+export default {
+  "name": "Default.v2",
   "title": "Default",
   "description": "General submission",
+  "DOI" : true,
   "sectionType": {
     "name": "Study",
-    "display": "required",
     "tableGroups": [
       [
         "Link",
@@ -21,7 +23,10 @@
           "name": "largetext",
           "minlength": 25
         },
-        "asyncValueValidatorName": "forStudyTitle"
+        "asyncValueValidatorName": "forStudyTitle",
+        "helpContextual": {
+          "description": "Provide a brief summary of dataset contents"
+        }
       },
       {
         "name": "ReleaseDate",
@@ -31,6 +36,9 @@
         "controlType": {
           "name": "date",
           "allowPast": false
+        },
+        "helpContextual": {
+          "description": "The date (GMT) at which your dataset should become publicly visible. This can be changed after submission if needed."
         }
       },
       {
@@ -40,6 +48,9 @@
         "controlType": {
           "name": "largetext",
           "minlength": 50
+        },
+        "helpContextual": {
+          "description": "Describe how the data are structured and how a potential consumer might use them. Be as descriptive as necessary."
         }
       },
       {
@@ -49,70 +60,16 @@
         "helpText": "Add organism",
         "helpLink": "help#new-item-dropdown",
         "controlType": {
-          "name": "select",
-          "multiple": true,
-          "values": [
-            "Homo sapiens (human)",
-            "Mus musculus (mouse)",
-            "Arabidopsis thaliana (thale cress)",
-            "Rattus norvegicus (brown rat)",
-            "Drosophila melanogaster (fruit fly)",
-            "Oryza sativa Japonica (common rice)",
-            "Anas platyrhyncho (mallard)",
-            "Anolis carolinensis (anole)",
-            "Anopheles gambiae (marsh mosquito)",
-            "Arabidopsis lyrata (rock cress)",
-            "Aspergillus fumigatus",
-            "Bos Taurus (cow)",
-            "Brachypodium distachyon (stiff brome)",
-            "Brassica oleracea (cabbage)",
-            "Brassica rapa (turnip)",
-            "Caenorhabditis elegans",
-            "Canis familiaris (dog)",
-            "Chlorocebus sabaeus (green monkey)",
-            "Ciona intestinalis (sea squirt)",
-            "Ciona savignyi (Pacific sea squirt)",
-            "Danio rerio (zebrafish)",
-            "Dasypus novemcinctus (nine-banded armadillo)",
-            "Equus caballus (horse)",
-            "Gallus gallus (chicken)",
-            "Glycine max (soybean)",
-            "Gorilla gorilla",
-            "Hordeum vulgare (barley)",
-            "Macaca mulatta (rhesus monkey)",
-            "Medicago truncatula (barrel clover)",
-            "Monodelphis domestica (short-tailed opossum)",
-            "Musa acuminata (banana)",
-            "Ornithorhynchus anatinus (platypus)",
-            "Oryctolagus cuniculus (rabbit)",
-            "Oryza rufipogon (brownbeard rice)",
-            "Ovis aries (sheep)",
-            "Pan troglodytes (chimpanzee)",
-            "Papio Anubis (baboom)",
-            "Physcomitrella patens (moss)",
-            "Pongo abelii (orangutan)",
-            "Populus trichocarpa (poplar tree)",
-            "Saccharomyces cerevisiae (brewer's yeast)",
-            "Schistosoma mansoni (blood fluke)",
-            "Schizosaccharomyces pombe (fission yeast)",
-            "Solanum lycopersicum (tomato)",
-            "Solanum tuberosum (potato)",
-            "Sorghum bicolor",
-            "Sus scrofa (pig)",
-            "Tetraodon nigroviridis (green pufferfish)",
-            "Theobroma cacao (chocolate)",
-            "Triticum aestivum (wheat)",
-            "Vitis vinifera (grape)",
-            "Xenopus tropicalis (frog)",
-            "Yarrowia lipolytica",
-            "Zea mays (corn)"
-          ]
+          "name": "ontology",
+          "ontology": ["NCBITaxon"],
+          "multiple": true
         }
       },
       {
-        "display": "required",
+        "display": "readonly",
         "name": "License",
         "uniqueValues": false,
+        "helpLink": "help#license",
         "controlType": {
           "name": "select",
           "defaultValue": "CC0",
@@ -150,13 +107,6 @@
       "allowImport": false,
       "columnTypes": [
         {
-          "name": "AttachTo",
-          "controlType": {
-            "name": "text"
-          },
-          "display": "readonly"
-        },
-        {
           "name": "Experimental design",
           "controlType": {
             "name": "text"
@@ -173,14 +123,22 @@
         {
           "name": "Organ",
           "controlType": {
-            "name": "text"
+            "name": "ontology",
+            "ontology": ["uberon"],
+            "multiple": true,
+            "local": true,
+            "enableValueAdd": true
           },
           "display": "optional"
         },
         {
           "name": "Cell type",
           "controlType": {
-            "name": "text"
+            "name": "ontology",
+            "ontology": ["cl"],
+            "multiple": true,
+            "local": true,
+            "enableValueAdd": true
           },
           "display": "optional"
         }
@@ -195,6 +153,7 @@
         "uniqueCols": true,
         "allowImport": true,
         "rowAsSection": true,
+        "hideColumns": true,
         "columnTypes": [
           {
             "autosuggest": false,
@@ -232,7 +191,8 @@
           {
             "name": "ORCID",
             "controlType": {
-              "name": "orcid"
+              "name": "orcid",
+              "placeholder": "e.g. 1892-5647-2571-9436"
             },
             "display": "desirable"
           },
@@ -261,7 +221,7 @@
       },
       {
         "name": "Link",
-        "description": "Provide pointers to data held in external databases or to related information on the web. Compact URIs from <a target=\"_blank\" href=\"https://www.ebi.ac.uk/miriam/main/collections\">Identifiers.org</a> are supported. </br>URLs must include the scheme, e.g. \"http://\".",
+        "description": "Provide pointers to data held in external databases or to related information on the web. Compact URIs from <a target=\"_blank\" href=\"https://www.ebi.ac.uk/miriam/main/collections\">Identifiers.org</a> are supported. </br>URLs must include the scheme, e.g. \"https://\". <br> Do not forget to link to code that you used to produce the data files, and/or that will help the data consumers to understand the data.",
         "icon": "fa-link",
         "uniqueCols": true,
         "allowImport": true,
@@ -288,6 +248,7 @@
         "description": "List and describe the data files associated with your study. It is possible to link entire directories, but note that for data consumers these will be served as zip files.",
         "icon": "fa-file",
         "uniqueCols": true,
+        "hideColumns": true,
         "allowImport": true,
         "rowAsSection": true,
         "columnTypes": [
@@ -320,7 +281,9 @@
         "icon": "fa-book",
         "uniqueCols": true,
         "allowImport": false,
-        "rowAsSection": true,
+        "rowAsSection": false,
+        "display": "desirable",
+        "helpContextual": {},
         "columnTypes": [
           {
             "name": "PMID",
@@ -386,7 +349,40 @@
             "display": "optional"
           }
         ]
+      },
+      {
+        "name": "Funding",
+        "icon": "",
+        "description": "List of individual grants funding data acquisition.",
+        "uniqueCols": true,
+        "rowAsSection": true,
+        "columnTypes": [
+          {
+            "name": "Agency",
+            "icon": "",
+            "controlType": {
+              "name": "text"
+            },
+            "display": "desirable",
+            "helpContextual": {
+              "description": "The funding body providing support."
+            }
+          },
+          {
+            "name": "grant_id",
+            "icon": "",
+            "controlType": {
+              "name": "text"
+            },
+            "display": "desirable",
+            "helpContextual": {
+              "description": "The identifier for the grant."
+            }
+          }
+        ],
+        "display": "desirable",
+        "helpContextual": {}
       }
     ]
   }
-}
+} as Template.TemplateDefinition;
