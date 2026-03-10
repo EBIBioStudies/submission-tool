@@ -170,7 +170,7 @@
 <script setup lang="ts">
 import { computed, onMounted, provide, ref, UnwrapRef, watch, watchEffect } from 'vue';
 
-import Default from './templates/Default.v2.json';
+import Default from '@/templates/Default.v2.json';
 import Submission from './components/Submission.vue';
 import ResubmitModal from './components/ResubmitModal.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
@@ -195,7 +195,6 @@ const hasValidated = ref(false);
 const success = ref(false);
 const serverErrorMessage = ref('');
 const displayType = ref<Template.DisplayType>();
-const editDateMode = ref(false);
 const isLoading = ref(false);
 const isManagerUser = ref(false);
 const collectionName = ref('');
@@ -203,7 +202,6 @@ const collectionName = ref('');
 provide('hasValidated', hasValidated);
 provide('submission', submission);
 provide('parentDisplayType', displayType);
-provide('readOnlyEditDateMode', editDateMode);
 provide('isManagerUser', isManagerUser);
 provide('collectionName', collectionName);
 
@@ -426,10 +424,9 @@ watchEffect(async () => {
         (t) => t?.title?.toLowerCase() === collection?.value?.toLowerCase() + '.v1',
       );
     }
-    template.value = tmpl ?? Default as Template.TemplateDefinition;
+    template.value = tmpl ?? Default;
     if (template.value?.display === 'readonly') {
       displayType.value = 'readonly';
-      editDateMode.value = true;
     }
 
     isLoading.value = false;

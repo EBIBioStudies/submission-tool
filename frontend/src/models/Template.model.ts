@@ -189,7 +189,12 @@ export namespace Template {
   export interface TemplateDefinition {
     name: string;
     sectionType: RootSectionType;
+    display?: DisplayType
 
+    title?: string;
+    description?: string;
+    helpText?: string;
+    helpLink?: string;
     displayName?: string
 
     DOI?: boolean;
