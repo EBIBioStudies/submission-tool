@@ -7,6 +7,7 @@ export default {
   "DOI" : true,
   "sectionType": {
     "name": "Study",
+    'allowNewAttribute': true,
     "tableGroups": [
       [
         "Link",
