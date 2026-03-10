@@ -1,15 +1,38 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { inject } from 'vue';
+import { computed, inject } from 'vue';
 
 const props = defineProps(['sectionType']);
-const emits = defineEmits(['newTable', 'newSection']);
-const parentDisplayType = inject('parentDisplayType');
+defineEmits(['newTable', 'newSection']);
+
+const parentDisplayType = inject('parentDisplayType', 'readonly');
+const collectionName = inject('collectionName', null);
+
+const alwaysVisibleTablesByCollection = {
+  ArrayExpress: ['Publication'],
+};
+
+const isParentDisplayTypeEditable = computed(
+  () => parentDisplayType?.value !== 'readonly',
+);
+
+const mandatoryTablesForCollection = computed(() => {
+  const names = alwaysVisibleTablesByCollection[collectionName?.value] || [];
+  const tableTypes = props?.sectionType?.tableTypes || [];
+  return tableTypes.filter((t) => names.includes(t.name));
+});
+
+const hasMandatoryTables = computed(
+  () => mandatoryTablesForCollection.value.length > 0,
+);
 </script>
 
 <template>
   <!--  add other sections button start -->
-  <div v-if="parentDisplayType !== 'readonly'" class="dropdown dropend">
+  <div
+    v-if="isParentDisplayTypeEditable || hasMandatoryTables"
+    class="dropdown dropend"
+  >
     <svg
       class="plus-icon"
       height="1em"
@@ -25,45 +48,60 @@ const parentDisplayType = inject('parentDisplayType');
       />
     </svg>
 
-    <ul class="dropdown-menu">
+    <!-- parent editable: full menu -->
+    <ul v-if="isParentDisplayTypeEditable" class="dropdown-menu">
       <li>
         <a class="dropdown-item btn" @click="$emit('newTable', null)">
-          <font-awesome-icon
-            class="icon fa-fw"
-            icon="fa-table"
-          ></font-awesome-icon>
-          Table</a
-        >
+          <font-awesome-icon class="icon fa-fw" icon="fa-table" />
+          Table
+        </a>
       </li>
-      <li v-for="(type, i) in props?.sectionType?.tableTypes">
+
+      <li v-for="type in props?.sectionType?.tableTypes || []" :key="type.name">
         <a class="dropdown-item btn" @click="$emit('newTable', type)">
           <font-awesome-icon
             class="icon fa-fw"
             :icon="type.icon && type.icon !== '' ? type.icon : 'fa-table'"
-          ></font-awesome-icon>
-          {{ type.name }}</a
-        >
+          />
+          {{ type.name }}
+        </a>
       </li>
+
       <li>
         <hr class="dropdown-divider" />
       </li>
+
       <li>
         <a class="dropdown-item btn" @click="$emit('newSection')">
-          <font-awesome-icon
-            class="icon fa-fw"
-            icon="fa-caret-right"
-          ></font-awesome-icon>
-          Subsection</a
-        >
+          <font-awesome-icon class="icon fa-fw" icon="fa-caret-right" />
+          Subsection
+        </a>
       </li>
-      <li v-for="(type, i) in props?.sectionType?.sectionTypes">
+
+      <li
+        v-for="type in props?.sectionType?.sectionTypes || []"
+        :key="type.name"
+      >
         <a class="dropdown-item btn" @click="$emit('newSection', type)">
           <font-awesome-icon
             class="icon fa-fw"
             :icon="type.icon && type.icon !== '' ? type.icon : 'fa-caret-right'"
-          ></font-awesome-icon>
-          {{ type.name }}</a
-        >
+          />
+          {{ type.name }}
+        </a>
+      </li>
+    </ul>
+
+    <!-- parent readonly but some tables must always be addable -->
+    <ul v-else-if="hasMandatoryTables" class="dropdown-menu">
+      <li v-for="type in mandatoryTablesForCollection" :key="type.name">
+        <a class="dropdown-item btn" @click="$emit('newTable', type)">
+          <font-awesome-icon
+            class="icon fa-fw"
+            :icon="type.icon && type.icon !== '' ? type.icon : 'fa-table'"
+          />
+          {{ type.name }}
+        </a>
       </li>
     </ul>
   </div>
