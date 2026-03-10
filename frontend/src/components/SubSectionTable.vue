@@ -323,16 +323,15 @@ defineExpose<SectionExpose>({ errors, thisSection });
             @click.stop=""
             :disabled="readonly"
           />
-          <font-awesome-icon
-            v-if="parentDisplayType !== 'readonly'"
-            class="icon ps-2"
-            icon="fa-trash"
-            role="button"
-            size="sm"
-            @click="$emit('delete')"
-            @click.stop=""
-          ></font-awesome-icon>
         </span>
+        <font-awesome-icon
+          v-if="!readonly && sectionType?.display !== 'required'"
+          class="icon ps-2"
+          icon="fa-trash"
+          role="button"
+          size="sm"
+          @click.stop="$emit('delete')"
+        />
       </span>
     </div>
     <div v-if="!isCollapsed" :key="sectionsRefreshKey" class="ps-3">
@@ -352,8 +351,9 @@ defineExpose<SectionExpose>({ errors, thisSection });
                   class="input-group input-group-sm flex-nowrap"
                 >
                   <template v-if="!getFieldType(header)?.createdOnRender">
-                    <div class="input-group-text p-0 justify-content-center square h-100" v-if="!(fixedFirstColumn && i === 1)">
-                      <font-awesome-icon icon="fa-grip-horizontal" class="handle icon fa-sm"/>
+                    <div class="input-group-text p-0 justify-content-center square h-100"
+                         v-if="!(fixedFirstColumn && i === 1)">
+                      <font-awesome-icon icon="fa-grip-horizontal" class="handle icon fa-sm" />
                     </div>
                     <label class="input-group-text flex-grow-1">
                       <span class="form-control-sm"
@@ -374,18 +374,17 @@ defineExpose<SectionExpose>({ errors, thisSection });
                         role="button"
                         @click="showHelp(getFieldType(header)!)"
                       />
-                      <font-awesome-icon
-                        v-if="!getFieldType(header)?.display"
-                        role="button"
-                        @click.prevent="deleteColumn(i)"
-                        class="icon fa-sm square"
-                        icon="fa-trash"
-                      ></font-awesome-icon>
                     </label>
+                    <button class="btn btn-outline-secondary icon square h-100"
+                            v-if="getFieldType(header)?.display !== 'required' && !readonly"
+                            @click.stop="deleteColumn(i)">
+                      <font-awesome-icon  class="fa-sm" icon="fa-trash"></font-awesome-icon>
+                    </button>
                   </template>
                   <template v-else>
-                    <div class="input-group-text p-0 justify-content-center square h-100" v-if="!(fixedFirstColumn && i === 1)">
-                      <font-awesome-icon icon="fa-grip-horizontal" class="handle icon fa-sm"/>
+                    <div class="input-group-text p-0 justify-content-center square h-100"
+                         v-if="!(fixedFirstColumn && i === 1)">
+                      <font-awesome-icon icon="fa-grip-horizontal" class="handle icon fa-sm" />
                     </div>
                     <input
                       ref="headerComponent"
@@ -434,7 +433,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
                     ref="attributeRefs"
                     :attribute="getCell(row, col)!"
                     :row="row"
-                    :field-type="getFieldType(getCell(row, col))!"
+                    :field-type="getFieldType(getCell(row, col))"
                     :isTableAttribute="true"
                     :parent="row.attributes"
                     @deleteAttribute="() => emits('deleteAttribute', index)"
