@@ -30,6 +30,7 @@ export default {
         'title': 'Release Date',
         'icon': 'fa-calendar-alt',
         'display': 'required',
+        'overrideReadonly': true,
         'controlType': {
           'name': 'date',
           'allowPast': false,
@@ -144,6 +145,7 @@ export default {
         'uniqueCols': true,
         'allowImport': false,
         'rowAsSection': true,
+        'overrideReadonly': true,
         'columnTypes': [
           {
             'name': 'PMID',
@@ -299,10 +301,12 @@ export default {
           {
             'name': 'Experimental Factors',
             'displayAnnotations': true,
+            'display': 'optional',
             'rowAsSection': true,
           },
           {
             'name': 'Source Characteristics',
+            'display': 'optional',
             'displayAnnotations': true,
             'rowAsSection': true,
           },

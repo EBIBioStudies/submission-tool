@@ -3,7 +3,7 @@ import { computed, inject, nextTick, ref, Ref } from 'vue';
 import draggable from 'vuedraggable';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Attribute from '@/components/Attribute.vue';
-import utils, { ensureArray } from '@/utils';
+import utils from '@/utils';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { Template } from '@/models/Template.model.ts';
 import { AttributeExpose, ControlError, SectionExpose } from 'components/expose.model.ts';
@@ -42,8 +42,9 @@ const tableType = ref(props.title || props.sectionSubType || rowSectionType);
 const theseRows = ref(Array.isArray(props.rows) ? props.rows : props.rows[0]);
 const headerMap = new Map();
 const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
-const collectionName = inject<Ref<string>>('collectionName');
-const subSections = ref(props.parent!.subsections!.flatMap(ensureArray));
+const readonly = computed(() => parentDisplayType?.value === 'readonly' && !props.sectionType?.overrideReadonly);
+
+const subSections = ref(props.parent!.subsections as PageTab.BuildingSection[]); // Important to keep the same reference as we delete from there
 
 if (tableType.value === 'File') {
   headerMap.set('File', []);
