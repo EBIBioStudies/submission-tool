@@ -124,14 +124,11 @@ const getSectionsWithRowsAsSections = (type: string): PageTab.Section[] => {
   ) || [];
 };
 
-const specialSectionMap = computed(() => {
-  const curMap = new Map<string, PageTab.Section[]>();
-  sectionType.value?.tableTypes?.forEach((tbType) => {
-    const combined = getSectionsWithRowsAsSections(tbType.name);
-    if (combined?.length) curMap.set(tbType.name, combined);
-  });
-  return curMap;
-});
+const specialSectionMap = computed(() => new Map(
+  sectionType.value?.tableTypes
+    ?.map(tbType => [tbType.name, getSectionsWithRowsAsSections(tbType.name)] as [string, PageTab.Section[]])
+    .filter(([_, combined]) => combined?.length)),
+);
 
 /**
  * Updates the subSectionTypeMap by matching subsections in props.section.subsections
