@@ -107,8 +107,7 @@ addMissingAttributes();
     </div>
 
     <template v-if="parentDisplayType !== 'readonly'">
-      <div v-if="nonPresentAttributes" class="branch mt-2">
-
+      <div v-if="nonPresentAttributes.length" class="branch mt-2">
         <div class="btn btn-light btn-small text-black-50" data-bs-toggle="dropdown" @click="singleOptionHandle">
           <font-awesome-icon
             :icon="['fas', 'plus']"
