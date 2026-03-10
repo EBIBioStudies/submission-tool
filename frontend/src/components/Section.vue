@@ -282,24 +282,38 @@ const addTable = async (aSection: PageTab.BuildingSection, _i: number, type?: Te
     added?.querySelector('.section-title').click();
 };
 
-const deleteSubSection = async (someSubSections: PageTab.BuildingSection[], index: number) => {
-  if (parentDisplayType?.value === 'readonly') return;
+const deleteSubsectionByName = async (sectionList: PageTab.BuildingSection[], name: string) => {
+  if (parentDisplayType?.value === 'readonly' && !subSectionTypeMap.get(name.toLowerCase())?.overrideReadonly) return;
 
   if (
     !(await utils.confirm(
       'Delete Section',
-      `Do you want to delete the section ${someSubSections[index].type}?`,
+      `Do you want to delete the section ${name}?`,
+      { okayLabel: 'Delete' },
+    ))
+  )
+    return;
+  thisSection.value.subsections = sectionList.filter((section) => section.type !== name);
+  sectionsRefreshKey.value += 1;
+};
+
+const deleteSubSection = async (someSubSections: (PageTab.BuildingSection | PageTab.BuildingSection[])[], index: number, type?: Template.SectionType) => {
+  if (parentDisplayType?.value === 'readonly' && !type?.overrideReadonly) return;
+
+  const typeName = ensureArray(someSubSections[index])[0]?.type;
+  if (
+    !(await utils.confirm(
+      'Delete Section',
+      `Do you want to delete the section ${typeName}?`,
       { okayLabel: 'Delete' },
     ))
   )
     return;
 
-  const subsectionTypeMapKey = someSubSections[index].type?.toLowerCase();
+  const subsectionTypeMapKey = typeName?.toLowerCase();
   thisSection.value.subsections = someSubSections.filter((_v, i) => i !== index);
-  thisSection.value.subsections = thisSection.value.subsections.filter(
-    (sub) => !(Array.isArray(sub) && sub.length === 0),
-  );
-  sectionsRefreshKey.value += 1;
+
+  await refreshSection()
   // Update the map so it does not contain the subsection that was just deleted
   subSectionTypeMap.delete(subsectionTypeMapKey);
 };
@@ -337,7 +351,7 @@ const deleteAttribute = async (del: PageTab.DetailedAttribute) => {
   attributesRefreshKey.value += 1;
 };
 
-const createTag = (msg: PageTab.IndexedTag) => {
+const createTag = (msg: Omit<PageTab.IndexedTag, 'index'>) => {
   if (parentDisplayType!.value === 'readonly' && !sectionType.value.overrideReadonly) return;
   thisSection.value.attributes = thisSection.value.attributes || [];
   // insert next to the last attribute with the same name
@@ -541,7 +555,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
               @rowsReordered="(e) => rowsReordered(e, section.files!, subSectionTypeMap.get('file'))"
               @columnUpdated="(msg) => updateColumnName(section.files as PageTab.BuildingSection[], msg, subSectionTypeMap.get('file'))"
               @columnsReordered="columnsReordered"
-              @delete="deleteSubSection(section.files as PageTab.BuildingSection[], 0)"
+              @delete="deleteSubsectionByName(section.files as PageTab.BuildingSection[], 'file' )"
               @refreshSection="refreshSection()"
               ref="sectionFilesRef"
             />
@@ -557,7 +571,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
               @rowsReordered="(e) => rowsReordered(e, section.links!, subSectionTypeMap.get('link'))"
               @columnUpdated="(msg) => updateColumnName(section.links as PageTab.BuildingSection[], msg, subSectionTypeMap.get('link'))"
               @columnsReordered="columnsReordered"
-              @delete="deleteSubSection(section.links as PageTab.BuildingSection[], 0)"
+              @delete="deleteSubsectionByName(section.links as PageTab.BuildingSection[], 'link' )"
               @refreshSection="refreshSection()"
               ref="sectionLinksRef"
             />
@@ -577,7 +591,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
                 @rowsReordered="(e) => rowsReordered(e, item[1], subSectionTypeMap.get(item[0].toLowerCase()))"
                 @columnUpdated="(msg) => updateColumnName(item[1], msg, subSectionTypeMap.get(item[0].toLowerCase()))"
                 @columnsReordered="columnsReordered"
-                @delete="deleteSubSection(section.subsections as PageTab.BuildingSection[], index)"
+                @delete="deleteSubsectionByName(section.subsections as PageTab.BuildingSection[], item[0])"
                 @refreshSection="refreshSection()"
                 ref="errSpecialSecTableRefs"
               />
