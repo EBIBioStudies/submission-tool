@@ -44,14 +44,11 @@ const thisMultiValuedAttribute = ref(
   })?.filter(a => a.name === thisAttribute.value.name && a?.value) || [],
 );
 const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
-const editDateMode = inject<Ref<boolean>>('readOnlyEditDateMode');
 const isManagerUser = inject<Ref<boolean>>('isManagerUser');
-const isPublicSubmission = inject<Ref<boolean>>('isPublicSubmission');
-const collectionName = inject<Ref<string>>('collectionName');
 
-const display = computed(() => {
-  return props?.fieldType?.display || parentDisplayType?.value || 'optional';
-});
+const display = computed(() => props?.fieldType?.display || (parentDisplayType?.value) || 'optional');
+
+const readonly = computed(() => (parentDisplayType?.value === 'readonly' && !props.fieldType?.overrideReadonly) || props.fieldType?.display === 'readonly');
 
 const minLength = computed(() => props?.fieldType?.controlType?.minlength || 0);
 
@@ -197,9 +194,9 @@ const showHelp = () => {
 </script>
 
 <template>
-  <div class="input-group" :class="{'branch pt-2': !props.isTableAttribute}" :id="attributeId">
+  <div class="input-group" :class="{'branch pt-2': !isTableAttribute}" :id="attributeId">
     <!--label-->
-    <label class="input-group-text attribute" v-if="!props.isTableAttribute">
+    <label class="input-group-text attribute" v-if="!isTableAttribute">
       <font-awesome-icon
         v-if="fieldType?.icon"
         class="icon"
@@ -211,18 +208,17 @@ const showHelp = () => {
         inverse
         icon="fa-check"
       ></font-awesome-icon>
-      <span class="text-muted" v-if="fieldType?.display"><span class="attribute-name">{{ fieldType.name }}</span>
+      <span class="text-muted" v-if="fieldType?.name"><span class="attribute-name">{{ fieldType.name }}</span>
         <span class="text-danger" v-if="fieldType?.display==='required' || minLength > 0">*</span>
       </span>
       <span v-else>
       <input
-        :disabled="parentDisplayType==='readonly' || display==='readonly'"
+        :disabled="readonly"
         type="text"
         class="form-control attribute-name"
         v-model="thisAttribute.name"
         placeholder="Attribute name"
         :class="{'is-invalid':errors?.length}"
-        style="margin-left: -1em"
       />
     </span>
       <font-awesome-icon v-if="fieldType?.helpContextual" :icon="['fas','circle-question']"
@@ -239,7 +235,7 @@ const showHelp = () => {
       :placeholder="fieldType?.controlType?.placeholder"
       v-model="thisAttribute.value"
       :class="{'is-invalid':errors && hasValidated}"
-      :disabled="parentDisplayType==='readonly' || display==='readonly'"
+      :disabled="readonly"
       :required="fieldType?.display==='required' || minLength > 0"
     ></textarea>
 
@@ -256,7 +252,7 @@ const showHelp = () => {
       :searchable="true"
       :options="singleSelectValues"
       :class="{'is-invalid':errors && hasValidated, 'form-control-sm':isTableAttribute}"
-      :disabled="parentDisplayType==='readonly' || display==='readonly'"
+      :disabled="readonly"
       :allow-empty="false"
       :create-option="fieldType?.controlType?.createOption ?? true"
       :append-to-body="true"
@@ -307,7 +303,7 @@ const showHelp = () => {
       @deselect="onDeleteTag"
       @select="onCreateTag"
       :class="{'is-invalid':errors && hasValidated , 'form-control-sm':isTableAttribute}"
-      :disabled="parentDisplayType==='readonly' || display==='readonly'"
+      :disabled="readonly"
       :append-to-body="true"
       object
     >
@@ -339,7 +335,7 @@ const showHelp = () => {
       valueType="format"
       placeholder="Select date"
       format="YYYY-MM-DD"
-      :disabled="(parentDisplayType==='readonly' || display==='readonly' || isPublicSubmission) && !editDateMode && !isManagerUser"
+      :disabled="readonly && !isManagerUser"
       :disabledDate="withinThreeYears"
       :class="{'is-invalid':errors && hasValidated}"
     />
@@ -375,7 +371,7 @@ const showHelp = () => {
       v-model="thisAttribute.value"
       :class="{'is-invalid':!!(errors && hasValidated)}"
       :fieldType="fieldType"
-      :disabled="parentDisplayType==='readonly' || display==='readonly'"
+      :disabled="readonly"
     >
     </Reference>
 
@@ -388,7 +384,7 @@ const showHelp = () => {
       :placeholder="fieldType?.controlType?.placeholder"
       v-model="thisAttribute.value"
       :required="fieldType?.display==='required' || minLength > 0"
-      :disabled="parentDisplayType==='readonly' || display==='readonly'"
+      :disabled="readonly"
     />
 
     <Publication
@@ -396,26 +392,10 @@ const showHelp = () => {
       ref="attributeControl"
       :row="props.parent"
       :pmid="thisAttribute as PageTab.Tag"
-      :disabled="(parentDisplayType==='readonly' || display==='readonly') && collectionName != 'ArrayExpress'"
+      :disabled="readonly"
       :class="{'is-invalid':!!(errors && hasValidated)}"
       :placeholder="fieldType?.controlType?.placeholder"
     />
-
-    <!-- A cell (text) in a publication section from ArrayExpress: allways editable -->
-    <input
-      v-else-if="row?.type == 'Publication' && collectionName==='ArrayExpress'"
-      type="text"
-      class="form-control"
-      :class="{
-        'is-invalid': !!(errors && hasValidated),
-        'min-width-inp': isTableAttribute
-      }"
-      :disabled="false"
-      :placeholder="fieldType?.controlType?.placeholder"
-      v-model="thisAttribute.value"
-      :required="fieldType?.display==='required' || minLength > 0 "
-    />
-
 
     <!-- default / text -->
     <input
@@ -426,18 +406,17 @@ const showHelp = () => {
         'is-invalid': errors && hasValidated,
         'min-width-inp': isTableAttribute
       }"
-      :disabled="parentDisplayType==='readonly' || display==='readonly'"
+      :disabled="readonly"
       :placeholder="fieldType?.controlType?.placeholder"
       v-model="thisAttribute.value"
       :required="fieldType?.display==='required' || minLength > 0"
     />
-
     <!-- delete icon -->
     <div
       class="input-group-text btn-group-vertical"
       v-if="
-      (!fieldType?.display && !props.isTableAttribute) ||
-      (display !== 'required' && display!=='readonly' && !props.isTableAttribute && !props.isSectionAttribute)"
+      (!fieldType?.display && !readonly && !isTableAttribute) ||
+      (display !== 'required' && !readonly && !isTableAttribute && !isSectionAttribute)"
     >
       <font-awesome-icon
         class="icon fa-sm"

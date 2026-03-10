@@ -144,7 +144,7 @@ export default {
         'icon': 'fa-book',
         'uniqueCols': true,
         'allowImport': false,
-        'rowAsSection': true,
+        'rowAsSection': false,
         'overrideReadonly': true,
         'columnTypes': [
           {

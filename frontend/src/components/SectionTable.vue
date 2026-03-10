@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, nextTick, ref, Ref, UnwrapRef } from 'vue';
+import { computed, inject, nextTick, provide, ref, Ref, UnwrapRef } from 'vue';
 import draggable from 'vuedraggable';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Attribute from '@/components/Attribute.vue';
@@ -40,7 +40,12 @@ const rowSectionType = props.rows && props.rows[0]?.type ? ('' + props.rows[0].t
 const tableType = ref(props.title || props.sectionSubType || rowSectionType);
 const theseRows = ref(props.rows);
 const headerMap = new Map<string, PageTab.Attribute[]>();
+
+if (props.sectionType?.overrideReadonly) provide('parentDisplayType', props.sectionType?.display);
 const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
+
+
+const readonly = computed(() => parentDisplayType?.value === 'readonly' && !props.sectionType?.overrideReadonly);
 const sectionsRefreshKey = ref(0);
 
 const columnTypes = props?.sectionType?.columnTypes || [];
@@ -123,7 +128,7 @@ const reorderColumns = () => {
 };
 
 const addColumn = () => {
-  if (parentDisplayType?.value === 'readonly') return;
+  if (readonly.value) return;
   const columnName = 'Column ' + (headers.value.length - 1);
   headers.value.splice(-1, 0, columnName);
   theseRows.value.forEach((row) => {
@@ -133,7 +138,7 @@ const addColumn = () => {
 };
 
 const addRow = () => {
-  if (parentDisplayType?.value === 'readonly') return;
+  if (readonly.value) return;
   const row = {} as PageTab.BuildingSection;
   row.type = rowSectionType;
   if (tableType.value === 'File') {
@@ -154,7 +159,7 @@ const addRow = () => {
 };
 
 const deleteRow = async (index: number) => {
-  if (parentDisplayType?.value === 'readonly') return;
+  if (readonly.value) return;
   theseRows.value.splice(index, 1);
 
   if (theseRows.value.length === 0) {
@@ -167,7 +172,7 @@ const deleteRow = async (index: number) => {
 };
 
 const deleteColumn = (index: number) => {
-  if (parentDisplayType?.value === 'readonly') return;
+  if (readonly.value) return;
   theseRows.value.forEach((row) => {
     row.attributes!.splice(row.attributes!.findIndex(attr => attr.name === headers.value[index]), 1);
   });
@@ -177,7 +182,7 @@ const deleteColumn = (index: number) => {
 
 const updateColumnName = (value: string, index: number) => {
   if (!value) value = ' ';
-  if (parentDisplayType?.value === 'readonly') return;
+  if (readonly.value) return;
   if (index === headers.value.length - 1) return;
   const oldValue = headers.value[index];
   const newValue = value;
@@ -237,7 +242,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
         <span v-else>
 <!--          <input v-model="props.rows[0].type" class="ms-2" placeholder="Enter table name" type="text" @click.stop="" />-->
           <EditableLabel :data="props.rows[0]" class="ms-2" placeholder="Enter table name" :isEditable="true" />
-          <font-awesome-icon v-if="parentDisplayType !== 'readonly'" class="icon ps-2" icon="fa-trash" role="button"
+          <font-awesome-icon v-if="!readonly" class="icon ps-2" icon="fa-trash" role="button"
                              size="sm" @click="$emit('delete')"
                              @click.stop=""></font-awesome-icon>
         </span>
@@ -282,7 +287,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
 
                       </label>
                       <button class="btn btn-outline-secondary icon square h-100"
-                              v-if="getFieldType(header)?.display !== 'required' && parentDisplayType !== 'readonly' && hideNonRequiredColumns"
+                              v-if="getFieldType(header)?.display !== 'required' && !readonly && hideNonRequiredColumns"
                               @click.prevent="deleteColumn(i)">
                         <font-awesome-icon  class="fa-sm" icon="fa-trash"></font-awesome-icon>
                       </button>
@@ -293,7 +298,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
                         <font-awesome-icon icon="fa-grip-horizontal" class="handle icon fa-sm"/>
                       </div>
                       <input v-if="!hideNonRequiredColumns || columnOptions.length === 0" ref="headerComponent" :value="header" class="form-control h-100"
-                             :disabled="parentDisplayType === 'readonly'" type="text"
+                             :disabled="readonly" type="text"
                              @change.stop="(e) => updateColumnName( (e.target as HTMLInputElement).value, i)">
 
                       <Multiselect v-else
@@ -304,7 +309,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
                                    class="form-control h-100 pe-0"
                                    :searchable="true"
                                    :options="columnOptions"
-                                   :disabled="parentDisplayType==='readonly' "
+                                   :disabled="readonly"
                                    :allow-empty="false"
                                    :append-to-body="true"
                                    :create-option="true"
@@ -313,8 +318,8 @@ defineExpose<SectionExpose>({ errors, thisSection });
                       />
 
                       <button class="btn btn-outline-secondary icon square h-100"
-                              v-if="getFieldType(header)?.display !== 'required' && parentDisplayType !== 'readonly'"
-                              @click.prevent="deleteColumn(i)">
+                              v-if="getFieldType(header)?.display !== 'required' && !readonly"
+                              @click.stop="deleteColumn(i)">
                         <font-awesome-icon  class="fa-sm" icon="fa-trash"></font-awesome-icon>
                       </button>
                     </template>
@@ -345,7 +350,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
                 </td>
                 <td class="grip">
                   <font-awesome-icon
-                    v-if="!(index === 0 && sectionType?.display === 'required') && parentDisplayType !== 'readonly'"
+                    v-if="!(index === 0 && sectionType?.display === 'required') && !readonly"
                     class="fa-sm" icon="fa-trash" role="button"
                     @click="deleteRow(index)"></font-awesome-icon>
                 </td>
@@ -354,7 +359,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
           </draggable>
         </table>
       </div>
-      <div v-if="parentDisplayType !== 'readonly'">
+      <div v-if="!readonly">
         <button class="btn btn-outline-secondary btn-sm" @click="addRow">
           Add Row
         </button>

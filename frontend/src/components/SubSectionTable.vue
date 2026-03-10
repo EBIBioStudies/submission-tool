@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, nextTick, ref, Ref } from 'vue';
+import { computed, inject, nextTick, provide, ref, Ref } from 'vue';
 import draggable from 'vuedraggable';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Attribute from '@/components/Attribute.vue';
@@ -41,7 +41,10 @@ const rowSectionType =
 const tableType = ref(props.title || props.sectionSubType || rowSectionType);
 const theseRows = ref(Array.isArray(props.rows) ? props.rows : props.rows[0]);
 const headerMap = new Map();
+
+if (props.sectionType?.overrideReadonly) provide('parentDisplayType', props.sectionType?.display);
 const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
+
 const readonly = computed(() => parentDisplayType?.value === 'readonly' && !props.sectionType?.overrideReadonly);
 
 const subSections = ref(props.parent!.subsections as PageTab.BuildingSection[]); // Important to keep the same reference as we delete from there
@@ -144,20 +147,9 @@ const areObjectsEqual = (obj1: any, obj2: any) => {
   return true;
 };
 
-const readOnly = () => {
-  return (
-    parentDisplayType?.value === 'readonly' &&
-    !(
-      collectionName?.value === 'ArrayExpress' &&
-      rowSectionType.toLowerCase() === 'publication'
-    )
-  );
-};
 
 const addColumn = () => {
-  if (readOnly()) {
-    return;
-  }
+  if (readonly.value) return;
   const columnName = 'Column ' + (headers.value.length - 1);
   headers.value.splice(-1, 0, columnName);
   const rows = subSections.value.filter(
@@ -171,7 +163,7 @@ const addColumn = () => {
 };
 
 const addRow = () => {
-  if (readOnly()) return;
+  if (readonly.value) return;
 
   const row = { attributes: [] as PageTab.Attribute[] } as PageTab.BuildingSection;
   row.type = rowSectionType;
@@ -197,11 +189,9 @@ const addRow = () => {
 };
 
 const deleteRow = async (index: number) => {
-  if (readOnly()) return;
+  if (readonly.value) return;
   const removedItem = theseRows.value[index];
-  const delIndex = subSections.value.findIndex((item) =>
-    areObjectsEqual(item, removedItem),
-  );
+  const delIndex = subSections.value.findIndex((item) => areObjectsEqual(item, removedItem));
   if (delIndex !== -1) {
     subSections.value.splice(delIndex, 1); // Only mutate the source
   }
@@ -220,7 +210,7 @@ const deleteRow = async (index: number) => {
 };
 
 const deleteColumn = (index: number) => {
-  if (readOnly()) return;
+  if (readonly.value) return;
   theseRows.value.forEach((row) => {
     row.attributes!.splice(
       row.attributes!.findIndex((attr) => attr.name === headers.value[index]),
@@ -232,7 +222,7 @@ const deleteColumn = (index: number) => {
 };
 
 // const deleteRow = (index) => {
-//   if(parentDisplayType.value === 'readonly')
+//   if(readonly.value)
 //     return;
 //   const removedItem = theseRows.value[index];
 //   const delIndex = subSections.value.findIndex(item => areObjectsEqual(item, removedItem));
@@ -244,7 +234,7 @@ const deleteColumn = (index: number) => {
 // };
 
 // const deleteColumn = (index) => {
-//   if(parentDisplayType.value === 'readonly')
+//   if(readonly.value)
 //     return;
 //   theseRows.value.forEach((row) => {
 //     row.attributes.splice(row.attributes.findIndex(attr => attr.name === headers.value[index]), 1);
@@ -253,7 +243,7 @@ const deleteColumn = (index: number) => {
 // };
 
 const updateColumnName = (event: Event, index: number) => {
-  if (readOnly()) return;
+  if (readonly.value) return;
   if (index === headers.value.length - 1) return;
   const oldValue = headers.value[index];
   const newValue = (event.target as HTMLInputElement).value;
@@ -331,7 +321,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
             placeholder="Enter table name"
             type="text"
             @click.stop=""
-            :disabled="parentDisplayType === 'readonly'"
+            :disabled="readonly"
           />
           <font-awesome-icon
             v-if="parentDisplayType !== 'readonly'"
@@ -401,10 +391,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
                       ref="headerComponent"
                       :value="header"
                       class="form-control"
-                      :disabled="
-                          readOnly() ||
-                          getFieldType(header)?.display === 'readonly'
-                        "
+                      :disabled="readonly ||  getFieldType(header)?.display === 'readonly'"
                       type="text"
                       @change.stop="(e) => updateColumnName(e, i)"
                     />
@@ -465,7 +452,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
                   <font-awesome-icon
                     v-if="
                       !(index === 0 && sectionType?.display === 'required') &&
-                      !readOnly()
+                      !readonly
                     "
                     class="fa-sm"
                     icon="fa-trash"
@@ -478,7 +465,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
           </draggable>
         </table>
       </div>
-      <div v-if="!readOnly()">
+      <div v-if="!readonly">
         <button class="btn btn-outline-secondary btn-sm" @click="addRow">
           Add Row
         </button>

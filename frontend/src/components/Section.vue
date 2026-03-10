@@ -6,7 +6,7 @@ import {
   getCurrentInstance,
   inject,
   nextTick,
-  onMounted,
+  onMounted, provide,
   ref,
   Ref,
   UnwrapRef,
@@ -51,7 +51,6 @@ const sectionLinksRef = ref<UnwrapRef<SectionExpose> & ComponentPublicInstance>(
 
 const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
 const isPublicSubmission = inject<ComputedRef<boolean>>('isPublicSubmission');
-const collectionName = inject<Ref<string>>('collectionName');
 
 const errSecRefs = ref<UnwrapRef<SectionExpose>[]>([]);
 const errSecTableRefs = ref<UnwrapRef<SectionExpose>[]>([]);
@@ -73,6 +72,8 @@ const inheritedSectionType = computed(() => ({
   disableCustomTable: props.parentSectionType?.disableCustomTable,
   ...sectionType.value,
 }));
+// override parentDisplayType for children component to not be considered as readonly
+if (sectionType.value.overrideReadonly) provide('parentDisplayType', sectionType.value.display);
 
 
 const isRemovable = computed(() => sectionType.value?.display !== 'required' || thisSection.value.accno?.includes('-removable'));
@@ -171,7 +172,7 @@ const isCollapsed = ref((props?.depth ?? 0) >= 2);
 // children are not allowed to change properties of a parent
 // all section/attributes updates thus need to be at this level
 const addSubsection = async (aSection: PageTab.Section, _i: number, type?: Template.SectionType) => {
-  if (parentDisplayType?.value === 'readonly') return;
+  if (parentDisplayType?.value === 'readonly' && !type?.overrideReadonly) return;
   aSection.subsections = aSection.subsections || [];
   const obj = {} as PageTab.Section;
   if (type != null) fillTemplate(obj, type);
@@ -235,10 +236,7 @@ const findAddedSection = (type?: string) => {
 };
 
 const addTable = async (aSection: PageTab.BuildingSection, _i: number, type?: Template.SectionType) => {
-  // if (type?.name?.toLowerCase()==='contact')
-  //   authorComponent.add
-  //   return
-  if (parentDisplayType?.value === 'readonly') return;
+  if (parentDisplayType?.value === 'readonly' && !type?.overrideReadonly) return;
   aSection.subsections = aSection.subsections || [];
   let obj = {} as PageTab.BuildingSection;
   if (type != null) fillTemplate(obj, type);
@@ -318,7 +316,7 @@ const refreshSection = async () => {
 };
 
 const addAttribute = async (name?: string = '') => {
-  if (parentDisplayType?.value === 'readonly') return;
+  if (parentDisplayType?.value === 'readonly' && !sectionType.value.overrideReadonly) return;
   thisSection.value.attributes = thisSection.value.attributes || [];
   thisSection.value.attributes.push({ name, value: '' });
   attributesRefreshKey.value += 1;
@@ -331,7 +329,7 @@ const addAttribute = async (name?: string = '') => {
 };
 
 const deleteAttribute = async (del: PageTab.DetailedAttribute) => {
-  if (parentDisplayType!.value === 'readonly') return;
+  if (parentDisplayType!.value === 'readonly' && !sectionType.value.overrideReadonly) return;
   const index = thisSection.value.attributes?.findIndex(att => att.name === del.name && att.value === del.value);
   if (index !== undefined && index >= 0) {
     thisSection.value.attributes?.splice(index, 1);
@@ -340,7 +338,7 @@ const deleteAttribute = async (del: PageTab.DetailedAttribute) => {
 };
 
 const createTag = (msg: PageTab.IndexedTag) => {
-  if (parentDisplayType!.value === 'readonly') return;
+  if (parentDisplayType!.value === 'readonly' && !sectionType.value.overrideReadonly) return;
   thisSection.value.attributes = thisSection.value.attributes || [];
   // insert next to the last attribute with the same name
   // just to keep the structure cleaner
@@ -370,8 +368,8 @@ const createTag = (msg: PageTab.IndexedTag) => {
 const rowsReordered = <T>(event: {
   newIndex: number;
   oldIndex: number;
-}, rows: T[]) => {
-  if (parentDisplayType?.value === 'readonly') return;
+}, rows: T[], type?: Template.Type) => {
+  if (parentDisplayType?.value === 'readonly' && !type?.overrideReadonly) return;
   rows.splice(event.newIndex, 0, rows.splice(event.oldIndex, 1)[0]);
   sectionsRefreshKey.value += 1;
 };
@@ -380,25 +378,15 @@ const columnsReordered = () => {
   sectionsRefreshKey.value += 1;
 };
 
-const canUpdateColumnName = (subsection: PageTab.BuildingSection | PageTab.BuildingSection[]) => {
-  const subsectionType = Array.isArray(subsection)
-    ? subsection[0]?.type
-    : subsection?.type;
-
-  return (
-    parentDisplayType?.value !== 'readonly' ||
-    (
-      subsectionType?.toLowerCase() == 'publication' &&
-      collectionName?.value == 'ArrayExpress'
-    )
-  );
+const canUpdateColumnName = (type?: Template.Type) => {
+  return parentDisplayType?.value !== 'readonly' && !type?.overrideReadonly;
 };
 
-const updateColumnName = (subsection: PageTab.BuildingSection[], update: { old: string; new: string; }) => {
-
-  if (!canUpdateColumnName(subsection)) {
-    return;
-  }
+const updateColumnName = (subsection: PageTab.BuildingSection[], update: {
+  old: string;
+  new: string;
+}, type?: Template.Type) => {
+  if (!canUpdateColumnName(type)) return;
 
   subsection.forEach(
     (row) =>
@@ -550,8 +538,8 @@ defineExpose<SectionExpose>({ errors, thisSection });
               :sectionType="subSectionTypeMap.get('file')!"
               sectionSubType="File"
               fixed-first-column
-              @rowsReordered="(e) => rowsReordered(e, section.files!)"
-              @columnUpdated="(msg) => updateColumnName(section.files as PageTab.BuildingSection[], msg)"
+              @rowsReordered="(e) => rowsReordered(e, section.files!, subSectionTypeMap.get('file'))"
+              @columnUpdated="(msg) => updateColumnName(section.files as PageTab.BuildingSection[], msg, subSectionTypeMap.get('file'))"
               @columnsReordered="columnsReordered"
               @delete="deleteSubSection(section.files as PageTab.BuildingSection[], 0)"
               @refreshSection="refreshSection()"
@@ -566,8 +554,8 @@ defineExpose<SectionExpose>({ errors, thisSection });
               :sectionType="subSectionTypeMap.get('link')!"
               sectionSubType="Link"
               fixed-first-column
-              @rowsReordered="(e) => rowsReordered(e, section.links!)"
-              @columnUpdated="(msg) => updateColumnName(section.links as PageTab.BuildingSection[], msg)"
+              @rowsReordered="(e) => rowsReordered(e, section.links!, subSectionTypeMap.get('link'))"
+              @columnUpdated="(msg) => updateColumnName(section.links as PageTab.BuildingSection[], msg, subSectionTypeMap.get('link'))"
               @columnsReordered="columnsReordered"
               @delete="deleteSubSection(section.links as PageTab.BuildingSection[], 0)"
               @refreshSection="refreshSection()"
@@ -586,8 +574,8 @@ defineExpose<SectionExpose>({ errors, thisSection });
                 :sectionType="subSectionTypeMap.get(item[0].toLowerCase())!"
                 :sectionSubType="item[0]"
                 :parent="section"
-                @rowsReordered="(e) => rowsReordered(e, item[1])"
-                @columnUpdated="(msg) => updateColumnName(item[1], msg)"
+                @rowsReordered="(e) => rowsReordered(e, item[1], subSectionTypeMap.get(item[0].toLowerCase()))"
+                @columnUpdated="(msg) => updateColumnName(item[1], msg, subSectionTypeMap.get(item[0].toLowerCase()))"
                 @columnsReordered="columnsReordered"
                 @delete="deleteSubSection(section.subsections as PageTab.BuildingSection[], index)"
                 @refreshSection="refreshSection()"
@@ -616,7 +604,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
                 :parentSectionType="inheritedSectionType"
                 :depth="props.depth + 1"
                 :sectionTypeMap="subSectionTypeMap"
-                @delete="deleteSubSection(section.subsections as PageTab.BuildingSection[], i)"
+                @delete="deleteSubSection(section.subsections!, i, subSectionTypeMap.get(subsection?.type?.toLowerCase()))"
                 @addTable="(msg) => addTable(msg.section, i, msg.instance)"
                 ref="errSecRefs"
               />
@@ -631,10 +619,10 @@ defineExpose<SectionExpose>({ errors, thisSection });
                   subSectionTypeMap.get(subsection[0]?.type?.toLowerCase())?.name
                 "
                 :parent="section"
-                @rowsReordered="(e) => rowsReordered(e, subsection)"
-                @columnUpdated="(msg) => updateColumnName(subsection, msg)"
+                @rowsReordered="(e) => rowsReordered(e, subsection, subSectionTypeMap.get(subsection[0]?.type?.toLowerCase()))"
+                @columnUpdated="(msg) => updateColumnName(subsection, msg, subSectionTypeMap.get(subsection[0]?.type?.toLowerCase()))"
                 @columnsReordered="columnsReordered"
-                @delete="deleteSubSection(section.subsections as PageTab.BuildingSection[], i)"
+                @delete="deleteSubSection(section.subsections!, i, subSectionTypeMap.get(subsection[0]?.type?.toLowerCase()))"
                 @refreshSection="refreshSection()"
                 ref="errSecTableRefs"
               />

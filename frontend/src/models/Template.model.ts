@@ -107,6 +107,10 @@ export namespace Template {
 
     uniqueValues?: boolean;
     createdOnRender?: boolean;
+    /**
+     * used to override readonly mode, e.g. on ArrayExpress, release date and publication should still be editable despite being readonly
+     */
+    overrideReadonly?: boolean;
   }
 
 
@@ -182,7 +186,7 @@ export namespace Template {
     };
   }
 
-  export interface TemplateDefinition extends SectionType {
+  export interface TemplateDefinition {
     name: string;
     sectionType: RootSectionType;
 

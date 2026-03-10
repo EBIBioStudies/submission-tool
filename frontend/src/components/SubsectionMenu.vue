@@ -12,9 +12,15 @@ const emits = defineEmits<{
 }>()
 const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType')
 
-const canAddTable = computed(() => !props.sectionType?.disableCustomTable || props.sectionType?.tableTypes?.length)
-const canAddSection = computed(() => !props.sectionType?.disableCustomTable || props.sectionType?.sectionTypes?.length)
-const enabled = computed(() =>canAddTable.value || canAddSection.value)
+const _tableTypes = computed(() => props.sectionType?.tableTypes || [])
+const tableTypes = computed(() => parentDisplayType?.value === 'readonly' ? _tableTypes.value.filter(t => t.overrideReadonly) : _tableTypes.value)
+
+const _sectionTypes = computed(() => props.sectionType?.sectionTypes || [])
+const sectionTypes = computed(() => parentDisplayType?.value === 'readonly' ? _sectionTypes.value.filter(t => t.overrideReadonly) : _sectionTypes.value)
+
+const canAddTable = computed(() => !props.sectionType?.disableCustomTable || tableTypes.value.length)
+const canAddSection = computed(() => !props.sectionType?.disableCustomTable || sectionTypes.value.length)
+const enabled = computed(() => canAddTable.value || canAddSection.value)
 
 
 </script>
@@ -22,7 +28,7 @@ const enabled = computed(() =>canAddTable.value || canAddSection.value)
 <template>
 
   <!--  add other sections button start -->
-  <div v-if="parentDisplayType!=='readonly' && enabled" class="dropdown dropend">
+  <div v-if="enabled" class="dropdown dropend">
     <svg class="plus-icon" height="1em" viewBox="0 0 640 512" aria-expanded="false"
          xmlns="http://www.w3.org/2000/svg" data-bs-toggle="dropdown" role="button">
       <path fill="currentColor"
@@ -46,7 +52,7 @@ const enabled = computed(() =>canAddTable.value || canAddSection.value)
         <font-awesome-icon class="icon fa-fw" icon="fa-table"></font-awesome-icon>
         Table</a>
       </li>
-      <li v-for="(type) in sectionType?.tableTypes">
+      <li v-for="(type) in tableTypes">
         <a class="dropdown-item btn" @click="emits('newTable', type)">
           <font-awesome-icon class="icon fa-fw" :icon="type.icon || 'fa-table'"></font-awesome-icon>
           {{ type.name }}</a>
@@ -58,7 +64,7 @@ const enabled = computed(() =>canAddTable.value || canAddSection.value)
         <font-awesome-icon class="icon fa-fw" icon="fa-caret-right"></font-awesome-icon>
         Subsection</a>
       </li>
-      <li v-for="(type) in props?.sectionType?.sectionTypes">
+      <li v-for="(type) in sectionTypes">
         <a class="dropdown-item btn" @click="emits('newSection', type)">
           <font-awesome-icon class="icon fa-fw" :icon="type.icon || 'fa-caret-right'"></font-awesome-icon>
           {{ type.name }}</a>
