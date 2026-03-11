@@ -24,9 +24,9 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
 import { Template } from '@/models/Template.model.ts';
 import { PageTab } from '@/models/PageTab.model.ts';
-import { PublicationSearchResult } from 'components/PmidPopUp.vue';
+import { PublicationSearchResult } from '@/components/PmidPopUp.vue';
 import { Class } from '@/utils.ts';
-import { AttributeControlExpose } from 'components/expose.model.ts';
+import { AttributeControlExpose } from '@/components/expose.model.ts';
 
 
 const props = defineProps<{

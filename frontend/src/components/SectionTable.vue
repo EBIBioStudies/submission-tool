@@ -8,7 +8,7 @@ import EditableLabel from '@/components/EditableLabel.vue';
 import Multiselect from '@vueform/multiselect';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { Template } from '@/models/Template.model.ts';
-import { AttributeExpose, ControlError, SectionExpose } from 'components/expose.model.ts';
+import { AttributeExpose, ControlError, SectionExpose } from '@/components/expose.model.ts';
 
 
 const props = defineProps<{

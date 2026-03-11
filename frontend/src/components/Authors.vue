@@ -5,7 +5,7 @@ import { addMissingAttributesGeneral } from '@/composables/useAttributesHelper';
 import { Template } from '@/models/Template.model.ts';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { ensureArray } from '@/utils.ts';
-import { SectionExpose } from 'components/expose.model.ts';
+import { SectionExpose } from '@/components/expose.model.ts';
 
 const props = defineProps<{
   section: PageTab.Section,

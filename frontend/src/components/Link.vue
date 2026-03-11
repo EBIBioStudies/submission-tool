@@ -6,7 +6,7 @@ import { Template } from '@/models/Template.model.ts';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { Class } from '@/utils.ts';
 import * as bootstrap from 'bootstrap';
-import { AttributeControlExpose } from 'components/expose.model.ts';
+import { AttributeControlExpose } from '@/components/expose.model.ts';
 
 const props = defineProps<{
   fieldType?: Template.FieldType,

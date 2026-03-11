@@ -184,7 +184,7 @@ import AnnouncementBanner from '@/components/AnnouncementBanner.vue';
 import { cleanAndReorderSubsections } from './templates/cleanUtils';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { Template } from '@/models/Template.model.ts';
-import { ControlError, SectionExpose } from 'components/expose.model.ts';
+import { ControlError, SectionExpose } from '@/components/expose.model.ts';
 
 
 const props = defineProps<{ accession: string }>();

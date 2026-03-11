@@ -3,7 +3,7 @@ import StudySection from './StudySection.vue';
 import { computed, ref, UnwrapRef } from 'vue';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { Template } from '@/models/Template.model.ts';
-import { SectionExpose } from 'components/expose.model.ts';
+import { SectionExpose } from '@/components/expose.model.ts';
 
 const props = defineProps<{
   submission: PageTab.LocalSubmission;

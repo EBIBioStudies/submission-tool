@@ -23,7 +23,7 @@ import Authors from '@/components/Authors.vue';
 import { Tooltip } from 'bootstrap';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { Template } from '@/models/Template.model.ts';
-import { SectionExpose } from 'components/expose.model.ts';
+import { SectionExpose } from '@/components/expose.model.ts';
 
 const props = defineProps<{
   section: PageTab.Section;
