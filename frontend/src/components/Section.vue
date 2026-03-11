@@ -306,12 +306,8 @@ const deleteSubSection = async (someSubSections: (PageTab.BuildingSection | Page
   )
     return;
 
-  const subsectionTypeMapKey = typeName?.toLowerCase();
   thisSection.value.subsections = someSubSections.filter((_v, i) => i !== index);
-
   await refreshSection()
-  // Update the map so it does not contain the subsection that was just deleted
-  subSectionTypeMap.delete(subsectionTypeMapKey);
 };
 
 const refreshSection = async () => {
