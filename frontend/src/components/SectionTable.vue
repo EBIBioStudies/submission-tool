@@ -69,8 +69,8 @@ const headers = ref(keys);
 const columnOptions = computed(() => columnTypes
   .filter(col => col.display !== 'required')
   .filter(col => !headers.value.includes(col.name))
-  .map(col => col.name)
-)
+  .map(col => col.name),
+);
 
 const getFieldType = (attribute: PageTab.BuildingSection): Template.FieldType => {
   let name = attribute?.type?.toLowerCase() === 'file' || attribute.hasOwnProperty('path') ? 'File' : attribute?.name || attribute;
@@ -109,9 +109,9 @@ const getCell = (row: PageTab.Section, col: string): PageTab.BuildingSection => 
   return attribute as PageTab.BuildingSection;
 };
 
-const canMove= (e: {draggedContext: {futureIndex: number, index: number, element: any}}): boolean => {
-  return !(props.fixedFirstColumn && e.draggedContext.futureIndex === 1)
-}
+const canMove = (e: { draggedContext: { futureIndex: number, index: number, element: any } }): boolean => {
+  return !(props.fixedFirstColumn && e.draggedContext.futureIndex === 1);
+};
 const reorderColumns = () => {
   const atts = theseRows.value[0].attributes!;
   headers.value.forEach((header, i) => {
@@ -121,7 +121,7 @@ const reorderColumns = () => {
       if (!row.attributes) return;
       const deleted = row.attributes.splice(index, 1);
       row.attributes.splice(i - 1, 0, deleted[0]);
-    })
+    });
 
   });
   emits('columnsReordered');
@@ -228,6 +228,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
 </script>
 
 <template>
+  section table
   <div class="section-block">
     <!-- section table title -->
     <div>
@@ -246,7 +247,8 @@ defineExpose<SectionExpose>({ errors, thisSection });
                              size="sm" @click="$emit('delete')"
                              @click.stop=""></font-awesome-icon>
         </span>
-        <span class="text-danger" v-if="sectionType?.display==='required' || (sectionType?.minRequired || 0) > 0">*</span>
+        <span class="text-danger"
+              v-if="sectionType?.display==='required' || (sectionType?.minRequired || 0) > 0">*</span>
       </span>
     </div>
     <div v-if="!isCollapsed" :key="sectionsRefreshKey" class="ps-3">
@@ -254,78 +256,82 @@ defineExpose<SectionExpose>({ errors, thisSection });
         <table class="table table-responsive">
           <thead>
           <draggable v-model="headers" :item-key="(key: string) => key" tag="tr" @end.stop="reorderColumns"
-                     handle=".handle" :move="canMove" >
-              <template #item="{ element: header, index: i }">
+                     handle=".handle" :move="canMove">
+            <template #item="{ element: header, index: i }">
 
-                <th :class="{ fixed: i === 0 || i === headers?.length - 1 }">
-                  <div v-if="i > 0 && i < headers.length - 1" class="input-group input-group-sm align-items-center flex-nowrap">
-                    <template v-if="!getFieldType(header)?.createdOnRender">
-                      <div class="input-group-text p-0 justify-content-center square h-100" v-if="!(fixedFirstColumn && i === 1)">
-                        <font-awesome-icon icon="fa-grip-horizontal" class="handle icon fa-sm" />
-                      </div>
-                      <label class="input-group-text flex-grow-1">
+              <th :class="{ fixed: i === 0 || i === headers?.length - 1 }">
+                <div v-if="i > 0 && i < headers.length - 1"
+                     class="input-group input-group-sm align-items-center flex-nowrap">
+                  <template v-if="!getFieldType(header)?.createdOnRender">
+                    <div class="input-group-text p-0 justify-content-center square h-100"
+                         v-if="!(fixedFirstColumn && i === 1)">
+                      <font-awesome-icon icon="fa-grip-horizontal" class="handle icon fa-sm" />
+                    </div>
+                    <label class="input-group-text flex-grow-1">
 
-                        <!--                      <font-awesome-icon-->
-                        <!--                        v-if="getFieldType(header)?.icon"-->
-                        <!--                        class="icon"-->
-                        <!--                        :icon="getFieldType(header)?.icon"-->
-                        <!--                      ></font-awesome-icon>-->
-                        <!--                      <font-awesome-icon-->
-                        <!--                        v-else-->
-                        <!--                        class="icon"-->
-                        <!--                        inverse-->
-                        <!--                        icon="fa-check"-->
-                        <!--                      ></font-awesome-icon>-->
-                        <span class="form-control-sm">{{ getFieldType(header)?.name }}
+                      <!--                      <font-awesome-icon-->
+                      <!--                        v-if="getFieldType(header)?.icon"-->
+                      <!--                        class="icon"-->
+                      <!--                        :icon="getFieldType(header)?.icon"-->
+                      <!--                      ></font-awesome-icon>-->
+                      <!--                      <font-awesome-icon-->
+                      <!--                        v-else-->
+                      <!--                        class="icon"-->
+                      <!--                        inverse-->
+                      <!--                        icon="fa-check"-->
+                      <!--                      ></font-awesome-icon>-->
+                      <span class="form-control-sm">{{ getFieldType(header)?.name }}
                           <span class="text-danger"
                                 v-if="getFieldType(header)?.display==='required' || (getFieldType(header)?.controlType?.minlength || 0) >0">*</span>
                         </span>
 
-                        <font-awesome-icon v-if="getFieldType(header)?.helpContextual" :icon="['fas','circle-question']"
-                                           class="text-black-50 ps-1 small"
-                                           role="button" @click="showHelp(getFieldType(header))" />
+                      <font-awesome-icon v-if="getFieldType(header)?.helpContextual" :icon="['fas','circle-question']"
+                                         class="text-black-50 ps-1 small"
+                                         role="button" @click="showHelp(getFieldType(header))" />
 
-                      </label>
-                      <button class="btn btn-outline-secondary icon square h-100"
-                              v-if="getFieldType(header)?.display !== 'required' && !readonly && hideNonRequiredColumns"
-                              @click.prevent="deleteColumn(i)">
-                        <font-awesome-icon  class="fa-sm" icon="fa-trash"></font-awesome-icon>
-                      </button>
+                    </label>
+                    <button class="btn btn-outline-secondary icon square h-100"
+                            v-if="getFieldType(header)?.display !== 'required' && !readonly && hideNonRequiredColumns"
+                            @click.prevent="deleteColumn(i)">
+                      <font-awesome-icon class="fa-sm" icon="fa-trash"></font-awesome-icon>
+                    </button>
 
-                    </template>
-                    <template v-else-if="header?.toLowerCase()!=='type' || tableType!=='Link'">
-                      <div class="input-group-text p-0 justify-content-center square h-100" v-if="!(fixedFirstColumn && i === 1)">
-                        <font-awesome-icon icon="fa-grip-horizontal" class="handle icon fa-sm"/>
-                      </div>
-                      <input v-if="!hideNonRequiredColumns || columnOptions.length === 0" ref="headerComponent" :value="header" class="form-control h-100"
-                             :disabled="readonly" type="text"
-                             @change.stop="(e) => updateColumnName( (e.target as HTMLInputElement).value, i)">
+                  </template>
+                  <template v-else-if="header?.toLowerCase()!=='type' || tableType!=='Link'">
+                    <div class="input-group-text p-0 justify-content-center square h-100"
+                         v-if="!(fixedFirstColumn && i === 1)">
+                      <font-awesome-icon icon="fa-grip-horizontal" class="handle icon fa-sm" />
+                    </div>
+                    <input v-if="!hideNonRequiredColumns || columnOptions.length === 0" ref="headerComponent"
+                           :value="header" class="form-control h-100"
+                           :disabled="readonly" type="text"
+                           @change.stop="(e) => updateColumnName( (e.target as HTMLInputElement).value, i)">
 
-                      <Multiselect v-else
-                                   ref="headerComponent"
-                                   :allow-absent="true"
-                                   label="value"
-                                   :value="header"
-                                   class="form-control h-100 pe-0"
-                                   :searchable="true"
-                                   :options="columnOptions"
-                                   :disabled="readonly"
-                                   :allow-empty="false"
-                                   :append-to-body="true"
-                                   :create-option="true"
-                                   @input="updateColumnName( $event, i)"
-                                   @remove="updateColumnName( $event, i)"
-                      />
+                    <Multiselect v-else
+                                 ref="headerComponent"
+                                 :allow-absent="true"
+                                 label="value"
+                                 :value="header"
+                                 class="form-control h-100 pe-0"
+                                 :searchable="true"
+                                 :options="columnOptions"
+                                 :disabled="readonly"
+                                 :allow-empty="false"
+                                 :append-to-body="true"
+                                 :create-option="true"
+                                 @input="updateColumnName( $event, i)"
+                                 @remove="updateColumnName( $event, i)"
+                    />
 
-                      <button class="btn btn-outline-secondary icon square h-100"
-                              v-if="getFieldType(header)?.display !== 'required' && !readonly"
-                              @click.stop="deleteColumn(i)">
-                        <font-awesome-icon  class="fa-sm" icon="fa-trash"></font-awesome-icon>
-                      </button>
-                    </template>
-                  </div>
-                </th>
-              </template>
+                    <button class="btn btn-outline-secondary icon square h-100"
+                            v-if="getFieldType(header)?.display !== 'required' && !readonly"
+                            @click.stop="deleteColumn(i)">
+                      <font-awesome-icon class="fa-sm" icon="fa-trash"></font-awesome-icon>
+                    </button>
+                  </template>
+                </div>
+              </th>
+            </template>
           </draggable>
           </thead>
           <draggable v-model="theseRows" item-key="name" tag="tbody" handle=".handle"

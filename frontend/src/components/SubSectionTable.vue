@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, nextTick, provide, ref, Ref } from 'vue';
+import { computed, inject, nextTick, provide, ref, Ref, watchEffect } from 'vue';
 import draggable from 'vuedraggable';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Attribute from '@/components/Attribute.vue';
@@ -7,6 +7,7 @@ import utils from '@/utils';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { Template } from '@/models/Template.model.ts';
 import { AttributeExpose, ControlError, SectionExpose } from '@/components/expose.model.ts';
+import Multiselect from '@vueform/multiselect';
 
 
 const props = defineProps<{
@@ -221,35 +222,21 @@ const deleteColumn = (index: number) => {
   sectionsRefreshKey.value += 1;
 };
 
-// const deleteRow = (index) => {
-//   if(readonly.value)
-//     return;
-//   const removedItem = theseRows.value[index];
-//   const delIndex = subSections.value.findIndex(item => areObjectsEqual(item, removedItem));
-//   if(delIndex!=-1)
-//     subSections.value.splice(delIndex, 1);
-//   const rows = subSections.value.filter(item => item?.type?.toLowerCase() === tableType.value.toLowerCase());
-//   theseRows.value = rows;
-//   // emits('deleteRow', index); // Needed only for Authors component
-// };
-
-// const deleteColumn = (index) => {
-//   if(readonly.value)
-//     return;
-//   theseRows.value.forEach((row) => {
-//     row.attributes.splice(row.attributes.findIndex(attr => attr.name === headers.value[index]), 1);
-//   });
-//   headers.value.splice(index, 1);
-// };
-
-const updateColumnName = (event: Event, index: number) => {
+const updateColumnName = (newValue: string, index: number) => {
   if (readonly.value) return;
   if (index === headers.value.length - 1) return;
   const oldValue = headers.value[index];
-  const newValue = (event.target as HTMLInputElement).value;
   if (headers.value.find((n) => n === newValue)) return;
   emits('columnUpdated', { old: oldValue, new: newValue, index: index });
 };
+
+const columnTypes = props?.sectionType?.columnTypes || [];
+
+const columnOptions = computed(() => columnTypes
+  .filter(col => col.display !== 'required')
+  .filter(col => !headers.value.includes(col.name))
+  .map(col => col.name),
+);
 
 const isCollapsed = ref(
   props.startCollapsed === undefined
@@ -290,6 +277,7 @@ const showHelp = (header: Template.FieldType) => {
 defineExpose<SectionExpose>({ errors, thisSection });
 </script>
 <template>
+  subsection table
   <div class="section-block">
     <!-- section table title -->
     <div>
@@ -378,7 +366,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
                     <button class="btn btn-outline-secondary icon square h-100"
                             v-if="getFieldType(header)?.display !== 'required' && !readonly"
                             @click.stop="deleteColumn(i)">
-                      <font-awesome-icon  class="fa-sm" icon="fa-trash"></font-awesome-icon>
+                      <font-awesome-icon class="fa-sm" icon="fa-trash"></font-awesome-icon>
                     </button>
                   </template>
                   <template v-else>
@@ -386,14 +374,25 @@ defineExpose<SectionExpose>({ errors, thisSection });
                          v-if="!(fixedFirstColumn && i === 1)">
                       <font-awesome-icon icon="fa-grip-horizontal" class="handle icon fa-sm" />
                     </div>
-                    <input
-                      ref="headerComponent"
-                      :value="header"
-                      class="form-control"
-                      :disabled="readonly ||  getFieldType(header)?.display === 'readonly'"
-                      type="text"
-                      @change.stop="(e) => updateColumnName(e, i)"
-                    />
+                    <input v-if="columnOptions.length === 0" ref="headerComponent"
+                           :value="header" class="form-control h-100"
+                           :disabled="readonly || getFieldType(header)?.display === 'readonly'" type="text"
+                           @change.stop="(e) => updateColumnName((e.target as HTMLInputElement).value, i)">
+
+                    <Multiselect v-else
+                                 ref="headerComponent"
+                                 :allow-absent="true"
+                                 label="value"
+                                 :value="header"
+                                 class="form-control h-100 pe-0"
+                                 :searchable="true"
+                                 :options="columnOptions"
+                                 :disabled="readonly || getFieldType(header)?.display === 'readonly'"
+                                 :allow-empty="false"
+                                 :append-to-body="true"
+                                 :create-option="true"
+                                 @input="updateColumnName( $event, i)"
+                                 @remove="updateColumnName( $event, i)" />
                     <button
                       v-if="!getFieldType(header)?.display"
                       class="btn btn-outline-secondary icon square h-100"
