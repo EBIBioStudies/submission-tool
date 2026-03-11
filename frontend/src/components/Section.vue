@@ -203,10 +203,8 @@ const findAddedSection = (type) => {
 };
 
 const addTable = async (aSection, i, type) => {
-  // if (type?.name?.toLowerCase()==='contact')
-  //   authorComponent.add
-  //   return
-  if (parentDisplayType.value === 'readonly') return;
+  if (!canAddTable(type)) return;
+
   aSection.subsections = aSection.subsections || [];
   let obj = {};
   if (type != null) fillTemplate(obj, type);
@@ -342,15 +340,21 @@ const canUpdateColumnName = (subsection) => {
 
   return (
     parentDisplayType.value !== 'readonly' ||
-    (
-      subsectionType.toLowerCase() == 'publication' &&
-      collectionName.value == 'ArrayExpress'
-    )
+    (subsectionType.toLowerCase() == 'publication' &&
+      collectionName.value == 'ArrayExpress')
   );
 };
 
-const updateColumnName = (subsection, update) => {
+const canAddTable = (type) => {
+  // normal: only allow when not readonly
+  if (parentDisplayType.value !== 'readonly') return true;
 
+  // readonly exceptions
+  const typeName = type?.name?.toLowerCase();
+  return typeName === 'publication' && collectionName?.value === 'ArrayExpress';
+};
+
+const updateColumnName = (subsection, update) => {
   if (!canUpdateColumnName(subsection)) {
     return;
   }
@@ -446,11 +450,11 @@ defineExpose({ errors, thisSection });
           :data-bs-toggle="sectionType?.description ? 'tooltip' : false"
           data-bs-html="true"
           :data-bs-title="sectionType?.description"
-        ><font-awesome-icon
-          v-if="props.sectionType?.icon"
-          class="icon"
-          :icon="props.sectionType?.icon"
-        />{{ section.type }}</span
+          ><font-awesome-icon
+            v-if="props.sectionType?.icon"
+            class="icon"
+            :icon="props.sectionType?.icon"
+          />{{ section.type }}</span
         >
         <span v-else>
           <EditableLabel
@@ -485,7 +489,7 @@ defineExpose({ errors, thisSection });
         v-if="depth === 0"
         class="float-end text-secondary"
         style="font-size: 8pt; padding-top: 35px"
-      >* Required</span
+        >* Required</span
       >
     </div>
     <!-- section content -->
