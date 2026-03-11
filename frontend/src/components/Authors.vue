@@ -271,7 +271,6 @@ defineExpose<SectionExpose>({ errors });
         :sectionType="props.sectionType"
         :startCollapsed="startCollapsed"
         sectionSubType="Contacts"
-        :isTableAttribute="true"
         title="Contacts"
         @rowsReordered="reorderAuthors"
         @columnUpdated="OnColumnUpdated"
