@@ -228,7 +228,6 @@ defineExpose<SectionExpose>({ errors, thisSection });
 </script>
 
 <template>
-  section table
   <div class="section-block">
     <!-- section table title -->
     <div>

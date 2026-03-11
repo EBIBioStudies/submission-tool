@@ -277,7 +277,6 @@ const showHelp = (header: Template.FieldType) => {
 defineExpose<SectionExpose>({ errors, thisSection });
 </script>
 <template>
-  subsection table
   <div class="section-block">
     <!-- section table title -->
     <div>
