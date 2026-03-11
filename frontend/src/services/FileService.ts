@@ -2,6 +2,12 @@ import axios, { AxiosProgressEvent } from 'axios';
 import utils from '@/utils.ts';
 import { Ref } from 'vue';
 import AuthService from '@/services/AuthService.ts';
+import {
+  forbiddenPathChars,
+  nonSafePathRegex,
+  provideReplacements, Replacement,
+  sanitizeString,
+} from '@/services/sanitize.utils.ts';
 
 //TODO: Get these constants from config
 const HARD_UPLOAD_SIZE_LIMIT = 30; // in GBs;
@@ -123,12 +129,12 @@ export namespace FileService {
   };
 
 
-  const uploadFile = (file: File, path: string[], progress: Ref<UploadProgress | null>, abortController?: Ref<AbortController>) => {
+  const uploadFile = (file: File, path: string[], progress: Ref<UploadProgress | null>, abortController?: Ref<AbortController>, newFileName?: string) => {
 
     const formData = new FormData();
 
     // Attach the file
-    formData.append('files', file);
+    formData.append('files', file, newFileName);
 
     // Attach JSON as a string under key 'filePath'
     formData.append(
@@ -158,6 +164,8 @@ export namespace FileService {
 
     let filesToUpload: File[] = Array.from(uploads);
 
+    console.log('Validate fileSize');
+
     if (filesToUpload.find((file) => file.size / GB > HARD_UPLOAD_SIZE_LIMIT)) {
       await utils.confirm(
         `Upload error`,
@@ -166,6 +174,8 @@ export namespace FileService {
       );
       return false;
     }
+
+    console.log('Validate fileSize waringin');
 
     // warn when files are large or more than a threshold
     const largeFiles = filesToUpload.filter(
@@ -180,6 +190,9 @@ export namespace FileService {
       if (!proceed) return false;
     }
 
+
+    console.log('Validate overlapping files:');
+
     // warn overwrite
     const fileNames = currentFiles?.map((f) => f.name) || [];
     const overlap = filesToUpload
@@ -193,6 +206,7 @@ export namespace FileService {
       )
       .filter((name) => fileNames.includes(name));
 
+    console.log('Checking for file overlap');
     if (overlap.length > 0) {
       const overlapString =
         overlap.length === 1
@@ -255,12 +269,21 @@ export namespace FileService {
         );
     }
 
+    let fileToNewPath: Map<File, string> = new Map<File, string>();
+    try {
+      fileToNewPath = await validateFilenames(filesToUpload);
+    } catch (e: any) {
+      return false;
+    }
+
+
     progress.value = { name: '', progress: 0 };
+
     for (let i = 0; i < filesToUpload.length; i++) {
       const file = filesToUpload[i];
       progress.value.name = file.name;
       try {
-        await uploadFile(file, path, progress, abortController);
+        await uploadFile(file, path, progress, abortController, fileToNewPath.get(file));
       } catch (e: any) {
         if (e?.message === 'canceled') i = filesToUpload.length; // Cancel everything when hitting cancel
         progress.value = null;
@@ -270,5 +293,39 @@ export namespace FileService {
     progress.value = null;
     return true;
   };
+}
+
+
+async function validateFilenames(toValidate: File[]): Promise<Map<File, string>> {
+  const fileToNewPath = new Map<File, string>();
+
+  let replacements =
+    forbiddenPathChars.map(([badChar, replacement, toString]) =>
+      [badChar, { replacement, examples: [], toString }]) as [RegExp, Replacement][];
+
+
+  for (const file of toValidate) {
+    for (const [badChar, { examples }] of replacements) {
+      if (file.webkitRelativePath.match(badChar)) examples.push(file.webkitRelativePath);
+    }
+  }
+
+  // Filter out replacements with no examples, but always keep the double space replacement
+  // since other replacements might generate double spaces
+  const doubleSpaceRegex =   /\s{2,}/g
+  replacements = replacements.filter(([regex, { examples }]) =>
+    examples.length > 0 || regex.source === doubleSpaceRegex.source
+  );
+
+  if (replacements.length === 0) return fileToNewPath;
+
+
+  const replacementList = await provideReplacements(replacements);
+
+  toValidate.forEach(file => {
+    if (file.webkitRelativePath.match(nonSafePathRegex)) fileToNewPath.set(file, sanitizeString(file.webkitRelativePath, replacementList));
+  });
+
+  return fileToNewPath;
 }
 

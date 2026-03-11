@@ -45,7 +45,7 @@
           hidden="hidden"
           multiple
           type="file"
-          @change.stop="(e) => uploadFiles((e.target as HTMLInputElement).files, false)"
+          @change.stop="(e) => uploadFiles((e.target as HTMLInputElement).files, false, e)"
         />
         <label
           class="btn btn-primary btn-sm me-2"
@@ -64,7 +64,7 @@
           odirectory
           type="file"
           webkitdirectory
-          @change.stop="(e) => uploadFiles((e.target as HTMLInputElement).files, true)"
+          @change.stop="(e) => uploadFiles((e.target as HTMLInputElement).files, true, e)"
         />
         <button
           class="btn btn-secondary btn-sm me-2 mb-2"
@@ -346,8 +346,10 @@ const navigate = async (path: string, name: string) => {
 };
 
 
-const uploadFiles = async (uploads: FileList | null, isFolderUpload: boolean) => {
+const uploadFiles = async (uploads: FileList | null, isFolderUpload: boolean, event: Event) => {
+  console.log('Upload files');
   await FileService.uploadFiles(uploads, isFolderUpload, currentPath.value, files.value, currentUpload, abortController);
+  (event.target as HTMLInputElement).value = '';
   await fetchFiles();
 };
 

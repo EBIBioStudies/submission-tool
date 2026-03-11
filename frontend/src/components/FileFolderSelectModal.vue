@@ -48,7 +48,7 @@ onMounted(() => {
   if (elementById) modal = new Modal(elementById, { backdrop: 'static' });
 });
 
-const uploadFile = async (file: FileList) => {
+const uploadFile = async (file: FileList, event: Event) => {
   try {
     const currentFiles = await FileService.fetchFiles(path);
     const succeed = await FileService.uploadFiles(file, false, [], currentFiles, currentUpload, abortController);
@@ -63,6 +63,8 @@ const uploadFile = async (file: FileList) => {
     }
   } catch (error) {
     console.error('File upload error:', error);
+  } finally {
+    (event.target as HTMLInputElement).value = '';
   }
 };
 
@@ -157,7 +159,7 @@ const loadTree = () => filetree.value?.show();
           <div class="input-group">
             <div class="custom-file">
               <input :id="'inputGroupFile'+thisComponent!.uid" type="file" class="custom-file-input"
-                     @change="uploadFile(($event.target as HTMLInputElement).files!)">
+                     @change="uploadFile(($event.target as HTMLInputElement).files!, $event)">
               <label :for="'inputGroupFile'+thisComponent!.uid" class="custom-file-label"> Select file to upload </label>
             </div>
           </div>
