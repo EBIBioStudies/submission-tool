@@ -48,10 +48,6 @@ const sectionTablesRef = ref<HTMLDivElement[]>();
 const sectionFilesRef = ref<UnwrapRef<SectionExpose> & ComponentPublicInstance>();
 const sectionLinksRef = ref<UnwrapRef<SectionExpose> & ComponentPublicInstance>();
 
-
-const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
-const isPublicSubmission = inject<ComputedRef<boolean>>('isPublicSubmission');
-
 const errSecRefs = ref<UnwrapRef<SectionExpose>[]>([]);
 const errSecTableRefs = ref<UnwrapRef<SectionExpose>[]>([]);
 const errSpecialSecTableRefs = ref<UnwrapRef<SectionExpose>[]>([]);
@@ -73,9 +69,12 @@ const inheritedSectionType = computed(() => ({
   ...sectionType.value,
 }));
 // override parentDisplayType for children component to not be considered as readonly
-if (sectionType.value.overrideReadonly) provide('parentDisplayType', sectionType.value.display);
+if (sectionType.value?.overrideReadonly) provide('parentDisplayType', sectionType.value.display);
 
+const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
+const isPublicSubmission = inject<ComputedRef<boolean>>('isPublicSubmission');
 
+const readonly = computed(() => parentDisplayType?.value === 'readonly' && !sectionType.value?.overrideReadonly || sectionType.value?.display === 'readonly');
 const isRemovable = computed(() => sectionType.value?.display !== 'required' || thisSection.value.accno?.includes('-removable'));
 const isRenamable = computed(() => sectionType.value?.allowRename || thisSection.value.accno?.includes('-custom'));
 
@@ -497,7 +496,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
       <span
         v-if="
           isRemovable &&
-          parentDisplayType !== 'readonly' &&
+          !readonly &&
           sectionType?.name !== 'Study' &&
           !isPublicSubmission
         "
