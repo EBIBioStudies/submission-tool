@@ -197,6 +197,28 @@ export namespace Template {
     helpLink?: string;
     displayName?: string
 
+
+    /**
+     * If provided, will customize the standard submission success message
+     */
+    onSubmission?: {
+      /**
+       * If provided, will replace the "Thanks for submitting to ..."
+       */
+      databaseName?: string;
+      citation?: {
+        authors: string,
+        title: string,
+        journal?: string,
+        year?: string,
+        doi?: string,
+        pubmedId?: string,
+      };
+    };
+
+
+
+
     DOI?: boolean;
   }
 

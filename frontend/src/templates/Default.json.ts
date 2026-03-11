@@ -4,6 +4,17 @@ export default {
   'name': 'Default',
   'title': 'Default',
   'description': 'General submission',
+  'onSubmission': {
+    'name': 'BioStudies database',
+    'citation': {
+      'authors': 'Sarkans U, Gostev M, Athar A, et al.',
+      'title': 'The BioStudies database-one stop shop for all data supporting a life sciences study.',
+      'journal': 'Nucleic Acids Res.',
+      'year': '2018;46(D1):D1266-D1270',
+      'doi': '10.1093/nar/gkx965',
+      'pubmed': '26700850',
+    },
+  },
   'sectionType': {
     'name': 'Study',
     'display': 'required',

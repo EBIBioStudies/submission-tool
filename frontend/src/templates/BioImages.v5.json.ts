@@ -5,6 +5,17 @@ export default {
   'title': 'BioImages',
   'description': 'BioImage Archive Submission',
   'DOI': true,
+  'onSubmission': {
+    'databaseName': 'BioImage Archive database',
+    'citation': {
+      'authors': 'Matthew Hartley, Gerard J. Kleywegt, Ardan Patwardhan, Ugis Sarkans, Jason R. Swedlow, Alvis Brazma',
+      'title': 'The BioImage Archive – Building a Home for Life-Sciences Microscopy Data',
+      'journal': 'Journal of Molecular Biology',
+      'year': '2022;434(11):167505',
+      'doi': '10.1016/j.jmb.2022.167505',
+      'pubmed': '35189131',
+    },
+  },
   'sectionType': {
     'display': 'required',
     'displayAnnotations': false,

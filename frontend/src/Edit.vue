@@ -16,7 +16,8 @@
         <i aria-hidden="true" class="fa fa-check-circle"></i> Study <span
         class="ng-star-inserted">submitted</span>
       </h2>
-      <p class="card-text mb-1 ng-star-inserted"> The study has been submitted to the BioStudies database and is now
+      <p class="card-text mb-1 ng-star-inserted"> The study has been submitted to the {{ onSubmission.databaseName }}
+        and is now
         being processed. </p>
       <div class="mt-3 ng-star-inserted">
         <h5>Please note <i class="far fa-hand-point-down"></i></h5>
@@ -42,12 +43,16 @@
       </div>
       <div class="mt-3 ng-star-inserted">
         <strong>
-          <a target="_blank" href="http://europepmc.org/abstract/MED/26700850"> Citing the BioStudies database <i
-            class="fa fa-fw fa-external-link-square"></i></a>
+          <a target="_blank" href="http://europepmc.org/abstract/MED/26700850"> Citing the {{ onSubmission.databaseName }} <i class="fa fa-fw fa-external-link-square"></i></a>
         </strong>
-        <p>Sarkans U, Gostev M, Athar A, et al. <a href="http://doi.org/10.1093/nar/gkx965">The BioStudies database-one
-          stop shop for all data supporting a life sciences study. </a><i>Nucleic Acids Res.</i>
-          2018;46(D1):D1266-D1270. doi:10.1093/nar/gkx965
+        <p>
+          {{ onSubmission.citation?.authors }}
+          <a class="p-1" v-if="onSubmission.citation?.doi"
+             :href="'https://doi.org/' + onSubmission.citation?.doi">{{ onSubmission.citation?.title }}</a>
+          <span class="p-1" v-else>{{ onSubmission.citation?.title }}</span>
+          <span class="p-1"><i>{{ onSubmission.citation?.journal }}</i></span>
+          <span class="p-1">{{ onSubmission.citation?.year }}</span>
+          <span class="p-1" v-if="onSubmission.citation?.doi">doi:{{ onSubmission.citation?.doi }}</span>
         </p>
       </div>
       <RouterLink to="/" class="btn btn-primary ng-star-inserted" tooltip="'List all other submitted studies'">
@@ -215,6 +220,11 @@ const submissionComponent = ref<UnwrapRef<SectionExpose>>();
 let offCanvasErrors: Offcanvas | null = null;
 let offCanvasJson: Offcanvas | null = null;
 let validationErrors = ref<ControlError[]>([]);
+
+const onSubmission = computed(() => ({
+  ...Default.onSubmission,
+  ...template.value?.onSubmission,
+}));
 
 
 const submitDraftPopUp = () => {

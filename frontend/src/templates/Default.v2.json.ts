@@ -1,389 +1,400 @@
 import { Template } from '@/models/Template.model.ts';
 
 export default {
-  "name": "Default.v2",
-  "title": "Default",
-  "description": "General submission",
-  "DOI" : true,
-  "sectionType": {
-    "name": "Study",
-    'allowNewAttribute': true,
-    "tableGroups": [
-      [
-        "Link",
-        "File"
-      ]
-    ],
-    "displayAnnotations": true,
-    "fieldTypes": [
-      {
-        "name": "Title",
-        "icon": "fa-heading",
-        "display": "required",
-        "controlType": {
-          "name": "largetext",
-          "minlength": 25
-        },
-        "asyncValueValidatorName": "forStudyTitle",
-        "helpContextual": {
-          "description": "Provide a brief summary of dataset contents"
-        }
-      },
-      {
-        "name": "ReleaseDate",
-        "title": "Release Date",
-        "icon": "fa-calendar-alt",
-        "display": "required",
-        "controlType": {
-          "name": "date",
-          "allowPast": false
-        },
-        "helpContextual": {
-          "description": "The date (GMT) at which your dataset should become publicly visible. This can be changed after submission if needed."
-        }
-      },
-      {
-        "name": "Description",
-        "icon": "fa-comment",
-        "display": "required",
-        "controlType": {
-          "name": "largetext",
-          "minlength": 50
-        },
-        "helpContextual": {
-          "description": "Describe how the data are structured and how a potential consumer might use them. Be as descriptive as necessary."
-        }
-      },
-      {
-        "name": "Organism",
-        "icon": "fa-tag",
-        "display": "required",
-        "helpText": "Add organism",
-        "helpLink": "help#new-item-dropdown",
-        "controlType": {
-          "name": "ontology",
-          "ontology": ["NCBITaxon"],
-          "multiple": true
-        }
-      },
-      {
-        "display": "readonly",
-        "name": "License",
-        "uniqueValues": false,
-        "helpLink": "help#license",
-        "controlType": {
-          "name": "select",
-          "defaultValue": "CC0",
-          "values": [
-            {
-              "value": "CC0",
-              "valqual": [
-                {
-                  "name": "URL",
-                  "value": "https://creativecommons.org/publicdomain/zero/1.0/legalcode"
-                }
-              ]
-            },
-            {
-              "value": "CC BY 4.0",
-              "valqual": [
-                {
-                  "name": "URL",
-                  "value": "https://creativecommons.org/licenses/by/4.0/legalcode"
-                }
-              ]
-            }
-          ],
-          "enableValueAdd": false
-        }
-      }
-    ],
-    "annotationsType": {
-      "name": "Annotation",
-      "title": "Annotation",
-      "description": "Provide any additional details that may help discover or interpret the study.",
-      "icon": "fa-tag",
-      "display": "desirable",
-      "singleRow": true,
-      "allowImport": false,
-      "columnTypes": [
-        {
-          "name": "Experimental design",
-          "controlType": {
-            "name": "text"
-          },
-          "display": "optional"
-        },
-        {
-          "name": "Experimental factor",
-          "controlType": {
-            "name": "text"
-          },
-          "display": "optional"
-        },
-        {
-          "name": "Organ",
-          "controlType": {
-            "name": "ontology",
-            "ontology": ["uberon"],
-            "multiple": true,
-            "local": true,
-            "enableValueAdd": true
-          },
-          "display": "optional"
-        },
-        {
-          "name": "Cell type",
-          "controlType": {
-            "name": "ontology",
-            "ontology": ["cl"],
-            "multiple": true,
-            "local": true,
-            "enableValueAdd": true
-          },
-          "display": "optional"
-        }
-      ]
+  'name': 'Default.v2',
+  'title': 'Default',
+  'description': 'General submission',
+  'DOI': true,
+  onSubmission: {
+    databaseName: 'BioStudies database',
+    citation: {
+      authors: 'Sarkans U, Gostev M, Athar A, et al.',
+      title: 'The BioStudies database-one stop shop for all data supporting a life sciences study.',
+      journal: 'Nucleic Acids Res.',
+      year: '2018;46(D1):D1266-D1270',
+      doi: '10.1093/nar/gkx965',
+      pubmed: '26700850',
     },
-    "tableTypes": [
+  },
+  'sectionType': {
+    'name': 'Study',
+    'allowNewAttribute': true,
+    'tableGroups': [
+      [
+        'Link',
+        'File',
+      ],
+    ],
+    'displayAnnotations': true,
+    'fieldTypes': [
       {
-        "name": "Contact",
-        "description": "Add the contact details for the authors involved in the study.",
-        "icon": "fa-address-card",
-        "display": "required",
-        "uniqueCols": true,
-        "allowImport": true,
-        "rowAsSection": true,
-        "hideColumns": true,
-        "columnTypes": [
-          {
-            "autosuggest": false,
-            "display": "required",
-            "name": "Name",
-            "controlType": {
-              "name": "text"
-            }
-          },
-          {
-            "autosuggest": false,
-            "name": "E-mail",
-            "controlType": {
-              "name": "text"
-            },
-            "display": "required"
-          },
-          {
-            "name": "Organisation",
-            "helpText": "Add org",
-            "helpLink": "help#new-item-dropdown",
-            "controlType": {
-              "name": "org",
-              "multiple": true
-            },
-            "display": "required"
-          },
-          {
-            "name": "Role",
-            "controlType": {
-              "name": "text"
-            },
-            "display": "optional"
-          },
-          {
-            "name": "ORCID",
-            "controlType": {
-              "name": "orcid",
-              "placeholder": "e.g. 1892-5647-2571-9436"
-            },
-            "display": "desirable"
-          },
-          {
-            "name": "Address",
-            "controlType": {
-              "name": "text"
-            },
-            "display": "optional"
-          },
-          {
-            "name": "Department",
-            "controlType": {
-              "name": "text"
-            },
-            "display": "optional"
-          },
-          {
-            "name": "Funding",
-            "controlType": {
-              "name": "text"
-            },
-            "display": "optional"
-          }
-        ]
+        'name': 'Title',
+        'icon': 'fa-heading',
+        'display': 'required',
+        'controlType': {
+          'name': 'largetext',
+          'minlength': 25,
+        },
+        'asyncValueValidatorName': 'forStudyTitle',
+        'helpContextual': {
+          'description': 'Provide a brief summary of dataset contents',
+        },
       },
       {
-        "name": "Link",
-        "description": "Provide pointers to data held in external databases or to related information on the web. Compact URIs from <a target=\"_blank\" href=\"https://www.ebi.ac.uk/miriam/main/collections\">Identifiers.org</a> are supported. </br>URLs must include the scheme, e.g. \"https://\". <br> Do not forget to link to code that you used to produce the data files, and/or that will help the data consumers to understand the data.",
-        "icon": "fa-link",
-        "uniqueCols": true,
-        "allowImport": true,
-        "rowAsSection": true,
-        "columnTypes": [
-          {
-            "name": "Link",
-            "controlType": {
-              "name": "idlink"
-            },
-            "display": "required"
-          },
-          {
-            "name": "Description",
-            "controlType": {
-              "name": "text"
-            },
-            "display": "desirable"
-          }
-        ]
+        'name': 'ReleaseDate',
+        'title': 'Release Date',
+        'icon': 'fa-calendar-alt',
+        'display': 'required',
+        'controlType': {
+          'name': 'date',
+          'allowPast': false,
+        },
+        'helpContextual': {
+          'description': 'The date (GMT) at which your dataset should become publicly visible. This can be changed after submission if needed.',
+        },
       },
       {
-        "name": "File",
-        "description": "List and describe the data files associated with your study. It is possible to link entire directories, but note that for data consumers these will be served as zip files.",
-        "icon": "fa-file",
-        "uniqueCols": true,
-        "hideColumns": true,
-        "allowImport": true,
-        "rowAsSection": true,
-        "columnTypes": [
-          {
-            "name": "File",
-            "controlType": {
-              "name": "file"
-            },
-            "display": "required"
-          },
-          {
-            "name": "Description",
-            "controlType": {
-              "name": "text"
-            },
-            "display": "required"
-          },
-          {
-            "name": "Type",
-            "controlType": {
-              "name": "text"
-            },
-            "display": "desirable"
-          }
-        ]
+        'name': 'Description',
+        'icon': 'fa-comment',
+        'display': 'required',
+        'controlType': {
+          'name': 'largetext',
+          'minlength': 50,
+        },
+        'helpContextual': {
+          'description': 'Describe how the data are structured and how a potential consumer might use them. Be as descriptive as necessary.',
+        },
       },
       {
-        "name": "Publication",
-        "description": "Add the bibliography relevant to the study. Autofill is available when searching by <a target=\"_blank\" href=\"https://www.ncbi.nlm.nih.gov/pubmed/\">PubMed</a> identifier. For other IDs, you may use <a target=\"_blank\" href=\"https://www.ncbi.nlm.nih.gov/pmc/pmctopmid/#converter\">PubMed's converter</a>.",
-        "icon": "fa-book",
-        "uniqueCols": true,
-        "allowImport": false,
-        "rowAsSection": false,
-        "display": "desirable",
-        "helpContextual": {},
-        "columnTypes": [
-          {
-            "name": "PMID",
-            "controlType": {
-              "name": "pubmedid"
-            },
-            "display": "desirable"
-          },
-          {
-            "name": "Authors",
-            "controlType": {
-              "name": "text"
-            },
-            "display": "required"
-          },
-          {
-            "name": "Title",
-            "controlType": {
-              "name": "text"
-            },
-            "display": "required"
-          },
-          {
-            "name": "Year",
-            "controlType": {
-              "name": "text"
-            },
-            "display": "required"
-          },
-          {
-            "name": "Volume",
-            "controlType": {
-              "name": "text"
-            },
-            "display": "desirable"
-          },
-          {
-            "name": "Issue",
-            "controlType": {
-              "name": "text"
-            },
-            "display": "desirable"
-          },
-          {
-            "name": "Type",
-            "controlType": {
-              "name": "text"
-            },
-            "display": "optional"
-          },
-          {
-            "name": "Issn",
-            "controlType": {
-              "name": "text"
-            },
-            "display": "optional"
-          },
-          {
-            "name": "DOI",
-            "controlType": {
-              "name": "text"
-            },
-            "display": "optional"
-          }
-        ]
+        'name': 'Organism',
+        'icon': 'fa-tag',
+        'display': 'required',
+        'helpText': 'Add organism',
+        'helpLink': 'help#new-item-dropdown',
+        'controlType': {
+          'name': 'ontology',
+          'ontology': ['NCBITaxon'],
+          'multiple': true,
+        },
       },
       {
-        "name": "Funding",
-        "icon": "",
-        "description": "List of individual grants funding data acquisition.",
-        "uniqueCols": true,
-        "rowAsSection": true,
-        "columnTypes": [
-          {
-            "name": "Agency",
-            "icon": "",
-            "controlType": {
-              "name": "text"
+        'display': 'readonly',
+        'name': 'License',
+        'uniqueValues': false,
+        'helpLink': 'help#license',
+        'controlType': {
+          'name': 'select',
+          'defaultValue': 'CC0',
+          'values': [
+            {
+              'value': 'CC0',
+              'valqual': [
+                {
+                  'name': 'URL',
+                  'value': 'https://creativecommons.org/publicdomain/zero/1.0/legalcode',
+                },
+              ],
             },
-            "display": "desirable",
-            "helpContextual": {
-              "description": "The funding body providing support."
-            }
+            {
+              'value': 'CC BY 4.0',
+              'valqual': [
+                {
+                  'name': 'URL',
+                  'value': 'https://creativecommons.org/licenses/by/4.0/legalcode',
+                },
+              ],
+            },
+          ],
+          'enableValueAdd': false,
+        },
+      },
+    ],
+    'annotationsType': {
+      'name': 'Annotation',
+      'title': 'Annotation',
+      'description': 'Provide any additional details that may help discover or interpret the study.',
+      'icon': 'fa-tag',
+      'display': 'desirable',
+      'singleRow': true,
+      'allowImport': false,
+      'columnTypes': [
+        {
+          'name': 'Experimental design',
+          'controlType': {
+            'name': 'text',
+          },
+          'display': 'optional',
+        },
+        {
+          'name': 'Experimental factor',
+          'controlType': {
+            'name': 'text',
+          },
+          'display': 'optional',
+        },
+        {
+          'name': 'Organ',
+          'controlType': {
+            'name': 'ontology',
+            'ontology': ['uberon'],
+            'multiple': true,
+            'local': true,
+            'enableValueAdd': true,
+          },
+          'display': 'optional',
+        },
+        {
+          'name': 'Cell type',
+          'controlType': {
+            'name': 'ontology',
+            'ontology': ['cl'],
+            'multiple': true,
+            'local': true,
+            'enableValueAdd': true,
+          },
+          'display': 'optional',
+        },
+      ],
+    },
+    'tableTypes': [
+      {
+        'name': 'Contact',
+        'description': 'Add the contact details for the authors involved in the study.',
+        'icon': 'fa-address-card',
+        'display': 'required',
+        'uniqueCols': true,
+        'allowImport': true,
+        'rowAsSection': true,
+        'hideColumns': true,
+        'columnTypes': [
+          {
+            'autosuggest': false,
+            'display': 'required',
+            'name': 'Name',
+            'controlType': {
+              'name': 'text',
+            },
           },
           {
-            "name": "grant_id",
-            "icon": "",
-            "controlType": {
-              "name": "text"
+            'autosuggest': false,
+            'name': 'E-mail',
+            'controlType': {
+              'name': 'text',
             },
-            "display": "desirable",
-            "helpContextual": {
-              "description": "The identifier for the grant."
-            }
-          }
+            'display': 'required',
+          },
+          {
+            'name': 'Organisation',
+            'helpText': 'Add org',
+            'helpLink': 'help#new-item-dropdown',
+            'controlType': {
+              'name': 'org',
+              'multiple': true,
+            },
+            'display': 'required',
+          },
+          {
+            'name': 'Role',
+            'controlType': {
+              'name': 'text',
+            },
+            'display': 'optional',
+          },
+          {
+            'name': 'ORCID',
+            'controlType': {
+              'name': 'orcid',
+              'placeholder': 'e.g. 1892-5647-2571-9436',
+            },
+            'display': 'desirable',
+          },
+          {
+            'name': 'Address',
+            'controlType': {
+              'name': 'text',
+            },
+            'display': 'optional',
+          },
+          {
+            'name': 'Department',
+            'controlType': {
+              'name': 'text',
+            },
+            'display': 'optional',
+          },
+          {
+            'name': 'Funding',
+            'controlType': {
+              'name': 'text',
+            },
+            'display': 'optional',
+          },
         ],
-        "display": "desirable",
-        "helpContextual": {}
-      }
-    ]
-  }
+      },
+      {
+        'name': 'Link',
+        'description': 'Provide pointers to data held in external databases or to related information on the web. Compact URIs from <a target="_blank" href="https://www.ebi.ac.uk/miriam/main/collections">Identifiers.org</a> are supported. </br>URLs must include the scheme, e.g. "https://". <br> Do not forget to link to code that you used to produce the data files, and/or that will help the data consumers to understand the data.',
+        'icon': 'fa-link',
+        'uniqueCols': true,
+        'allowImport': true,
+        'rowAsSection': true,
+        'columnTypes': [
+          {
+            'name': 'Link',
+            'controlType': {
+              'name': 'idlink',
+            },
+            'display': 'required',
+          },
+          {
+            'name': 'Description',
+            'controlType': {
+              'name': 'text',
+            },
+            'display': 'desirable',
+          },
+        ],
+      },
+      {
+        'name': 'File',
+        'description': 'List and describe the data files associated with your study. It is possible to link entire directories, but note that for data consumers these will be served as zip files.',
+        'icon': 'fa-file',
+        'uniqueCols': true,
+        'hideColumns': true,
+        'allowImport': true,
+        'rowAsSection': true,
+        'columnTypes': [
+          {
+            'name': 'File',
+            'controlType': {
+              'name': 'file',
+            },
+            'display': 'required',
+          },
+          {
+            'name': 'Description',
+            'controlType': {
+              'name': 'text',
+            },
+            'display': 'required',
+          },
+          {
+            'name': 'Type',
+            'controlType': {
+              'name': 'text',
+            },
+            'display': 'desirable',
+          },
+        ],
+      },
+      {
+        'name': 'Publication',
+        'description': 'Add the bibliography relevant to the study. Autofill is available when searching by <a target="_blank" href="https://www.ncbi.nlm.nih.gov/pubmed/">PubMed</a> identifier. For other IDs, you may use <a target="_blank" href="https://www.ncbi.nlm.nih.gov/pmc/pmctopmid/#converter">PubMed\'s converter</a>.',
+        'icon': 'fa-book',
+        'uniqueCols': true,
+        'allowImport': false,
+        'rowAsSection': false,
+        'display': 'desirable',
+        'helpContextual': {},
+        'columnTypes': [
+          {
+            'name': 'PMID',
+            'controlType': {
+              'name': 'pubmedid',
+            },
+            'display': 'desirable',
+          },
+          {
+            'name': 'Authors',
+            'controlType': {
+              'name': 'text',
+            },
+            'display': 'required',
+          },
+          {
+            'name': 'Title',
+            'controlType': {
+              'name': 'text',
+            },
+            'display': 'required',
+          },
+          {
+            'name': 'Year',
+            'controlType': {
+              'name': 'text',
+            },
+            'display': 'required',
+          },
+          {
+            'name': 'Volume',
+            'controlType': {
+              'name': 'text',
+            },
+            'display': 'desirable',
+          },
+          {
+            'name': 'Issue',
+            'controlType': {
+              'name': 'text',
+            },
+            'display': 'desirable',
+          },
+          {
+            'name': 'Type',
+            'controlType': {
+              'name': 'text',
+            },
+            'display': 'optional',
+          },
+          {
+            'name': 'Issn',
+            'controlType': {
+              'name': 'text',
+            },
+            'display': 'optional',
+          },
+          {
+            'name': 'DOI',
+            'controlType': {
+              'name': 'text',
+            },
+            'display': 'optional',
+          },
+        ],
+      },
+      {
+        'name': 'Funding',
+        'icon': '',
+        'description': 'List of individual grants funding data acquisition.',
+        'uniqueCols': true,
+        'rowAsSection': true,
+        'columnTypes': [
+          {
+            'name': 'Agency',
+            'icon': '',
+            'controlType': {
+              'name': 'text',
+            },
+            'display': 'desirable',
+            'helpContextual': {
+              'description': 'The funding body providing support.',
+            },
+          },
+          {
+            'name': 'grant_id',
+            'icon': '',
+            'controlType': {
+              'name': 'text',
+            },
+            'display': 'desirable',
+            'helpContextual': {
+              'description': 'The identifier for the grant.',
+            },
+          },
+        ],
+        'display': 'desirable',
+        'helpContextual': {},
+      },
+    ],
+  },
 } as Template.TemplateDefinition;
