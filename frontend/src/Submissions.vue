@@ -82,6 +82,7 @@
             v-if="submission.status === 'PROCESSED'"
             class="btn btn-link text-primary"
             @click.stop="open(submission.accno)"
+            v-tooltip="'Open in Biostudies'"
           >
             <font-awesome-icon
               icon="fa-solid fa-arrow-up-right-from-square"
@@ -93,13 +94,15 @@
                 submission.status === 'INVALID'
               "
             class="btn btn-link text-primary"
+            v-tooltip="'Edit submission'"
             @click.stop="edit(submission.accno)"
           >
             <font-awesome-icon icon="fa-edit"></font-awesome-icon>
           </button>
           <button
             v-if="canDelete(submission)"
-            class="btn btn-link text-primary"
+            class="btn btn-link text-danger"
+            v-tooltip="'Delete submission'"
             @click.stop="deleteSubmission(submission.accno)"
           >
             <font-awesome-icon

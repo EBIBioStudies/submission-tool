@@ -13,8 +13,10 @@
         <td>{{ getTitle(draft) }}</td>
         <td>
           <font-awesome-icon role="button" icon="fa-edit" class="text-primary fa-fw"
+                             v-tooltip="'Edit draft'"
                              @click.stop="editDraft(draft.key)"></font-awesome-icon>
-          <font-awesome-icon role="button" icon="fa-trash-can" class="icon fa-fw text-secondary ps-2"
+          <font-awesome-icon role="button" icon="fa-regular fa-trash-can" class="fa-fw text-danger ps-2"
+                             v-tooltip="'Delete draft'"
                              @click.stop="deleteDraft(draft.key)"></font-awesome-icon>
         </td>
       </tr>

@@ -187,20 +187,20 @@
                 v-if="file.type.toLowerCase() !== 'dir'"
                 class="fa-fw btn btn-link text-primary"
                 icon="fa-download"
-                title="Download"
+                v-tooltip="'Download'"
                 @click.stop="downloadFile(file)"
               ></font-awesome-icon>
               <font-awesome-icon
                 v-else
                 class="fa-fw btn btn-link text-primary"
                 icon="fa-regular fa-file-lines"
-                title="Download File List"
+                v-tooltip="'Generate File List'"
                 @click.stop="downloadFileList(file)"
               ></font-awesome-icon>
               <font-awesome-icon
                 class="fa-fw btn btn-link text-danger"
                 icon="fa-regular fa-trash-can"
-                title="Delete"
+                v-tooltip="'Delete'"
                 @click.stop="deleteFile(file)"
               ></font-awesome-icon>
             </div>
