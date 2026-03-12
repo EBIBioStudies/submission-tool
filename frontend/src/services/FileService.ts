@@ -312,15 +312,13 @@ async function validateFilenames(toValidate: File[]): Promise<Map<File, string>>
 
   // Filter out replacements with no examples, but always keep the double space replacement
   // since other replacements might generate double spaces
-  const doubleSpaceRegex =   /\s{2,}/g
-  replacements = replacements.filter(([regex, { examples }]) =>
-    examples.length > 0 || regex.source === doubleSpaceRegex.source
-  );
+
+  replacements = replacements.filter(([_, { examples }]) => examples.length > 0);
 
   if (replacements.length === 0) return fileToNewPath;
 
 
-  const replacementList = await provideReplacements(replacements);
+  const replacementList = await provideReplacements(replacements, toValidate.map(file => file.webkitRelativePath));
 
   toValidate.forEach(file => {
     if (file.webkitRelativePath.match(nonSafePathRegex)) fileToNewPath.set(file, sanitizeString(file.webkitRelativePath, replacementList));
