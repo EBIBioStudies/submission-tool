@@ -12,7 +12,17 @@ const asperaVersion = computed(() => uploadType.value === 'ftp' ? '4.2.12' : '3.
 
 type OSType = 'Windows' | 'macOS' | 'Linux';
 
-const selectedOS = ref<OSType>('Windows');
+function detectOS(): OSType {
+  const platform = navigator.platform.toLowerCase();
+
+  if (platform.includes("win")) return "Windows";
+  if (platform.includes("mac")) return "macOS";
+  if (platform.includes("linux")) return "Linux";
+
+  return "Windows";
+}
+
+const selectedOS = ref<OSType>(detectOS());
 
 </script>
 
