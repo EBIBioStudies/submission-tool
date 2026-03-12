@@ -6,7 +6,7 @@ export const nonSafePathRegex = /[^a-zA-Z0-9!\-_.*'()/ ]| {2,}/g;
 export const forbiddenPathChars: [RegExp, string, string?][] = [
   [/&/g, 'Et'],
   [/\$/g, 'S'],
-  [/\p{C}/gu, ''],
+  [/\p{C}/gu, '', 'Control characters'],
   [/@/g, 'A'],
   [/=/g, '-'],
   [/;/g, '-'],
