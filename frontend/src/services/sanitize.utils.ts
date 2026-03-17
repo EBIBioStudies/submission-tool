@@ -58,7 +58,7 @@ export async function provideReplacements(replacements: [RegExp, Replacement][],
             resolve(replacements);
             cleanUp();
           },
-        } as unknown as ModalInstance['$props']);
+        } as ModalInstance['$props']);
       },
     });
 
