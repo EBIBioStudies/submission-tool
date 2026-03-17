@@ -86,8 +86,9 @@ const hasInvalidReplacements = computed(() => entriesWithResults.value.some(entr
 </script>
 
 <template>
-  <div class="modal fade show d-block">
-    <div class="modal-dialog">
+  <div class="modal fade show d-block" tabindex="-1" style="z-index: 1060;">
+    <div class="modal-backdrop fade show" style="z-index: 1055;"></div>
+    <div class="modal-dialog" style="z-index: 1060;">
       <div class="modal-content">
 
         <div class="modal-header">
