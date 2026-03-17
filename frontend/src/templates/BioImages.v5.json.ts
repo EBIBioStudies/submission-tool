@@ -587,6 +587,7 @@ export default {
               'multiple': true,
               'ontology': ['FBbi'],
               'defaultAll': true,
+              'enableValueAdd': true,
               'allChildrenOf': [
                 'http://purl.obolibrary.org/obo/FBbi_00000222',
               ],
