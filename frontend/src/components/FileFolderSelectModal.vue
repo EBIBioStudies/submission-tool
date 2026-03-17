@@ -42,7 +42,7 @@ defineExpose({ errorMessage });
 
 let modal: Modal | null = null;
 const thisComponent = getCurrentInstance();
-const filetree = ref<ComponentPublicInstance<typeof FileTree>>();
+const fileTree = ref<ComponentPublicInstance<typeof FileTree>>();
 onMounted(() => {
   let elementById = document.getElementById('fileFolderSelectModal' + thisComponent!.uid);
   if (elementById) modal = new Modal(elementById, { backdrop: 'static' });
@@ -51,13 +51,13 @@ onMounted(() => {
 const uploadFile = async (file: FileList, event: Event) => {
   try {
     const currentFiles = await FileService.fetchFiles(path);
-    const succeed = await FileService.uploadFiles(file, false, [], currentFiles, currentUpload, abortController);
-    if (!succeed) return;
+    const uploadedFileNames = await FileService.uploadFiles(file, false, [], currentFiles, currentUpload, abortController);
+    if (!uploadedFileNames.length) return;
     loadTree(); // Assuming refreshTree is a method in FileTree
-    modal?.hide()
+    modal?.hide();
     //We are reusing this component for file and file list selection. File is using path in pagetab but FileList use value
     //this line is trying to set correct pageTab variable based on component usage
-    isAFileList(thisFile.value) ? thisFile.value.value = file[0].name : thisFile.value.path = file[0].name; // Update the input box with the file name
+    isAFileList(thisFile.value) ? thisFile.value.value = uploadedFileNames[0] : thisFile.value.path = uploadedFileNames[0]; // Update the input box with the file name
     if (isAFileList(thisFile.value)) {
       await validateFileListFile(file[0].name);
     }
@@ -118,7 +118,7 @@ const fileModalModel = computed({
   },
 });
 
-const loadTree = () => filetree.value?.show();
+const loadTree = () => fileTree.value?.show();
 </script>
 
 <template>
@@ -151,8 +151,7 @@ const loadTree = () => filetree.value?.show();
           <h5>Select file{{ allowFolder ? ' / folder' : '' }}</h5>
           <div class="card bg-light mb-3">
             <div class="card-body overflow-auto" style="max-height: 400px;">
-              <FileTree path="" ref="filetree" :allowFolders="allowFolder"
-                        @select="(node:Node) => select(node)" />
+              <FileTree path="" ref="fileTree" :allowFolders="allowFolder" @select="(node:Node) => select(node)" />
             </div>
           </div>
           <h5>Upload File</h5>
@@ -160,7 +159,9 @@ const loadTree = () => filetree.value?.show();
             <div class="custom-file">
               <input :id="'inputGroupFile'+thisComponent!.uid" type="file" class="custom-file-input"
                      @change="uploadFile(($event.target as HTMLInputElement).files!, $event)">
-              <label :for="'inputGroupFile'+thisComponent!.uid" class="custom-file-label"> Select file to upload </label>
+              <label :for="'inputGroupFile'+thisComponent!.uid" class="custom-file-label">
+                Select file to upload
+              </label>
             </div>
           </div>
           <div v-if="currentUpload !== null">

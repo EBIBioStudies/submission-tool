@@ -347,7 +347,6 @@ const navigate = async (path: string, name: string) => {
 
 
 const uploadFiles = async (uploads: FileList | null, isFolderUpload: boolean, event: Event) => {
-  console.log('Upload files');
   await FileService.uploadFiles(uploads, isFolderUpload, currentPath.value, files.value, currentUpload, abortController);
   (event.target as HTMLInputElement).value = '';
   await fetchFiles();

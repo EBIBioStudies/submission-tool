@@ -133,6 +133,7 @@ export namespace FileService {
 
     const formData = new FormData();
 
+    if (!file.webkitRelativePath && newFileName) file = new File([file], newFileName, { type: file.type });
     // Attach the file
     formData.append('files', file, newFileName);
 
@@ -158,13 +159,12 @@ export namespace FileService {
 
 
   export const uploadFiles = async (uploads: FileList | null, isFolderUpload: boolean, path: string[], currentFiles: FileItem[], progress: Ref<UploadProgress | null>, abortController?: Ref<AbortController>) => {
-    if (!uploads) return false;
+    if (!uploads) return [];
 
     if (abortController) abortController.value = new AbortController();
 
     let filesToUpload: File[] = Array.from(uploads);
 
-    console.log('Validate fileSize');
 
     if (filesToUpload.find((file) => file.size / GB > HARD_UPLOAD_SIZE_LIMIT)) {
       await utils.confirm(
@@ -172,10 +172,9 @@ export namespace FileService {
         `You are trying to upload at least one file larger than ${HARD_UPLOAD_SIZE_LIMIT} GB.<br>This is not supported by this web interface.<br>Please use FTP/Aspera for such large files transfer.`,
         { showCancel: false },
       );
-      return false;
+      return [];
     }
 
-    console.log('Validate fileSize waringin');
 
     // warn when files are large or more than a threshold
     const largeFiles = filesToUpload.filter(
@@ -187,39 +186,7 @@ export namespace FileService {
         `For uploading files larger than ${MAX_UPLOAD_SIZE} MB or more than ${MAX_UPLOAD_FILE_COUNT} files, using FTP/Aspera is recommended. Do you still want to continue?`,
         { okayLabel: `Yes`, cancelLabel: 'No, cancel' },
       );
-      if (!proceed) return false;
-    }
-
-
-    console.log('Validate overlapping files:');
-
-    // warn overwrite
-    const fileNames = currentFiles?.map((f) => f.name) || [];
-    const overlap = filesToUpload
-      .map((file) =>
-        isFolderUpload
-          ? file?.webkitRelativePath.substring(
-            0,
-            file?.webkitRelativePath.indexOf('/'),
-          )
-          : file.name,
-      )
-      .filter((name) => fileNames.includes(name));
-
-    console.log('Checking for file overlap');
-    if (overlap.length > 0) {
-      const overlapString =
-        overlap.length === 1
-          ? overlap[0] + '?'
-          : overlap.length + ' files? (' + overlap.join(', ') + ')';
-      const proceed = await utils.confirm(
-        `Overwrite files?`,
-        isFolderUpload
-          ? 'This may overwrite existing files in the folder. Do you want to go ahead?'
-          : `Do you want to overwrite ${overlapString}`,
-        { okayLabel: `Yes, overwrite`, cancelLabel: 'No, cancel' },
-      );
-      if (!proceed) return false;
+      if (!proceed) return [];
     }
 
     // filter hidden files
@@ -273,25 +240,48 @@ export namespace FileService {
     try {
       fileToNewPath = await validateFilenames(filesToUpload);
     } catch (e: any) {
-      return false;
+      return [];
     }
 
+    // warn overwrite
+    const fileNames = currentFiles?.map((f) => f.name) || [];
+    const updatedFileNames = filesToUpload
+      .map((file) => fileToNewPath.get(file)
+        || file.webkitRelativePath.substring(0, file.webkitRelativePath.indexOf('/'))
+        || file.name);
+    const overlap = updatedFileNames
+      .filter((name) => fileNames.includes(name));
+
+    if (overlap.length > 0) {
+      const overlapString =
+        overlap.length === 1
+          ? overlap[0] + '?'
+          : overlap.length + ' files? (' + overlap.join(', ') + ')';
+      const proceed = await utils.confirm(
+        `Overwrite files?`,
+        isFolderUpload
+          ? 'This may overwrite existing files in the folder. Do you want to go ahead?'
+          : `Do you want to overwrite ${overlapString}`,
+        { okayLabel: `Yes, overwrite`, cancelLabel: 'No, cancel' },
+      );
+      if (!proceed) return [];
+    }
 
     progress.value = { name: '', progress: 0 };
 
     for (let i = 0; i < filesToUpload.length; i++) {
       const file = filesToUpload[i];
-      progress.value.name = file.name;
+      progress.value.name = fileToNewPath.get(file) || file.name;
       try {
         await uploadFile(file, path, progress, abortController, fileToNewPath.get(file));
       } catch (e: any) {
         if (e?.message === 'canceled') i = filesToUpload.length; // Cancel everything when hitting cancel
         progress.value = null;
-        return false;
+        return [];
       }
     }
     progress.value = null;
-    return true;
+    return updatedFileNames;
   };
 }
 
@@ -305,8 +295,9 @@ async function validateFilenames(toValidate: File[]): Promise<Map<File, string>>
 
 
   for (const file of toValidate) {
+    const toCheck = file.webkitRelativePath || file.name;
     for (const [badChar, { examples }] of replacements) {
-      if (file.webkitRelativePath.match(badChar)) examples.push(file.webkitRelativePath);
+      if (toCheck.match(badChar)) examples.push(toCheck);
     }
   }
 
@@ -318,10 +309,12 @@ async function validateFilenames(toValidate: File[]): Promise<Map<File, string>>
   if (replacements.length === 0) return fileToNewPath;
 
 
-  const replacementList = await provideReplacements(replacements, toValidate.map(file => file.webkitRelativePath));
+  const replacementList = await provideReplacements(replacements, toValidate.map(file => file.webkitRelativePath || file.name));
 
+  console.log(replacementList);
   toValidate.forEach(file => {
-    if (file.webkitRelativePath.match(nonSafePathRegex)) fileToNewPath.set(file, sanitizeString(file.webkitRelativePath, replacementList));
+    const toCheck = file.webkitRelativePath || file.name;
+    if (toCheck.match(nonSafePathRegex)) fileToNewPath.set(file, sanitizeString(toCheck, replacementList));
   });
 
   return fileToNewPath;
