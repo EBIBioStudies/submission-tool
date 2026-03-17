@@ -525,7 +525,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
                         :fieldTypes="sectionType?.fieldTypes || sectionType?.columnTypes!"
                         :annotationsType="sectionType?.displayAnnotations ? sectionType?.annotationsType : undefined"
                         :is-section-attribute="subSectionTypeMap.get(sectionType?.name?.toLowerCase())?.rowAsSection == false"
-                        :allow-new-attribute="inheritedSectionType.allowNewAttribute || !!(sectionType?.displayAnnotations && sectionType?.annotationsType)"
+                        :allow-new-attribute="inheritedSectionType.allowNewAttribute"
                         @deleteAttribute="deleteAttribute"
                         @createTag="createTag"
                         @deleteTag="deleteTag"
