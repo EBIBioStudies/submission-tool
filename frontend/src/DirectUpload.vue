@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 import AuthService from '@/services/AuthService';
 import axios from 'axios';
 import { from, Observable, of, Subject } from 'rxjs';
 import { catchError, map, mergeAll, takeUntil } from 'rxjs/operators';
+
 
 const noneCollection: Collection = { accno: 'none', title: 'None' };
 
@@ -20,17 +21,26 @@ const errorMessage = ref<string | null>(null);
 const showModalMessage = ref(false);
 const loading = ref(false);
 
-export interface Collection {
+interface Collection {
   accno: string;
   title: string;
 }
 
-export interface UploadingFile extends File {
-  status: number;
+enum UploadStatus {
+  UPLOADING = 0,
+  SUCCESS = 1,
+  FAILED = 2,
+}
+
+interface UploadingFile {
+  file: File;
+  name: string;
+  size: number;
+  status: UploadStatus;
   progress: number;
   message?: string;
-  isChecked?: boolean;
-  hasStudyExtension?: boolean;
+  isChecked: boolean;
+  hasStudyExtension: boolean;
 }
 
 const triggerFileSelect = () => {
@@ -45,7 +55,7 @@ const handleFileChange = (event: Event) => {
   const files = (event.target as HTMLInputElement).files!;
   if (files.length > 0) {
     for (let i = 0; i < files.length; i++) {
-      addUniqueFile(files[i] as UploadingFile);
+      addUniqueFile(files[i]);
     }
   }
 };
@@ -54,7 +64,7 @@ const handleFolderChange = (event: Event) => {
   const files = (event.target as HTMLInputElement).files!;
   if (files.length > 0) {
     for (let i = 0; i < files.length; i++) {
-      addUniqueFile(files[i] as UploadingFile);
+      addUniqueFile(files[i]);
     }
   }
 };
@@ -64,14 +74,21 @@ const hasStudyExtension = (fileName: string) => {
   return extensions.some(ext => fileName.endsWith(ext));
 };
 
-const addUniqueFile = (file: UploadingFile) => {
+const addUniqueFile = (file: File) => {
   const isDuplicate = selectedFiles.value.some(f => f.name === file.name && f.size === file.size);
   if (!isDuplicate) {
-    file.isChecked = false;
-    file.hasStudyExtension = hasStudyExtension(file.name);
-    file.status = 0;
-    file.progress = 0;
-    selectedFiles.value.push(file);
+    const uploadingFile = reactive({
+      file: file,
+      name: file.name,
+      size: file.size,
+      isChecked: false,
+      hasStudyExtension: hasStudyExtension(file.name),
+      status: UploadStatus.UPLOADING,
+      progress: 0,
+      message: ''
+    }) as UploadingFile;
+    validateJsonFile(uploadingFile);
+    selectedFiles.value.push(uploadingFile);
     if (successSubmit.value)
       successSubmit.value = false;
   }
@@ -111,7 +128,7 @@ const submitForm = () => {
     },
     complete: () => {
       updateSelectedFiles();
-      if (!uploadResults.value.some(file => file.status === 2)) {
+      if (!uploadResults.value.some(file => file.status === UploadStatus.FAILED)) {
         successSubmit.value = true;
         resetForm();
       }
@@ -150,10 +167,10 @@ onMounted(async () => {
 });
 
 const doUploadRegularFile = (file: UploadingFile): Observable<UploadingFile> => {
-  if (file?.progress === 100 && file.status === 1) return of(file);
+  if (file?.progress === 100 && file.status === UploadStatus.SUCCESS) return of(file);
   return new Observable((observer) => {
     const formData = new FormData();
-    formData.append('files', file);
+    formData.append('files', file.file);
 
     axios.post('/api/files/user/', formData, {
       onUploadProgress: (progressEvent) => {
@@ -161,13 +178,13 @@ const doUploadRegularFile = (file: UploadingFile): Observable<UploadingFile> => 
       },
     })
       .then(() => {
-        file.status = 1;
+        file.status = UploadStatus.SUCCESS;
         file.progress = 100;
         observer.next(file);
         observer.complete();
       })
       .catch((error) => {
-        file.status = 2;
+        file.status = UploadStatus.FAILED;
         file.progress = 0;
         file.message = error.response?.data || error.message || 'Unknown error';
         errorMessage.value = error?.response?.data?.log?.message || error?.message || 'Unknown Error';
@@ -184,21 +201,19 @@ const doUploadStudyFile = (file: UploadingFile): Observable<UploadingFile> => {
       const collection = { name: 'AttachTo', value: selectedCollection.value.title };
       formData.append('attributes', JSON.stringify(collection));
     }
-    formData.append('submission', file);
+    formData.append('submission', file.file);
 
     axios.post('/api/submissions/async/direct', formData, {
-      onUploadProgress: (progressEvent) => {
-        file.progress = Math.round((progressEvent.loaded * 100) / progressEvent.total!);
-      },
+      onUploadProgress: (progressEvent) => file.progress = Math.round((progressEvent.loaded * 100) / progressEvent.total!),
     })
       .then(() => {
-        file.status = 1;
+        file.status = UploadStatus.SUCCESS;
         file.progress = 100;
         observer.next(file);
         observer.complete();
       })
       .catch((error) => {
-        file.status = 2;
+        file.status = UploadStatus.FAILED;
         file.progress = 0;
         file.message = error.response?.data || error.message || 'Unknown error';
         errorMessage.value = error?.response?.data?.log?.message || error?.message || 'Unknown Error';
@@ -208,7 +223,7 @@ const doUploadStudyFile = (file: UploadingFile): Observable<UploadingFile> => {
   });
 };
 
-const moveCheckedFileToTop = (file: UploadingFile) => {
+const moveCheckedFileToTop = async (file: UploadingFile) => {
   // Remove the file from its current position
   selectedFiles.value = selectedFiles.value.filter(f => f !== file);
   // Add the file to the beginning if checked, otherwise add it to the end
@@ -216,6 +231,18 @@ const moveCheckedFileToTop = (file: UploadingFile) => {
     selectedFiles.value.unshift(file);
   } else {
     selectedFiles.value.push(file);
+  }
+};
+
+const validateJsonFile = async (file: UploadingFile) => {
+  if (!file.name.endsWith('.json')) return;
+
+  try {
+    const text = await file.file.slice(0, file.file.size).text();
+    JSON.parse(text);
+  } catch (error: any) {
+    file.status = UploadStatus.FAILED;
+    file.message = error.message;
   }
 };
 
@@ -396,16 +423,16 @@ onBeforeUnmount(() => {
             <div class="card-body">
               <div class="card-title d-flex align-items-center">
                 <div>
-                  <font-awesome-icon v-if="file.status==0" :icon="['fas', 'plus']"
+                  <font-awesome-icon v-if="file.status==UploadStatus.UPLOADING" :icon="['fas', 'plus']"
                                      class="fa-1x st-panel-description-icon green-icon" />
-                  <font-awesome-icon v-if="file.status==1" :icon="['fas', 'check-circle']"
+                  <font-awesome-icon v-if="file.status==UploadStatus.SUCCESS" :icon="['fas', 'check-circle']"
                                      class="fa-1x st-panel-description-icon green-icon" />
-                  <font-awesome-icon v-if="file.status==2" :icon="['fas', 'times-circle']"
+                  <font-awesome-icon v-if="file.status==UploadStatus.FAILED" :icon="['fas', 'times-circle']"
                                      class="fa-1x st-panel-description-icon error-icon" />
                 </div>
                 <h5 class="st-direct-submit-file-name m-0">{{ file.name }}</h5>
               </div>
-              <span class="text-danger" v-if="file.status===2">{{ file.message }}</span>
+              <span class="text-danger" v-if="file.status===UploadStatus.FAILED">{{ file.message }}</span>
               <div v-if="file.progress > 0">
                 <p>Uploading: {{ file.progress }}%</p>
                 <progress :value="file.progress" max="100"></progress>
