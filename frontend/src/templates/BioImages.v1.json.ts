@@ -563,6 +563,56 @@ export default {
           },
         ],
       },
+      {
+        'name': 'Author',
+        'display': 'hidden',
+        'description': 'Actual data container for Contacts',
+        'fieldTypes': [
+          {
+            'name': 'Name',
+            'controlType': { 'name': 'text' },
+          },
+          {
+            'name': 'Email',
+            'controlType': { 'name': 'text' },
+          },
+          {
+            'name': 'Organisation',
+            'controlType': {
+              'name': 'org',
+              'multiple': true,
+            },
+          },
+          {
+            'name': 'Role',
+            'controlType': { 'name': 'text' },
+          },
+          {
+            'name': 'ORCID',
+            'controlType': { 'name': 'orcid' },
+          },
+        ],
+      },
+      {
+        'name': 'Organization',
+        'display': 'hidden',
+        'description': 'Actual data container for Contacts organizations',
+        'fieldTypes': [
+          {
+            'name': 'Name',
+            'display': 'required',
+            'controlType': { 'name': 'text' },
+          },
+          {
+            'name': 'Address',
+            'controlType': { 'name': 'text' },
+          },
+          {
+            'name': 'RORID',
+            'controlType': { 'name': 'text' },
+          },
+        ],
+      },
     ],
   },
 } as Template.TemplateDefinition;

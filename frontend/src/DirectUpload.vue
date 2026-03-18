@@ -4,6 +4,10 @@ import AuthService from '@/services/AuthService';
 import axios from 'axios';
 import { from, Observable, of, Subject } from 'rxjs';
 import { catchError, map, mergeAll, takeUntil } from 'rxjs/operators';
+import { allTemplates } from '@/templates/templates.ts';
+import DefaultV2Json from '@/templates/Default.v2.json.ts';
+import { validatePageTabStructure } from '@/utils/pageTabStructureValidator.ts';
+import { validateAgainstTemplate } from '@/utils/pageTabTemplateValidator.ts';
 
 
 const noneCollection: Collection = { accno: 'none', title: 'None' };
@@ -34,6 +38,7 @@ enum UploadStatus {
 
 interface UploadingFile {
   file: File;
+  parsed?: any;
   name: string;
   size: number;
   status: UploadStatus;
@@ -51,22 +56,16 @@ const triggerFolderSelect = () => {
   folderInput.value?.click();
 };
 
-const handleFileChange = (event: Event) => {
-  const files = (event.target as HTMLInputElement).files!;
-  if (files.length > 0) {
-    for (let i = 0; i < files.length; i++) {
-      addUniqueFile(files[i]);
-    }
-  }
-};
 
-const handleFolderChange = (event: Event) => {
-  const files = (event.target as HTMLInputElement).files!;
+const handleFileChange = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const files = target.files!;
   if (files.length > 0) {
     for (let i = 0; i < files.length; i++) {
       addUniqueFile(files[i]);
     }
   }
+  target.value = '';
 };
 
 const hasStudyExtension = (fileName: string) => {
@@ -74,8 +73,8 @@ const hasStudyExtension = (fileName: string) => {
   return extensions.some(ext => fileName.endsWith(ext));
 };
 
-const addUniqueFile = (file: File) => {
-  const isDuplicate = selectedFiles.value.some(f => f.name === file.name && f.size === file.size);
+const addUniqueFile = async (file: File) => {
+  const isDuplicate = selectedFiles.value.some(f => f.name === file.name);
   if (!isDuplicate) {
     const uploadingFile = reactive({
       file: file,
@@ -85,17 +84,24 @@ const addUniqueFile = (file: File) => {
       hasStudyExtension: hasStudyExtension(file.name),
       status: UploadStatus.UPLOADING,
       progress: 0,
-      message: ''
+      message: '',
     }) as UploadingFile;
-    validateJsonFile(uploadingFile);
     selectedFiles.value.push(uploadingFile);
-    if (successSubmit.value)
-      successSubmit.value = false;
+    validateJsonFile(uploadingFile);
+    if (successSubmit.value) successSubmit.value = false;
+  } else {
+    const existingFile = selectedFiles.value.find(f => f.name === file.name)!;
+    existingFile.file = file;
+    existingFile.status = UploadStatus.UPLOADING;
+    existingFile.progress = 0;
+    existingFile.message = '';
+    await validateJsonFile(existingFile);
+    if (existingFile.isChecked) validateStudyJSON(existingFile);
   }
 };
 
 const removeFile = (file: UploadingFile) => {
-  selectedFiles.value = selectedFiles.value.filter(f => !(f.name === file.name && f.size === file.size));
+  selectedFiles.value = selectedFiles.value.filter(f => !(f.name === file.name));
 };
 
 const submitForm = () => {
@@ -215,12 +221,17 @@ const doUploadStudyFile = (file: UploadingFile): Observable<UploadingFile> => {
       .catch((error) => {
         file.status = UploadStatus.FAILED;
         file.progress = 0;
-        file.message = error.response?.data || error.message || 'Unknown error';
+        file.message = formatErrorMessage(error.response?.data?.log || error || {message: 'Unknown error'});
         errorMessage.value = error?.response?.data?.log?.message || error?.message || 'Unknown Error';
         observer.next(file);
         observer.complete();
       });
   });
+};
+
+const formatErrorMessage = (error: any) => {
+  const sub = error.subnodes?.length ? '<ul><li>' + error.subnodes?.map(formatErrorMessage).join('</li><li>') + '</li></ul>' : '';
+  return `${error.message} ${sub}`;
 };
 
 const moveCheckedFileToTop = async (file: UploadingFile) => {
@@ -229,8 +240,10 @@ const moveCheckedFileToTop = async (file: UploadingFile) => {
   // Add the file to the beginning if checked, otherwise add it to the end
   if (file.isChecked) {
     selectedFiles.value.unshift(file);
+    validateStudyJSON(file);
   } else {
     selectedFiles.value.push(file);
+    file.status = UploadStatus.UPLOADING;
   }
 };
 
@@ -238,12 +251,58 @@ const validateJsonFile = async (file: UploadingFile) => {
   if (!file.name.endsWith('.json')) return;
 
   try {
-    const text = await file.file.slice(0, file.file.size).text();
-    JSON.parse(text);
+    file.parsed = JSON.parse(await file.file.slice(0, file.file.size).text());
+    file.status = UploadStatus.UPLOADING;
+    file.message = '';
   } catch (error: any) {
     file.status = UploadStatus.FAILED;
     file.message = error.message;
   }
+};
+
+interface ValidationError {
+  field?: string;
+  message: string;
+  path?: string;
+}
+
+const formatValidationErrors = (errors: ValidationError[], title: string): string => {
+  const errorItems = errors.map(e => {
+    const location = e.path ? ` (at ${e.path})` : '';
+    return `<li>${e.message}${location}</li>`;
+  }).join('');
+  return `<strong>${title}</strong><ul>${errorItems}</ul>`;
+};
+
+/**
+ * Needs to be run after having validateJsonFile()
+ */
+const validateStudyJSON = (file: UploadingFile) => {
+  if (!file.parsed) return;
+
+  // First, validate PageTab structure
+  const structureErrors = validatePageTabStructure(file.parsed);
+
+  // Then, validate against template
+  const templateName = file.parsed.attributes?.find((attr: any) => attr.name?.toLowerCase() === 'template')?.value;
+  let templateTitle = file.parsed.attributes?.find((attr: any) => attr.name?.toLowerCase() === 'attachto')?.value;
+  const collectionFromAttachTo = collections.value.find(col => col.title === templateTitle);
+  if (templateTitle && collectionFromAttachTo) selectedCollection.value = collectionFromAttachTo;
+  else templateTitle = selectedCollection.value.title;
+  const template = allTemplates.find(t => t.name === templateName || t.title === templateTitle) ?? DefaultV2Json;
+
+  const templateErrors = validateAgainstTemplate(file.parsed, template);
+
+  const errors = [...structureErrors, ...templateErrors];
+  if (errors.length > 0) {
+    file.status = UploadStatus.FAILED;
+    file.message = formatValidationErrors(errors, 'Study file errors:');
+    return;
+  }
+
+  // Validation passed
+  file.status = UploadStatus.UPLOADING;
+  file.message = 'Validation successful';
 };
 
 
@@ -296,7 +355,7 @@ onBeforeUnmount(() => {
                     Folder
                   </button>
                   <input type="file" ref="fileInput" @change="handleFileChange" style="display: none;" multiple>
-                  <input type="file" ref="folderInput" @change="handleFolderChange" webkitdirectory directory
+                  <input type="file" ref="folderInput" @change="handleFileChange" webkitdirectory directory
                          style="display: none;">
                 </div>
               </div>
@@ -419,7 +478,7 @@ onBeforeUnmount(() => {
 
         <div class="st-direct-upload-files-grid mt-3">
           <div v-for="file in selectedFiles" :key="file.name + file.size" class="card h-100 panel-default"
-               style="cursor: default;">
+               style="cursor: default;" :class="{'study-file': file.isChecked}">
             <div class="card-body">
               <div class="card-title d-flex align-items-center">
                 <div>
@@ -432,7 +491,7 @@ onBeforeUnmount(() => {
                 </div>
                 <h5 class="st-direct-submit-file-name m-0">{{ file.name }}</h5>
               </div>
-              <span class="text-danger" v-if="file.status===UploadStatus.FAILED">{{ file.message }}</span>
+              <div class="text-danger" v-if="file.status===UploadStatus.FAILED" v-html="file.message"></div>
               <div v-if="file.progress > 0">
                 <p>Uploading: {{ file.progress }}%</p>
                 <progress :value="file.progress" max="100"></progress>
@@ -569,6 +628,10 @@ onBeforeUnmount(() => {
 .fa-spinner {
   color: #0275d8;
   margin-top: 20px;
+}
+
+.study-file {
+  grid-column: 1/ -1;
 }
 
 </style>

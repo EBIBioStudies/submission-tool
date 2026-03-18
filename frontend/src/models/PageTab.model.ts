@@ -39,8 +39,8 @@ export namespace PageTab {
     type: string;
     attributes?: Attribute[];
     subsections?: (Section | Section[])[];
-    links?: Link[];
-    files?: File[];
+    links?: Link[]; // TODO check if it shouldn't be Link[][]
+    files?: File[]; // TODO check if it shouldn't be File[][]
 
     label?: string;
     name?: string;

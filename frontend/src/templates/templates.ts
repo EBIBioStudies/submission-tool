@@ -84,7 +84,7 @@ export const fillTemplate = (section: PageTab.BuildingSection, tmpl: Template.Se
 
   // fill sections
   [...(tmpl?.tableTypes ?? []), ...(tmpl?.sectionTypes ?? [])].forEach((sectionTemplate) => {
-    if (sectionTemplate?.name === 'Contact') return;
+    if (sectionTemplate?.name === 'Contact' || sectionTemplate?.display === 'hidden') return;
     const subsection = { type: sectionTemplate.name };
     if (isFile(subsection)) {
       if (!section.files) section.files = [];

@@ -12,10 +12,10 @@ const emits = defineEmits<{
 }>()
 const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType')
 
-const _tableTypes = computed(() => props.sectionType?.tableTypes || [])
+const _tableTypes = computed(() => props.sectionType?.tableTypes?.filter(t => t.display !== 'hidden') || [])
 const tableTypes = computed(() => parentDisplayType?.value === 'readonly' ? _tableTypes.value.filter(t => t.overrideReadonly) : _tableTypes.value)
 
-const _sectionTypes = computed(() => props.sectionType?.sectionTypes || [])
+const _sectionTypes = computed(() => props.sectionType?.sectionTypes?.filter(t => t.display !== 'hidden') || [])
 const sectionTypes = computed(() => parentDisplayType?.value === 'readonly' ? _sectionTypes.value.filter(t => t.overrideReadonly) : _sectionTypes.value)
 
 const canAddTable = computed(() => !props.sectionType?.disableCustomTable || tableTypes.value.length)

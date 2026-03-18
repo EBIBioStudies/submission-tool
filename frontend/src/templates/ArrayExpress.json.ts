@@ -7,7 +7,7 @@ export default {
   'display': 'readonly',
   'sectionType': {
     'name': 'Study',
-    'allowNewAttribute': false,
+    'allowNewAttribute': true,
     'disableCustomSubsection': true,
     'disableCustomTable': true,
     'displayAnnotations': true,
@@ -100,6 +100,7 @@ export default {
         'uniqueCols': true,
         'allowImport': true,
         'rowAsSection': true,
+        'overrideReadonly': true,
         'columnTypes': [
           {
             'autosuggest': false,
@@ -144,6 +145,7 @@ export default {
         'icon': 'fa-book',
         'uniqueCols': true,
         'allowImport': false,
+        'allowNewAttribute': false,
         'rowAsSection': false,
         'overrideReadonly': true,
         'columnTypes': [
@@ -203,6 +205,12 @@ export default {
           },
           {
             'name': 'DOI',
+            'controlType': {
+              'name': 'text',
+            },
+          },
+          {
+            'name': 'Status',
             'controlType': {
               'name': 'text',
             },
@@ -487,6 +495,56 @@ export default {
         'singleRow': true,
         'allowImport': false,
         'displayAnnotations': true,
+      },
+      {
+        name: 'Author',
+        display: 'hidden',
+        description: 'Actual data container for Contacts',
+        fieldTypes: [
+          {
+            'name': 'Name',
+            'controlType': { 'name': 'text' },
+          },
+          {
+            'name': 'Email',
+            'controlType': { 'name': 'text' },
+          },
+          {
+            'name': 'Organisation',
+            'controlType': {
+              'name': 'org',
+              'multiple': true,
+            },
+          },
+          {
+            'name': 'Role',
+            'controlType': { 'name': 'text' },
+          },
+          {
+            'name': 'ORCID',
+            'controlType': { 'name': 'orcid' },
+          },
+        ],
+      },
+      {
+        name: 'Organization',
+        display: 'hidden',
+        description: 'Actual data container for Contacts organizations',
+        fieldTypes: [
+          {
+            'name': 'Name',
+            'display': 'required',
+            'controlType': { 'name': 'text' },
+          },
+          {
+            'name': 'Address',
+            'controlType': { 'name': 'text' },
+          },
+          {
+            'name': 'RORID',
+            'controlType': { 'name': 'text' },
+          },
+        ],
       },
     ],
   },

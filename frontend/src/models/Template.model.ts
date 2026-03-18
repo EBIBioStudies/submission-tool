@@ -1,7 +1,7 @@
 import { PageTab } from '@/models/PageTab.model.ts';
 
 export namespace Template {
-  export type DisplayType = 'required' | 'desirable' | 'optional' | 'readonly';
+  export type DisplayType = 'required' | 'desirable' | 'optional' | 'readonly' | 'hidden';
 
 
   export type ControlTypeName =
@@ -137,6 +137,9 @@ export namespace Template {
     allowImport?: boolean;
     allowCustomCols?: boolean;
     displayAnnotations?: boolean;
+    /**
+     * Whether user can remove columns
+     */
     hideColumns?: boolean;
   }
 
