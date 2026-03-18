@@ -1,54 +1,70 @@
-<script setup>
-import { onMounted, ref, onBeforeUnmount } from 'vue';
+<script setup lang="ts">
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 import AuthService from '@/services/AuthService';
 import axios from 'axios';
-import { from, Subject, Observable } from 'rxjs';
-import { map, mergeAll, last, takeUntil, catchError } from 'rxjs/operators';
+import { from, Observable, of, Subject } from 'rxjs';
+import { catchError, map, mergeAll, takeUntil } from 'rxjs/operators';
 
-const fileInput = ref(null);
-const folderInput = ref(null);
-const selectedFiles = ref([]);
-const collections = ref([]);
-const selectedCollection = ref(null);
-const ngUnsubscribe = new Subject();
-const uploadResults = ref([]);
+const noneCollection: Collection = { accno: 'none', title: 'None' };
+
+
+const fileInput = ref<HTMLInputElement>();
+const folderInput = ref<HTMLInputElement>();
+const selectedFiles = ref<UploadingFile[]>([]);
+const collections = ref<Collection[]>([]);
+const selectedCollection = ref<Collection>(noneCollection);
+const ngUnsubscribe = new Subject<void>();
+const uploadResults = ref<UploadingFile[]>([]);
 const successSubmit = ref(false);
-const errorMessage = ref(null);
+const errorMessage = ref<string | null>(null);
 const showModalMessage = ref(false);
 const loading = ref(false);
 
+export interface Collection {
+  accno: string;
+  title: string;
+}
+
+export interface UploadingFile extends File {
+  status: number;
+  progress: number;
+  message?: string;
+  isChecked?: boolean;
+  hasStudyExtension?: boolean;
+}
+
 const triggerFileSelect = () => {
-  fileInput.value.click();
+  fileInput.value?.click();
 };
 
 const triggerFolderSelect = () => {
-  folderInput.value.click();
+  folderInput.value?.click();
 };
 
-const handleFileChange = (event) => {
-  const files = event.target.files;
+const handleFileChange = (event: Event) => {
+  const files = (event.target as HTMLInputElement).files!;
   if (files.length > 0) {
     for (let i = 0; i < files.length; i++) {
-      addUniqueFile(files[i]);
+      addUniqueFile(files[i] as UploadingFile);
     }
   }
 };
 
-const handleFolderChange = (event) => {
-  const files = event.target.files;
+const handleFolderChange = (event: Event) => {
+  const files = (event.target as HTMLInputElement).files!;
   if (files.length > 0) {
     for (let i = 0; i < files.length; i++) {
-      addUniqueFile(files[i]);
+      addUniqueFile(files[i] as UploadingFile);
     }
   }
 };
 
-const hasStudyExtension = (fileName) => {
+const hasStudyExtension = (fileName: string) => {
   const extensions = ['.json', '.xml', '.tsv', '.xlsx'];
   return extensions.some(ext => fileName.endsWith(ext));
 };
 
-const addUniqueFile = (file) => {
+const addUniqueFile = (file: UploadingFile) => {
   const isDuplicate = selectedFiles.value.some(f => f.name === file.name && f.size === file.size);
   if (!isDuplicate) {
     file.isChecked = false;
@@ -61,15 +77,7 @@ const addUniqueFile = (file) => {
   }
 };
 
-const getCheckedFiles = () => {
-  return selectedFiles.value.filter(file => file.isChecked);
-};
-
-const getNonCheckedFiles = () => {
-  return selectedFiles.value.filter(file => !file.isChecked);
-};
-
-const removeFile = (file) => {
+const removeFile = (file: UploadingFile) => {
   selectedFiles.value = selectedFiles.value.filter(f => !(f.name === file.name && f.size === file.size));
 };
 
@@ -128,39 +136,28 @@ const updateSelectedFiles = () => {
 const resetForm = () => {
   uploadResults.value = [];
   selectedFiles.value = [];
-  selectedCollection.value = collections.value.find(col => col.title === 'None') || null;
+  selectedCollection.value = noneCollection;
 };
 
 onMounted(async () => {
   if (!AuthService.isAuthenticated()) return;
   try {
     const response = await axios.get(`/api/collections`);
-    collections.value = response.data;
-    const none = { accno: 'none', title: 'None' };
-    collections.value.push(none);
-    selectedCollection.value = none;
+    collections.value = [...response.data, noneCollection];
   } catch (error) {
     console.error('Failed to fetch collections:', error);
   }
 });
 
-const uploadFiles = (files, isStudyFile) => {
-  return from(files).pipe(
-    map((file) => isStudyFile ? doUploadStudyFile(file) : doUploadRegularFile(file)),
-    takeUntil(ngUnsubscribe),
-  );
-};
-
-const doUploadRegularFile = (file) => {
-  if (file?.progress === 100 && file.status === 1)
-    return;
+const doUploadRegularFile = (file: UploadingFile): Observable<UploadingFile> => {
+  if (file?.progress === 100 && file.status === 1) return of(file);
   return new Observable((observer) => {
     const formData = new FormData();
     formData.append('files', file);
 
     axios.post('/api/files/user/', formData, {
       onUploadProgress: (progressEvent) => {
-        file.progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        file.progress = Math.round((progressEvent.loaded * 100) / progressEvent.total!);
       },
     })
       .then(() => {
@@ -180,19 +177,19 @@ const doUploadRegularFile = (file) => {
   });
 };
 
-const doUploadStudyFile = (file) => {
+const doUploadStudyFile = (file: UploadingFile): Observable<UploadingFile> => {
   return new Observable((observer) => {
     const formData = new FormData();
-    if (selectedCollection.value.name) {
-      const collection = { name: 'AttachTo', value: selectedCollection.value.name };
+    if (selectedCollection.value.title) {
+      const collection = { name: 'AttachTo', value: selectedCollection.value.title };
       formData.append('attributes', JSON.stringify(collection));
     }
     formData.append('submission', file);
 
     axios.post('/api/submissions/async/direct', formData, {
       onUploadProgress: (progressEvent) => {
-        file.progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-      }
+        file.progress = Math.round((progressEvent.loaded * 100) / progressEvent.total!);
+      },
     })
       .then(() => {
         file.status = 1;
@@ -211,7 +208,7 @@ const doUploadStudyFile = (file) => {
   });
 };
 
-const moveCheckedFileToTop = (file) => {
+const moveCheckedFileToTop = (file: UploadingFile) => {
   // Remove the file from its current position
   selectedFiles.value = selectedFiles.value.filter(f => f !== file);
   // Add the file to the beginning if checked, otherwise add it to the end
@@ -283,7 +280,7 @@ onBeforeUnmount(() => {
                     <label class="m-0">Collection</label>
                     <span class="text-muted"><i>Optional</i></span>
                   </div>
-                  <div v-for="col in collections" :key="col" class="ng-star-inserted">
+                  <div v-for="col in collections" :key="col.accno" class="ng-star-inserted">
                     <label>
                       <input type="radio" name="project" class="ng-untouched ng-pristine ng-valid" :value="col"
                              v-model="selectedCollection">
