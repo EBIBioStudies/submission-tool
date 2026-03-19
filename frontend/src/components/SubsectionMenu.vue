@@ -36,18 +36,6 @@ const enabled = computed(() => canAddTable.value || canAddSection.value)
     </svg>
 
     <ul class="dropdown-menu">
-<!--      <li><a class="dropdown-item btn" @click="$emit('newAttribute')">-->
-<!--        <font-awesome-icon class="icon fa-fw" :icon="['fas','plus']"></font-awesome-icon>-->
-<!--        Text Attribute</a>-->
-<!--      </li>-->
-<!--      <li v-for="(type,i) in props?.sectionType?.fieldTypes">-->
-<!--        <a class="dropdown-item btn" @click="$emit('newAttribute', type)">-->
-<!--          <font-awesome-icon class="icon" :icon="type.icon ?? 'fa-plus'"></font-awesome-icon>-->
-<!--          {{ type.name }}</a>-->
-<!--      </li>-->
-<!--      <li>-->
-<!--        <hr class="dropdown-divider">-->
-<!--      </li>-->
       <li><a class="dropdown-item btn" @click="emits('newTable', undefined)" v-if="!sectionType?.disableCustomTable">
         <font-awesome-icon class="icon fa-fw" icon="fa-table"></font-awesome-icon>
         Table</a>
@@ -74,6 +62,4 @@ const enabled = computed(() => canAddTable.value || canAddSection.value)
   <!--  add other sections button end -->
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
