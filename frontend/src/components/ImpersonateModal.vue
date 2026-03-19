@@ -26,23 +26,23 @@
     </div>
   </div>
 </template>
-<script setup>
-import { onMounted, ref } from 'vue';
-import AuthService from '@/services/AuthService';
+<script setup lang="ts">
+import { ref } from 'vue';
+import AuthService, { LoginCredentials } from '@/services/AuthService';
 import router from '@/router';
 
 const error = ref('');
 const email = ref('');
 
 document.addEventListener('shown.bs.modal', () => {
-  document.querySelector('#email').focus();
+  (document.querySelector('#email') as HTMLInputElement)?.focus();
 });
 
 const doLogin = async () => {
   try {
-    const credentials = {
+    const credentials : LoginCredentials = {
       login: email.value,
-      password: AuthService.user.value?.sessid,
+      password: AuthService.user.value?.sessid!,
     };
     const user = await AuthService.login(credentials);
     if (user) {
@@ -50,7 +50,7 @@ const doLogin = async () => {
     } else {
       error.value = 'Could not impersonate user';
     }
-  } catch (error) {
+  } catch (error: any) {
     error.value = error?.response?.status === 401 ? 'Invalid username or password' : error?.response?.data?.log?.message || 'Unknown error';
   }
 };

@@ -1,22 +1,17 @@
-<script setup>
-import {defineProps, defineEmits} from 'vue'
+<script setup lang="ts">
 
-const props = defineProps({
-  errors: {
-    type: Array,
-    default: () => []
-  }
-})
+withDefaults(
+  defineProps<{ errors: string[] }>(),
+  { errors: () => [] },
+);
 
-const emit = defineEmits(['hide'])
+const emits = defineEmits<{
+  hide: []
+}>();
 
-const hide = () => {
-  emit('hide')
-}
+const hide = () => emits('hide');
 
-const stopPropagation = (event) => {
-  event.stopPropagation()
-}
+const stopPropagation = (event: Event) => event.stopPropagation();
 </script>
 
 <template>
@@ -68,7 +63,7 @@ const stopPropagation = (event) => {
   width: 90%;
   max-width: 500px;
   max-height: 80vh; /* Set a max height */
-  overflow-y: auto;  /* Enable scrolling inside modal */
+  overflow-y: auto; /* Enable scrolling inside modal */
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
 }
 

@@ -1,20 +1,21 @@
-import {createRouter, createWebHistory} from 'vue-router';
-import AuthService from "./services/AuthService";
+import { createRouter, createWebHistory } from 'vue-router';
+import type { RouteRecordRaw } from 'vue-router';
+import AuthService from './services/AuthService';
 
 const basePath = import.meta.env.VITE_BASE_URL || '/';
-const routes = [
+const routes: RouteRecordRaw[] = [
   // ⚠ Any path added here must also be added to Proxy::redirect
   {
     path: '/',
     name: 'Submissions',
     component: () => import('./Submissions.vue'),
-    meta: {requiresAuth: true}
+    meta: { requiresAuth: true },
   },
   {
     path: '/drafts',
     name: 'Drafts',
     component: () => import('./Drafts.vue'),
-    meta: {requiresAuth: true}
+    meta: { requiresAuth: true },
   },
   {
     path: '/signin',
@@ -56,15 +57,15 @@ const routes = [
     name: 'Edit',
     component: () => import('./Edit.vue'),
     props: true,
-    meta: {requiresAuth: true}
+    meta: { requiresAuth: true },
   },
   {
     path: '/edit',
     name: 'New',
     component: () => import('./Edit.vue'),
     props: true,
-    meta: {requiresAuth: true}
-  },  {
+    meta: { requiresAuth: true },
+  }, {
     path: '/help',
     name: 'Help',
     component: () => import('./Help.vue'),
@@ -75,35 +76,35 @@ const routes = [
     name: 'Files',
     component: () => import('./Files.vue'),
     props: true,
-    meta: {requiresAuth: true}
+    meta: { requiresAuth: true },
   },
   {
     path: '/files/:paths*',
     name: 'Files',
     component: () => import('./Files.vue'),
     props: true,
-    meta: {requiresAuth: true}
+    meta: { requiresAuth: true },
   },
   {
     path: '/profile',
     name: 'Profile',
     component: () => import('./Profile.vue'),
     props: true,
-    meta: {requiresAuth: true}
+    meta: { requiresAuth: true },
   },
   {
     path: '/direct_upload',
     name: 'Direct Upload',
     component: () => import('./DirectUpload.vue'),
     props: true,
-    meta: {requiresAuth: true}
-  }
+    meta: { requiresAuth: true },
+  },
 ];
 
 const router = createRouter({
   history: createWebHistory(basePath),
   routes,
-  scrollBehavior(to, from, savedPosition) {
+  scrollBehavior(to) {
     if (to.hash) {
       return {
         el: to.hash,
@@ -111,10 +112,10 @@ const router = createRouter({
       };
     }
     return { top: 0 };
-  }
+  },
 });
 
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _, next) => {
   await AuthService.initializeAuth();
   if (to.matched.some((route) => route.meta.requiresAuth)) {
     if (!AuthService.isAuthenticated()) {
@@ -122,8 +123,8 @@ router.beforeEach(async (to, from, next) => {
     } else {
       next();
     }
-  } else if (AuthService.isAuthenticated() && to.path==='/signin') {
-    next('/')
+  } else if (AuthService.isAuthenticated() && to.path === '/signin') {
+    next('/');
   } else {
     next();
   }

@@ -1,52 +1,89 @@
-<script setup>
-import { computed, inject, ref } from 'vue';
-import Attribute from './Attribute.vue';
+<script setup lang="ts">
+import { computed, inject, Ref, ref, UnwrapRef } from 'vue';
+import Attribute from '@/components/Attribute.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { addMissingAttributesGeneral } from '@/composables/useAttributesHelper';
+import { PageTab } from '@/models/PageTab.model.ts';
+import { Template } from '@/models/Template.model.ts';
+import { AttributeExpose, ControlError, SectionExpose } from '@/components/expose.model.ts';
+import { isDefined } from '@/utils.ts';
 
-const props = defineProps(['attributes', 'fieldTypes', 'isSectionAttribute']);
-const emits = defineEmits([
-  'deleteAttribute',
-  'createTag',
-  'deleteTag',
-  'newAttribute',
-]);
+const props = defineProps<{
+  attributes?: PageTab.DetailedAttribute[],
+  fieldTypes?: Template.Type[],
+  annotationsType?: Template.AnnotationType,
+  allowNewAttribute?: boolean,
+  isSectionAttribute?: boolean,
+}>();
+const emits = defineEmits<{
+  deleteAttribute: [attribute: PageTab.DetailedAttribute]
+  createTag: [obj: PageTab.Tag]
+  deleteTag: [obj: PageTab.IndexedTag]
+  newAttribute: [type?: string]
+}>();
 const attributeList = ref(props.attributes);
 const duplicateAttributes = attributeList.value?.filter(
-  (value, index, array) =>
-    array.find((v, i) => v.name === value.name) !== value && value.name !== '',
+  (value, _index, array) =>
+    array.find((v) => v.name === value.name) !== value && value.name !== '',
 );
-const attributeRefs = ref([]);
-const parentDisplayType = inject('parentDisplayType');
+const attributeRefs = ref<UnwrapRef<AttributeExpose>[]>([]);
+const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
 
-const processed = (attribute) => duplicateAttributes.includes(attribute);
+const processed = (attribute: PageTab.DetailedAttribute) => duplicateAttributes?.includes(attribute);
 
-const getFieldType = (attribute) => {
-  const fieldType = props?.fieldTypes?.find(
-    (f) => f.name?.toLowerCase() === attribute?.name?.toLowerCase(),
-  );
-  return fieldType ? fieldType : props?.attributes?.length > 1 ? attribute : '';
+const getFieldType = (attribute: PageTab.DetailedAttribute): Template.FieldType | undefined => {
+  // First check in regular fieldTypes
+  const fieldType = props?.fieldTypes?.find((f) => f.name?.toLowerCase() === attribute?.name?.toLowerCase());
+  if (fieldType) return fieldType;
+
+  // Then check in annotationsType.columnTypes
+  if (props?.annotationsType?.columnTypes) {
+    const annotationType = props.annotationsType.columnTypes.find(
+      (f) => f.name?.toLowerCase() === attribute?.name?.toLowerCase(),
+    );
+    if (annotationType) return annotationType as Template.FieldType;
+  }
+
+  return undefined;
 };
+
+const nonPresentAttributes = computed(() =>
+  [
+    ...props.fieldTypes?.filter(f => !props.attributes?.some(a => a.name === f.name)) || [],
+    ...props.annotationsType?.columnTypes?.filter(f => !props.attributes?.some(a => a.name === f.name)) || [],
+    ...props.allowNewAttribute ? [{ name: '' }] : [],
+  ],
+);
+
+
+// Check if attribute matches a regular fieldType (not annotation)
+const isRegularAttribute = (attribute: PageTab.DetailedAttribute): boolean => {
+  return props?.fieldTypes?.some(
+    (f) => f.name?.toLowerCase() === attribute?.name?.toLowerCase(),
+  ) ?? false;
+};
+
+
+const singleOptionHandle = (e: Event) => {
+  if (nonPresentAttributes.value.length !== 1) return;
+  e.preventDefault();
+  emits('newAttribute', nonPresentAttributes.value[0].name)
+}
 
 const addMissingAttributes = () => {
   addMissingAttributesGeneral(attributeList, props.fieldTypes);
 };
 
-const errors = computed(() => {
-  const _errors = [];
-  // validate subsections
-  attributeRefs?.value.forEach((a) => {
-    const err = a.errors;
-    if (err)
-      _errors.push({
-        errorMessage: err,
-        control: a,
-        element: document.getElementById(a.attributeId),
-      });
-  });
-  return _errors;
-});
-defineExpose({ errors });
+const errors = computed(() => attributeRefs.value
+  .filter(att => isDefined(att.errors))
+  .map(att => ({
+    errorMessage: att.errors,
+    control: att,
+    element: document.getElementById(att.attributeId)!,
+  }) as ControlError<UnwrapRef<AttributeExpose>>),
+);
+
+defineExpose<SectionExpose>({ errors });
 
 addMissingAttributes();
 </script>
@@ -58,29 +95,38 @@ addMissingAttributes();
         <Attribute
           :key="index"
           ref="attributeRefs"
-          :attribute="attribute"
-          :field-type="getFieldType(attribute)"
+          :attribute="attribute as PageTab.BuildingSection"
+          :field-type="getFieldType(attribute)!"
           :parent="attributeList"
           @createTag="(v) => emits('createTag', v)"
-          :isSectionAttribute="isSectionAttribute"
-          @deleteAttribute="(v) => emits('deleteAttribute', index)"
+          :isSectionAttribute="isSectionAttribute && isRegularAttribute(attribute)"
+          @deleteAttribute="() => emits('deleteAttribute', attribute)"
           @deleteTag="(v) => emits('deleteTag', v)"
         />
       </template>
     </div>
 
-    <div v-if="isSectionAttribute" class="branch mt-2">
-      <button
-        v-if="parentDisplayType !== 'readonly'"
-        class="btn btn-light btn-small text-black-50"
-        @click="$emit('newAttribute')"
-      >
-        <font-awesome-icon
-          :icon="['fas', 'plus']"
-          class="icon fa-fw"
-        ></font-awesome-icon>
-        <i>New Attribute</i>
-      </button>
-    </div>
+    <template v-if="parentDisplayType !== 'readonly'">
+      <div v-if="nonPresentAttributes.length" class="branch mt-2">
+        <div class="btn btn-light btn-small text-black-50" data-bs-toggle="dropdown" @click="singleOptionHandle">
+          <font-awesome-icon
+            :icon="['fas', 'plus']"
+            class="icon fa-fw"
+          ></font-awesome-icon>
+          <i>New Attribute</i>
+
+          <ul class="dropdown-menu">
+            <li v-for="(attribute, i) in nonPresentAttributes" :key="i"
+                @click="$emit('newAttribute', attribute.name)"
+                class="dropdown-item btn">
+              <font-awesome-icon class="icon fa-fw" :icon="attribute.icon || 'fa-circle-dot'"></font-awesome-icon>
+              <span v-if="attribute.name">{{ attribute.name }}</span>
+              <i v-else>Custom attribute</i>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </template>
+
   </div>
 </template>

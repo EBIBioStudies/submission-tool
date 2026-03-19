@@ -1,76 +1,107 @@
-<script setup>
-import { onMounted, ref, onBeforeUnmount } from 'vue';
-import AuthService from "@/services/AuthService.js";
-import axios from "axios";
-import { from, Subject, Observable } from 'rxjs';
-import { map, mergeAll, last, takeUntil, catchError } from 'rxjs/operators';
+<script setup lang="ts">
+import { onBeforeUnmount, onMounted, reactive, ref } from 'vue';
+import AuthService from '@/services/AuthService';
+import axios from 'axios';
+import { from, Observable, of, Subject } from 'rxjs';
+import { catchError, map, mergeAll, takeUntil } from 'rxjs/operators';
+import { allTemplates } from '@/templates/templates.ts';
+import DefaultV2Json from '@/templates/Default.v2.json.ts';
+import { validatePageTabStructure } from '@/utils/pageTabStructureValidator.ts';
+import { validateAgainstTemplate } from '@/utils/pageTabTemplateValidator.ts';
 
-const fileInput = ref(null);
-const folderInput = ref(null);
-const selectedFiles = ref([]);
-const collections = ref([]);
-const selectedCollection = ref(null);
-const ngUnsubscribe = new Subject();
-const uploadResults = ref([]);
+
+const noneCollection: Collection = { accno: 'none', title: 'None' };
+
+
+const fileInput = ref<HTMLInputElement>();
+const folderInput = ref<HTMLInputElement>();
+const selectedFiles = ref<UploadingFile[]>([]);
+const collections = ref<Collection[]>([]);
+const selectedCollection = ref<Collection>(noneCollection);
+const ngUnsubscribe = new Subject<void>();
+const uploadResults = ref<UploadingFile[]>([]);
 const successSubmit = ref(false);
-const errorMessage = ref(null);
+const errorMessage = ref<string | null>(null);
 const showModalMessage = ref(false);
 const loading = ref(false);
 
+interface Collection {
+  accno: string;
+  title: string;
+}
+
+enum UploadStatus {
+  UPLOADING = 0,
+  SUCCESS = 1,
+  FAILED = 2,
+}
+
+interface UploadingFile {
+  file: File;
+  parsed?: any;
+  name: string;
+  size: number;
+  status: UploadStatus;
+  progress: number;
+  message?: string;
+  isChecked: boolean;
+  hasStudyExtension: boolean;
+}
+
 const triggerFileSelect = () => {
-  fileInput.value.click();
+  fileInput.value?.click();
 };
 
 const triggerFolderSelect = () => {
-  folderInput.value.click();
+  folderInput.value?.click();
 };
 
-const handleFileChange = (event) => {
-  const files = event.target.files;
+
+const handleFileChange = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const files = target.files!;
   if (files.length > 0) {
     for (let i = 0; i < files.length; i++) {
       addUniqueFile(files[i]);
     }
   }
+  target.value = '';
 };
 
-const handleFolderChange = (event) => {
-  const files = event.target.files;
-  if (files.length > 0) {
-    for (let i = 0; i < files.length; i++) {
-      addUniqueFile(files[i]);
-    }
-  }
-};
-
-const hasStudyExtension = (fileName) => {
-  const extensions = [".json", ".xml", ".tsv", ".xlsx"];
+const hasStudyExtension = (fileName: string) => {
+  const extensions = ['.json', '.xml', '.tsv', '.xlsx'];
   return extensions.some(ext => fileName.endsWith(ext));
 };
 
-const addUniqueFile = (file) => {
-  const isDuplicate = selectedFiles.value.some(f => f.name === file.name && f.size === file.size);
+const addUniqueFile = async (file: File) => {
+  const isDuplicate = selectedFiles.value.some(f => f.name === file.name);
   if (!isDuplicate) {
-    file.isChecked = false;
-    file.hasStudyExtension = hasStudyExtension(file.name);
-    file.status = 0;
-    file.progress = 0;
-    selectedFiles.value.push(file);
-    if(successSubmit.value)
-      successSubmit.value = false;
+    const uploadingFile = reactive({
+      file: file,
+      name: file.name,
+      size: file.size,
+      isChecked: false,
+      hasStudyExtension: hasStudyExtension(file.name),
+      status: UploadStatus.UPLOADING,
+      progress: 0,
+      message: '',
+    }) as UploadingFile;
+    selectedFiles.value.push(uploadingFile);
+    validateJsonFile(uploadingFile);
+    if (successSubmit.value) successSubmit.value = false;
+  } else {
+    const existingFile = selectedFiles.value.find(f => f.name === file.name)!;
+    existingFile.file = file;
+    existingFile.status = UploadStatus.UPLOADING;
+    existingFile.progress = 0;
+    existingFile.message = '';
+    await validateJsonFile(existingFile);
+    if (existingFile.isChecked) validateStudyJSON(existingFile);
   }
 };
 
-const getCheckedFiles = () => {
-  return selectedFiles.value.filter(file => file.isChecked);
-};
-
-const getNonCheckedFiles = () => {
-  return selectedFiles.value.filter(file => !file.isChecked);
-};
-
-const removeFile = (file) => {
-  selectedFiles.value = selectedFiles.value.filter(f => !(f.name === file.name && f.size === file.size));
+const removeFile = (file: UploadingFile) => {
+  selectedFiles.value = selectedFiles.value.filter(f => !(f.name === file.name));
 };
 
 const submitForm = () => {
@@ -82,7 +113,7 @@ const submitForm = () => {
     return;
   }
 
-  errorMessage.value = "";
+  errorMessage.value = '';
   successSubmit.value = false;
   loading.value = true;
 
@@ -94,7 +125,7 @@ const submitForm = () => {
       errorMessage.value = err?.message || 'Unknown error';
       loading.value = false;
       return [];
-    })
+    }),
   );
 
   uploads$.subscribe({
@@ -103,7 +134,7 @@ const submitForm = () => {
     },
     complete: () => {
       updateSelectedFiles();
-      if (!uploadResults.value.some(file => file.status === 2)) {
+      if (!uploadResults.value.some(file => file.status === UploadStatus.FAILED)) {
         successSubmit.value = true;
         resetForm();
       }
@@ -112,7 +143,7 @@ const submitForm = () => {
     error: (error) => {
       errorMessage.value = error?.message || 'Unknown error';
       loading.value = false;
-    }
+    },
   });
 };
 
@@ -128,49 +159,38 @@ const updateSelectedFiles = () => {
 const resetForm = () => {
   uploadResults.value = [];
   selectedFiles.value = [];
-  selectedCollection.value = collections.value.find(col => col.title === "None") || null;
+  selectedCollection.value = noneCollection;
 };
 
 onMounted(async () => {
   if (!AuthService.isAuthenticated()) return;
   try {
     const response = await axios.get(`/api/collections`);
-    collections.value = response.data;
-    const none = { accno: "none", title: "None" };
-    collections.value.push(none);
-    selectedCollection.value = none;
+    collections.value = [...response.data, noneCollection];
   } catch (error) {
     console.error('Failed to fetch collections:', error);
   }
 });
 
-const uploadFiles = (files, isStudyFile) => {
-  return from(files).pipe(
-    map((file) => isStudyFile ? doUploadStudyFile(file) : doUploadRegularFile(file)),
-    takeUntil(ngUnsubscribe)
-  );
-};
-
-const doUploadRegularFile = (file) => {
-  if (file?.progress==100 && file.status==1)
-    return;
+const doUploadRegularFile = (file: UploadingFile): Observable<UploadingFile> => {
+  if (file?.progress === 100 && file.status === UploadStatus.SUCCESS) return of(file);
   return new Observable((observer) => {
     const formData = new FormData();
-    formData.append('files', file);
+    formData.append('files', file.file);
 
     axios.post('/api/files/user/', formData, {
       onUploadProgress: (progressEvent) => {
-        file.progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-      }
+        file.progress = Math.round((progressEvent.loaded * 100) / progressEvent.total!);
+      },
     })
       .then(() => {
-        file.status = 1;
+        file.status = UploadStatus.SUCCESS;
         file.progress = 100;
         observer.next(file);
         observer.complete();
       })
       .catch((error) => {
-        file.status = 2;
+        file.status = UploadStatus.FAILED;
         file.progress = 0;
         file.message = error.response?.data || error.message || 'Unknown error';
         errorMessage.value = error?.response?.data?.log?.message || error?.message || 'Unknown Error';
@@ -180,30 +200,28 @@ const doUploadRegularFile = (file) => {
   });
 };
 
-const doUploadStudyFile = (file) => {
+const doUploadStudyFile = (file: UploadingFile): Observable<UploadingFile> => {
   return new Observable((observer) => {
     const formData = new FormData();
-    if (selectedCollection.value.name) {
-      const collection = { name: 'AttachTo', value: selectedCollection.value.name };
+    if (selectedCollection.value.title) {
+      const collection = { name: 'AttachTo', value: selectedCollection.value.title };
       formData.append('attributes', JSON.stringify(collection));
     }
-    formData.append('submission', file);
+    formData.append('submission', file.file);
 
     axios.post('/api/submissions/async/direct', formData, {
-      onUploadProgress: (progressEvent) => {
-        file.progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-      }
+      onUploadProgress: (progressEvent) => file.progress = Math.round((progressEvent.loaded * 100) / progressEvent.total!),
     })
       .then(() => {
-        file.status = 1;
+        file.status = UploadStatus.SUCCESS;
         file.progress = 100;
         observer.next(file);
         observer.complete();
       })
       .catch((error) => {
-        file.status = 2;
+        file.status = UploadStatus.FAILED;
         file.progress = 0;
-        file.message = error.response?.data || error.message || 'Unknown error';
+        file.message = formatErrorMessage(error.response?.data?.log || error || {message: 'Unknown error'});
         errorMessage.value = error?.response?.data?.log?.message || error?.message || 'Unknown Error';
         observer.next(file);
         observer.complete();
@@ -211,15 +229,80 @@ const doUploadStudyFile = (file) => {
   });
 };
 
-const moveCheckedFileToTop = (file) => {
+const formatErrorMessage = (error: any) => {
+  const sub = error.subnodes?.length ? '<ul><li>' + error.subnodes?.map(formatErrorMessage).join('</li><li>') + '</li></ul>' : '';
+  return `${error.message} ${sub}`;
+};
+
+const moveCheckedFileToTop = async (file: UploadingFile) => {
   // Remove the file from its current position
   selectedFiles.value = selectedFiles.value.filter(f => f !== file);
   // Add the file to the beginning if checked, otherwise add it to the end
   if (file.isChecked) {
     selectedFiles.value.unshift(file);
+    validateStudyJSON(file);
   } else {
     selectedFiles.value.push(file);
+    file.status = UploadStatus.UPLOADING;
   }
+};
+
+const validateJsonFile = async (file: UploadingFile) => {
+  if (!file.name.endsWith('.json')) return;
+
+  try {
+    file.parsed = JSON.parse(await file.file.slice(0, file.file.size).text());
+    file.status = UploadStatus.UPLOADING;
+    file.message = '';
+  } catch (error: any) {
+    file.status = UploadStatus.FAILED;
+    file.message = error.message;
+  }
+};
+
+interface ValidationError {
+  field?: string;
+  message: string;
+  path?: string;
+}
+
+const formatValidationErrors = (errors: ValidationError[], title: string): string => {
+  const errorItems = errors.map(e => {
+    const location = e.path ? ` (at ${e.path})` : '';
+    return `<li>${e.message}${location}</li>`;
+  }).join('');
+  return `<strong>${title}</strong><ul>${errorItems}</ul>`;
+};
+
+/**
+ * Needs to be run after having validateJsonFile()
+ */
+const validateStudyJSON = (file: UploadingFile) => {
+  if (!file.parsed) return;
+
+  // First, validate PageTab structure
+  const structureErrors = validatePageTabStructure(file.parsed);
+
+  // Then, validate against template
+  const templateName = file.parsed.attributes?.find((attr: any) => attr.name?.toLowerCase() === 'template')?.value;
+  let templateTitle = file.parsed.attributes?.find((attr: any) => attr.name?.toLowerCase() === 'attachto')?.value;
+  const collectionFromAttachTo = collections.value.find(col => col.title === templateTitle);
+  if (templateTitle && collectionFromAttachTo) selectedCollection.value = collectionFromAttachTo;
+  else templateTitle = selectedCollection.value.title;
+  const template = allTemplates.find(t => t.name === templateName || t.title === templateTitle) ?? DefaultV2Json;
+
+  const templateErrors = validateAgainstTemplate(file.parsed, template);
+
+  const errors = [...structureErrors, ...templateErrors];
+  if (errors.length > 0) {
+    file.status = UploadStatus.FAILED;
+    file.message = formatValidationErrors(errors, 'Study file errors:');
+    return;
+  }
+
+  // Validation passed
+  file.status = UploadStatus.UPLOADING;
+  file.message = 'Validation successful';
 };
 
 
@@ -251,10 +334,10 @@ onBeforeUnmount(() => {
 
     <div class=" row">
       <div class="col-2">
-        <div  class="d-md-block sidebar sidebar-expanded border-right">
+        <div class="d-md-block sidebar sidebar-expanded border-right">
           <div class="sidebar-container">
             <div v-if="loading" class="card">
-              <div  class="d-flex justify-content-center">
+              <div class="d-flex justify-content-center">
                 <font-awesome-icon :icon="['fas', 'spinner']" class="fa-spin fa-spinner fa-2x" />
               </div>
             </div>
@@ -262,14 +345,18 @@ onBeforeUnmount(() => {
             <div v-else class="card">
               <div class="form-group mt-3 mx-3">
                 <div class="border-bottom mb-2 d-flex align-items-center justify-content-between">
-                  <label  class="m-0">Files</label>
-                  <span  class=" m-0"> {{ selectedFiles.length }} </span>
+                  <label class="m-0">Files</label>
+                  <span class=" m-0"> {{ selectedFiles.length }} </span>
                 </div>
                 <div class="btn-group border-bottom mb-2">
-                  <button @click="triggerFileSelect" class="btn btn-primary btn-sm w-25  left-btn mx-1">Add File</button>
-                  <button @click="triggerFolderSelect" class="btn btn-primary  btn-sm  w-25  right-btn mx-1">Add Folder</button>
+                  <button @click="triggerFileSelect" class="btn btn-primary btn-sm w-25  left-btn mx-1">Add File
+                  </button>
+                  <button @click="triggerFolderSelect" class="btn btn-primary  btn-sm  w-25  right-btn mx-1">Add
+                    Folder
+                  </button>
                   <input type="file" ref="fileInput" @change="handleFileChange" style="display: none;" multiple>
-                  <input type="file" ref="folderInput" @change="handleFolderChange" webkitdirectory directory style="display: none;">
+                  <input type="file" ref="folderInput" @change="handleFileChange" webkitdirectory directory
+                         style="display: none;">
                 </div>
               </div>
 
@@ -279,14 +366,17 @@ onBeforeUnmount(() => {
                     <label class="m-0">Collection</label>
                     <span class="text-muted"><i>Optional</i></span>
                   </div>
-                  <div v-for="col in collections" :key="col" class="ng-star-inserted">
+                  <div v-for="col in collections" :key="col.accno" class="ng-star-inserted">
                     <label>
-                      <input type="radio" name="project" class="ng-untouched ng-pristine ng-valid" :value="col" v-model="selectedCollection">
+                      <input type="radio" name="project" class="ng-untouched ng-pristine ng-valid" :value="col"
+                             v-model="selectedCollection">
                       {{ col.title }}
                     </label>
                   </div>
                   <div class="d-flex justify-content-center">
-                    <button @click="submitForm" id="single-button" type="button" class="btn btn-success btn-submit"> Upload </button>
+                    <button @click="submitForm" id="single-button" type="button" class="btn btn-success btn-submit">
+                      Upload
+                    </button>
                   </div>
                 </div>
               </div>
@@ -296,9 +386,9 @@ onBeforeUnmount(() => {
 
       </div>
       <div class="col-9 gy-9">
-        <div  class="card">
+        <div class="card">
           <div v-if="!successSubmit && !errorMessage">
-            <div  class="card-body">
+            <div class="card-body">
               <p>Please fill in the form on the left-hand side to upload your studies:</p>
               <ul>
                 <li>
@@ -310,7 +400,7 @@ onBeforeUnmount(() => {
                     Use the <i>"Add Folder"</i> button to upload all the files in a directory. <br />
                   </p>
                 </li>
-                <li >
+                <li>
                   <strong>Which collections are you attaching your studies to?</strong>
                   <p>Choose the collections all your files will be attached to. If no collection is selected, studies
                     will be uploaded as stand-alone and will be allocated an accession number with format
@@ -321,18 +411,21 @@ onBeforeUnmount(() => {
               <strong>Are you updating existing studies?</strong>
               <p>
                 <mark>
-                  To update a study please provide the accession number in the <strong>"Submission"</strong> attribute within the study file (cell B1). If
-                  no value for the <strong>"Submission"</strong> attribute is found, a new study will be created, with a new accession number.
+                  To update a study please provide the accession number in the <strong>"Submission"</strong> attribute
+                  within the study file (cell B1). If
+                  no value for the <strong>"Submission"</strong> attribute is found, a new study will be created, with a
+                  new accession number.
                 </mark>
               </p>
               <strong>Supported extensions for studies</strong>
               <p>
-                The extension of the file containing the study information should be <strong>.json, .xml, .tsv or .xlsx</strong>
+                The extension of the file containing the study information should be <strong>.json, .xml, .tsv or
+                .xlsx</strong>
               </p>
             </div>
           </div>
-          <div v-if="errorMessage" class="alert" >
-            <div  class=" alert alert-danger">
+          <div v-if="errorMessage" class="alert">
+            <div class=" alert alert-danger">
               <h4>Error while uploading study</h4>
               <p>The study highlighted below is invalid or an unexpected
                 error was encountered.</p>
@@ -364,46 +457,58 @@ onBeforeUnmount(() => {
                 </li>
                 <li class="mb-3">
                   <mark>
-                    The study will remain private and accessible only via login until the release date in the Western European Time Zone.
+                    The study will remain private and accessible only via login until the release date in the Western
+                    European Time Zone.
                   </mark>
                 </li>
               </ul>
             </div>
 
-            <strong> <a href="http://europepmc.org/abstract/MED/26700850" target="_blank"> Citing the BioStudies database <i
-              class="fa fa-fw fa-external-link-square"></i> </a> </strong>
+            <strong> <a href="http://europepmc.org/abstract/MED/26700850" target="_blank"> Citing the BioStudies
+              database <i
+                class="fa fa-fw fa-external-link-square"></i> </a> </strong>
             <p>
-              Sarkans U, Gostev M, Athar A, et al. <a href="http://doi.org/10.1093/nar/gkx965">The BioStudies database-one
-              stop shop for all data supporting a life sciences study. </a> <i>Nucleic Acids Res.</i> 2018;46(D1):D1266-D1270.
+              Sarkans U, Gostev M, Athar A, et al. <a href="http://doi.org/10.1093/nar/gkx965">The BioStudies
+              database-one
+              stop shop for all data supporting a life sciences study. </a> <i>Nucleic Acids Res.</i>
+              2018;46(D1):D1266-D1270.
               doi:10.1093/nar/gkx965 </p>
           </div>
         </div>
 
         <div class="st-direct-upload-files-grid mt-3">
-          <div v-for="file in selectedFiles" :key="file.name + file.size" class="card h-100 panel-default" style="cursor: default;">
+          <div v-for="file in selectedFiles" :key="file.name + file.size" class="card h-100 panel-default"
+               style="cursor: default;" :class="{'study-file': file.isChecked}">
             <div class="card-body">
               <div class="card-title d-flex align-items-center">
                 <div>
-                  <font-awesome-icon v-if="file.status==0" :icon="['fas', 'plus']" class="fa-1x st-panel-description-icon green-icon" />
-                  <font-awesome-icon v-if="file.status==1" :icon="['fas', 'check-circle']" class="fa-1x st-panel-description-icon green-icon"/>
-                  <font-awesome-icon v-if="file.status==2" :icon="['fas', 'times-circle']" class="fa-1x st-panel-description-icon error-icon" />
+                  <font-awesome-icon v-if="file.status==UploadStatus.UPLOADING" :icon="['fas', 'plus']"
+                                     class="fa-1x st-panel-description-icon green-icon" />
+                  <font-awesome-icon v-if="file.status==UploadStatus.SUCCESS" :icon="['fas', 'check-circle']"
+                                     class="fa-1x st-panel-description-icon green-icon" />
+                  <font-awesome-icon v-if="file.status==UploadStatus.FAILED" :icon="['fas', 'times-circle']"
+                                     class="fa-1x st-panel-description-icon error-icon" />
                 </div>
                 <h5 class="st-direct-submit-file-name m-0">{{ file.name }}</h5>
               </div>
-              <span class="text-danger" v-if="file.status===2">{{file.message}}</span>
+              <div class="text-danger" v-if="file.status===UploadStatus.FAILED" v-html="file.message"></div>
               <div v-if="file.progress > 0">
                 <p>Uploading: {{ file.progress }}%</p>
                 <progress :value="file.progress" max="100"></progress>
               </div>
             </div>
             <div class="card-footer d-flex align-items-center">
-              <div  class="flex-grow-1">
+              <div class="flex-grow-1">
                 <button v-if="file.hasStudyExtension" class="btn btn-link text-muted d-inline p-0">
-                  <label class="sr-only" :for="'is-study-checkbox-' + file.name">Is {{ file.name }} containing the study information?</label>
-                  <input type="checkbox" :id="'is-study-checkbox-' + file.name" v-model="file.isChecked" @change="moveCheckedFileToTop(file)"> Study File
+                  <label class="sr-only" :for="'is-study-checkbox-' + file.name">Is {{ file.name }} containing the study
+                    information?</label>
+                  <input type="checkbox" :id="'is-study-checkbox-' + file.name" v-model="file.isChecked"
+                         @change="moveCheckedFileToTop(file)"> Study File
                 </button>
               </div>
-              <button type="button" class="btn btn-outline-danger btn-sm d-flex align-items-center" :aria-label="'Delete file ' + file.name" :title="'Delete file ' + file.name" @click="removeFile(file)">
+              <button type="button" class="btn btn-outline-danger btn-sm d-flex align-items-center"
+                      :aria-label="'Delete file ' + file.name" :title="'Delete file ' + file.name"
+                      @click="removeFile(file)">
                 <font-awesome-icon :icon="['fas', 'trash-alt']" class="fa-fw" />
               </button>
             </div>
@@ -417,109 +522,116 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-  .btn-group {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-  }
-  .left-btn {
-    margin-right: auto;
-  }
+.btn-group {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
 
-  .right-btn {
-    margin-left: auto;
-  }
+.left-btn {
+  margin-right: auto;
+}
 
-  .st-direct-submit-file-name {
-    word-wrap: anywhere;
-  }
+.right-btn {
+  margin-left: auto;
+}
 
-
-  .sidebar {
-    background-color: #6d9fc1;
-    bottom: 0;
-    left: 0;
-    padding:  64px 0 0;
-    position: fixed;
-    top: 80px;
-    z-index: 9;
-    overflow: auto;
-  }
-
-  .sidebar-expanded {
-    width: 260px
-  }
-
-  .green-icon {
-    color: green;
-  }
- .st-direct-upload-files-grid {
-   display: grid;
-   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-   gap: 16px;
- }
-
-  .message-box {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 80%;
-    max-width: 400px;
-    background: rgba(0, 0, 0, 0.6);
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-    z-index: 10000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .message-content {
-    background: #f0f9ff;
-    padding: 20px;
-    border-radius: 8px;
-    width: 100%;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  }
-
-  .message-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #d1e7ff;
-    padding-bottom: 10px;
-    margin-bottom: 10px;
-  }
-
-  .message-title {
-    font-size: 18px;
-    font-weight: bold;
-    color: #0275d8;
-  }
-
-  .message-body {
-    font-size: 16px;
-    color: #333;
-  }
-
-  .message-footer {
-    display: flex;
-    justify-content: flex-end;
-  }
+.st-direct-submit-file-name {
+  word-wrap: anywhere;
+}
 
 
-  .btn-primary:hover {
-    background-color: #025aa5;
-  }
+.sidebar {
+  background-color: #6d9fc1;
+  bottom: 0;
+  left: 0;
+  padding: 64px 0 0;
+  position: fixed;
+  top: 80px;
+  z-index: 9;
+  overflow: auto;
+}
 
-  .error-icon {
-    color: red;
-  }
-  .fa-spinner {
-    color: #0275d8;
-    margin-top: 20px;
-  }
+.sidebar-expanded {
+  width: 260px
+}
+
+.green-icon {
+  color: green;
+}
+
+.st-direct-upload-files-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.message-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  max-width: 400px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.message-content {
+  background: #f0f9ff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 100%;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #d1e7ff;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+.message-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #0275d8;
+}
+
+.message-body {
+  font-size: 16px;
+  color: #333;
+}
+
+.message-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+
+.btn-primary:hover {
+  background-color: #025aa5;
+}
+
+.error-icon {
+  color: red;
+}
+
+.fa-spinner {
+  color: #0275d8;
+  margin-top: 20px;
+}
+
+.study-file {
+  grid-column: 1/ -1;
+}
 
 </style>

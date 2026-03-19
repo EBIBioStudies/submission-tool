@@ -1,4 +1,4 @@
-export const prefixToLinkMap = {
+export const prefixToLinkMap: Record<string, string> = {
   pmc: 'https://europepmc.org/articles/{0}',
   pmid: 'https://europepmc.org/abstract/MED/{0}',
   doi: 'https://dx.doi.org/{0}',
@@ -39,7 +39,7 @@ export const linkNameSpaceList = ['genedb', 'refseq.gcf', 'bgee.stage', 'maxo', 
     'ncbidrs', 'miriam.collection', 'eco', 'tricdb', 'macie', 'maggot', 'neuromorpho', 'hco', 'glycomedb', 'dg.4825',
     'vectorbase', '3dmet', 'dragondb.allele', 'vbase2'];
 
-export const SearchLinks = (filterQuery)=>{
+export const SearchLinks = (filterQuery: string)=>{
   const combinedList = Object.keys(prefixToLinkMap).concat(linkNameSpaceList);
   // Sort the combined array alphabetically
   combinedList.sort((a, b) => a.localeCompare(b));

@@ -1,82 +1,85 @@
-<script setup>
-import {activeTemplates, fillTemplate} from "@/templates/templates";
-import {onMounted, ref} from "vue";
-import axios from "axios";
-import router from "@/router";
-import AuthService from "@/services/AuthService";
+<script setup lang="ts">
+import { activeTemplates, fillTemplate } from '@/templates/templates';
+import { onMounted, ref } from 'vue';
+import axios from 'axios';
+import router from '@/router';
+import AuthService from '@/services/AuthService';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { Template } from '@/models/Template.model.ts';
+import { PageTab } from '@/models/PageTab.model.ts';
+import { Collection } from '@/Profile.vue';
 
 
-const emits = defineEmits(['select'])
-const showMoreWasPressed = ref(false)
-const selectedTemplate = ref(null)
-const allowedTemplates = ref([])
+const emits = defineEmits<{ select: [Template.TemplateDefinition] }>();
+const showMoreWasPressed = ref(false);
+const selectedTemplate = ref<string | null>(null);
+const allowedTemplates = ref<Template.TemplateDefinition[]>([]);
 const baseURL = import.meta.env.VITE_BASE_URL;
 
 
-const createNewSubmission = async ()=> {
+const createNewSubmission = async () => {
 
   // create new
-  let thisTemplate = activeTemplates.find((tmpl) => tmpl.name===selectedTemplate.value);
+  let thisTemplate = activeTemplates.find((tmpl) => tmpl.name === selectedTemplate.value) as Template.TemplateDefinition;
 
-  let collectionName = null
+  let collectionName = null;
 
   const draft = {
     type: 'submission',
     attributes: [
-      { name: 'Template', value: thisTemplate.name }
+      { name: 'Template', value: thisTemplate.name },
     ],
-  };
-  if (!thisTemplate.name.toLowerCase().startsWith("default")) {
-    collectionName = thisTemplate.title
-    draft.attributes.push({name: 'AttachTo', value: collectionName })
+  } as PageTab.Submission;
+  if (!thisTemplate.name.toLowerCase().startsWith('default')) {
+    collectionName = thisTemplate.title;
+    draft.attributes.push({ name: 'AttachTo', value: collectionName! });
   }
   if (thisTemplate.DOI) {
-    draft.attributes.push({name: 'DOI', value: "true" })
+    draft.attributes.push({ name: 'DOI', value: 'true' });
   }
-  
+
   const tmpl = thisTemplate.sectionType;
-  draft.section = { type: tmpl.name };
+  draft.section = { type: tmpl.name } ;
   fillTemplate(draft.section, tmpl);
-  const author =  {
-    accno : "author-1-init",
-    type : "Author",
-    attributes : [ {
-      name : "Name",
-      value : AuthService.user?.value?.fullname
+  const author = {
+    accno: 'author-1-init',
+    type: 'Author',
+    attributes: [{
+      name: 'Name',
+      value: AuthService.user?.value?.fullname,
     }, {
-      name : "E-mail",
-      value : AuthService.user?.value?.email
+      name: 'E-mail',
+      value: AuthService.user?.value?.email,
     },
       {
-          name : "affiliation",
-          value: ""
-      }]
+        name: 'affiliation',
+        value: '',
+      }],
 
   };
   if (AuthService.user?.value?.orcid) {
-    author.attributes.push({name:"ORCID", value:AuthService.user?.value?.orcid})
+    author.attributes.push({ name: 'ORCID', value: AuthService.user?.value?.orcid });
   }
-  draft.section.subsections.push(author);
+  draft.section.subsections?.push(author);
 
   const response = await axios.post(
     '/api/submissions/drafts',
     draft,
-    collectionName ? { params: { attachTo: collectionName } } : undefined
+    collectionName ? { params: { attachTo: collectionName } } : undefined,
   );
-  await router.push(`/edit/${response.data.key}`)
-}
+  await router.push(`/edit/${response.data.key}`);
+};
 
 
 onMounted(async () => {
   if (!AuthService.isAuthenticated()) return;
   try {
-    await axios.get(`/api/collections`).then(response=>{
+    await axios.get<Collection[]>(`/api/collections`).then(response => {
       const allowedCollections = response.data;
-      allowedTemplates.value = activeTemplates.filter( (tmpl)=> {
-        const collection = tmpl.name.split(".")[0].toLowerCase() || 'default';
-        return collection==='default' || allowedCollections.find( (obj) => collection===obj?.accno?.toLowerCase())
-      })
+      allowedTemplates.value = activeTemplates.filter((tmpl) => {
+        const collection = tmpl.name.split('.')[0].toLowerCase() || 'default';
+        return collection === 'default' || allowedCollections.find((obj) => collection === obj?.accno?.toLowerCase());
+      });
     });
   } catch (error) {
     //console.error('Failed to fetch collections:', error);
@@ -91,13 +94,20 @@ onMounted(async () => {
     <div class="btn-group mb-4">
       <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#NewSubmission">
         <font-awesome-icon :icon="['fas', 'circle-plus']"></font-awesome-icon>
-        New Submission</button>
-      <button type="button" class="btn btn-success dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+        New Submission
+      </button>
+      <button type="button" class="btn btn-success dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
+              aria-expanded="false">
         <span class="visually-hidden">Toggle Dropdown</span>
       </button>
       <ul class="dropdown-menu">
-        <li><span role="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#NewSubmission">Submit Form</span></li>
-        <li><router-link to="direct_upload" style="text-decoration: none" role="button" class="dropdown-item">Submit PageTab</router-link></li>
+        <li><span role="button" class="dropdown-item" data-bs-toggle="modal"
+                  data-bs-target="#NewSubmission">Submit Form</span></li>
+        <li>
+          <router-link to="direct_upload" style="text-decoration: none" role="button" class="dropdown-item">Submit
+            PageTab
+          </router-link>
+        </li>
       </ul>
     </div>
   </div>
@@ -118,18 +128,18 @@ onMounted(async () => {
             href="https://www.ebi.ac.uk/bioimage-archive/help-images-at-ebi" target="_blank"> EMBL-EBI policy on imaging
             data submissions</a>.</p>
 
-          <div v-for="(tmpl, i) in allowedTemplates" >
+          <div v-for="(tmpl, i) in allowedTemplates">
             <div v-if="i<4 || showMoreWasPressed" class="form-check template-button">
               <div v-if="i<4 || showMoreWasPressed">
                 <input :id="`template_${i}`" type="radio" class="form-check visually-hidden" name="template"
                        v-model="selectedTemplate"
                        :value="tmpl.name"
                 />
-                <label class="input-group" :for="`template_${i}`"  :title="tmpl.name">
-                <span class="input-group-text p-4"  style="width:70pt; height: 70pt">
-                  <img :alt="tmpl.displayName"  style="width: 48px"
+                <label class="input-group" :for="`template_${i}`" :title="tmpl.name">
+                <span class="input-group-text p-4" style="width:70pt; height: 70pt">
+                  <img :alt="tmpl.displayName" style="width: 48px"
                        :src="`${baseURL}images/template-icons/${tmpl.title||'Default'}.png`"
-                       @error="(e) => e.target.src = `${baseURL}images/template-icons/Default.png`"/>
+                       @error="(e) => (e.target as HTMLImageElement).src = `${baseURL}images/template-icons/Default.png`" />
                 </span>
                   <div class="form-control btn-group-vertical">
                     <div><strong>{{ tmpl.title }}</strong></div>
@@ -149,7 +159,9 @@ onMounted(async () => {
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button @click="createNewSubmission" :disabled="selectedTemplate==null" type="button" class="btn btn-primary" data-bs-dismiss="modal">Add</button>
+          <button @click="createNewSubmission" :disabled="selectedTemplate==null" type="button" class="btn btn-primary"
+                  data-bs-dismiss="modal">Add
+          </button>
         </div>
       </div>
     </div>
@@ -166,7 +178,6 @@ label {
   border: 1pt solid #dddddd;
   border-radius: 5pt;
 }
-
 
 
 .icon span {
@@ -198,6 +209,7 @@ label {
   overflow-y: auto;
   padding: 1rem;
 }
+
 .modal-body p:first-of-type {
   margin-bottom: 0.25rem;
 }

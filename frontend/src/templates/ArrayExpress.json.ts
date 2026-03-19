@@ -1,0 +1,551 @@
+import { Template } from '@/models/Template.model.ts';
+
+export default {
+  'name': 'ArrayExpress',
+  'title': 'ArrayExpress',
+  'description': 'ArrayExpress studies',
+  'display': 'readonly',
+  'sectionType': {
+    'name': 'Study',
+    'allowNewAttribute': true,
+    'disableCustomSubsection': true,
+    'disableCustomTable': true,
+    'displayAnnotations': true,
+    'display': 'readonly',
+    'banner': {
+      'src': '/images/ae-logo-64.svg',
+      'alt': 'ArrayExpress logo',
+      'backgroundColor': 'rgb(94, 140, 192)',
+    },
+    'fieldTypes': [
+      {
+        'name': 'Title',
+        'icon': 'fa-heading',
+        'controlType': {
+          'name': 'largetext',
+        },
+      },
+      {
+        'name': 'ReleaseDate',
+        'title': 'Release Date',
+        'icon': 'fa-calendar-alt',
+        'display': 'required',
+        'overrideReadonly': true,
+        'controlType': {
+          'name': 'date',
+          'allowPast': false,
+        },
+      },
+      {
+        'name': 'Study type',
+        'icon': 'fa-tag',
+        'controlType': {
+          'name': 'text',
+        },
+      },
+      {
+        'name': 'Organism',
+        'icon': 'fa-tag',
+        'controlType': {
+          'name': 'text',
+        },
+      },
+      {
+        'name': 'Description',
+        'icon': 'fa-tag',
+        'controlType': {
+          'name': 'largetext',
+        },
+      },
+    ],
+    'tableTypes': [
+      {
+        'name': 'Protocols',
+        'icon': 'fa-list',
+        'uniqueCols': true,
+        'allowImport': true,
+        'columnTypes': [
+          {
+            'name': 'Name',
+            'controlType': {
+              'name': 'text',
+            },
+            'display': 'required',
+          },
+          {
+            'name': 'Type',
+            'controlType': {
+              'name': 'text',
+            },
+          },
+          {
+            'name': 'Description',
+            'controlType': {
+              'name': 'text',
+            },
+          },
+          {
+            'name': 'Hardware',
+            'controlType': {
+              'name': 'text',
+            },
+          },
+        ],
+      },
+      {
+        'name': 'Contact',
+        'description': 'Add the contact details for the authors involved in the study.',
+        'icon': 'fa-address-card',
+        'display': 'optional',
+        'uniqueCols': true,
+        'allowImport': true,
+        'rowAsSection': true,
+        'overrideReadonly': true,
+        'columnTypes': [
+          {
+            'autosuggest': false,
+            'display': 'desirable',
+            'name': 'Name',
+            'controlType': {
+              'name': 'text',
+            },
+          },
+          {
+            'autosuggest': false,
+            'name': 'Email',
+            'controlType': {
+              'name': 'text',
+            },
+          },
+          {
+            'name': 'Organisation',
+            'controlType': {
+              'name': 'org',
+              'multiple': true,
+            },
+          },
+          {
+            'name': 'Role',
+            'controlType': {
+              'name': 'text',
+            },
+          },
+          {
+            'name': 'ORCID',
+            'controlType': {
+              'name': 'orcid',
+            },
+          },
+        ],
+      },
+      {
+        'name': 'Publication',
+        'display': 'optional',
+        'description': 'Add the bibliography relevant to the study. Autofill is available when searching by <a target="_blank" href="https://www.ncbi.nlm.nih.gov/pubmed/">PubMed</a> identifier. For other IDs, you may use <a target="_blank" href="https://www.ncbi.nlm.nih.gov/pmc/pmctopmid/#converter">PubMed\'s converter</a>.',
+        'icon': 'fa-book',
+        'uniqueCols': true,
+        'allowImport': false,
+        'allowNewAttribute': false,
+        'rowAsSection': false,
+        'overrideReadonly': true,
+        'columnTypes': [
+          {
+            'name': 'PMID',
+            'controlType': {
+              'name': 'pubmedid',
+            },
+            'display': 'desirable',
+          },
+          {
+            'name': 'Authors',
+            'controlType': {
+              'name': 'text',
+            },
+            'display': 'required',
+          },
+          {
+            'name': 'Title',
+            'controlType': {
+              'name': 'text',
+            },
+            'display': 'required',
+          },
+          {
+            'name': 'Year',
+            'controlType': {
+              'name': 'text',
+            },
+            'display': 'required',
+          },
+          {
+            'name': 'Volume',
+            'controlType': {
+              'name': 'text',
+            },
+            'display': 'desirable',
+          },
+          {
+            'name': 'Issue',
+            'controlType': {
+              'name': 'text',
+            },
+            'display': 'desirable',
+          },
+          {
+            'name': 'Type',
+            'controlType': {
+              'name': 'text',
+            },
+          },
+          {
+            'name': 'Issn',
+            'controlType': {
+              'name': 'text',
+            },
+          },
+          {
+            'name': 'DOI',
+            'controlType': {
+              'name': 'text',
+            },
+          },
+          {
+            'name': 'Status',
+            'controlType': {
+              'name': 'text',
+            },
+          },
+        ],
+      },
+      {
+        'name': 'Link',
+        'icon': 'fa-link',
+        'uniqueCols': true,
+        'allowImport': true,
+        'rowAsSection': true,
+        'columnTypes': [
+          {
+            'name': 'Link',
+            'controlType': {
+              'name': 'idlink',
+            },
+            'display': 'required',
+          },
+          {
+            'name': 'Description',
+            'controlType': {
+              'name': 'text',
+            },
+            'display': 'desirable',
+          },
+        ],
+      },
+      {
+        'name': 'File',
+        'icon': 'fa-file',
+        'uniqueCols': true,
+        'allowImport': true,
+        'rowAsSection': true,
+        'columnTypes': [
+          {
+            'name': 'File',
+            'controlType': {
+              'name': 'file',
+            },
+            'display': 'required',
+          },
+          {
+            'name': 'Description',
+            'controlType': {
+              'name': 'text',
+            },
+            'display': 'required',
+          },
+          {
+            'name': 'Type',
+            'controlType': {
+              'name': 'text',
+            },
+            'display': 'desirable',
+          },
+        ],
+      },
+      {
+        'name': 'MINSEQE Score',
+        'icon': 'fa-sliders-h',
+        'uniqueCols': true,
+        'allowImport': true,
+        'rowAsSection': true,
+      },
+    ],
+    'sectionTypes': [
+      {
+        'name': 'Samples',
+        'displayAnnotations': true,
+        'fieldTypes': [
+          {
+            'name': 'Sample count',
+            'icon': 'fa-comment',
+            'controlType': {
+              'name': 'text',
+            },
+          },
+          {
+            'name': 'Experimental Factors',
+            'icon': 'fa-comment',
+            'controlType': {
+              'name': 'text',
+            },
+          },
+          {
+            'name': 'Source Characteristics',
+            'icon': 'fa-comment',
+            'controlType': {
+              'name': 'text',
+            },
+          },
+        ],
+        'tableTypes': [
+          {
+            'name': 'Experimental Factors',
+            'displayAnnotations': true,
+            'display': 'optional',
+            'rowAsSection': true,
+          },
+          {
+            'name': 'Source Characteristics',
+            'display': 'optional',
+            'displayAnnotations': true,
+            'rowAsSection': true,
+          },
+        ],
+      },
+      {
+        'name': 'Assays and Data',
+        'displayAnnotations': true,
+        'fieldTypes': [
+          {
+            'name': 'Assay count',
+            'icon': 'fa-comment',
+            'controlType': {
+              'name': 'text',
+            },
+          },
+          {
+            'name': 'Technology',
+            'icon': 'fa-comment',
+            'controlType': {
+              'name': 'text',
+            },
+          },
+          {
+            'name': 'Assay by Molecule',
+            'icon': 'fa-comment',
+            'controlType': {
+              'name': 'text',
+            },
+          },
+        ],
+        'sectionTypes': [
+          {
+            'name': 'Raw Data',
+            'tableTypes': [
+              {
+                'name': 'File',
+                'description': 'List the raw data files for the experiment.',
+                'icon': 'fa-file',
+                'uniqueCols': true,
+                'allowImport': true,
+                'rowAsSection': true,
+                'columnTypes': [
+                  {
+                    'name': 'File',
+                    'controlType': {
+                      'name': 'file',
+                    },
+                    'display': 'required',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            'name': 'Processed Data',
+            'tableTypes': [
+              {
+                'name': 'File',
+                'description': 'List the processed data files for the experiment.',
+                'icon': 'fa-file',
+                'uniqueCols': true,
+                'allowImport': true,
+                'rowAsSection': true,
+                'columnTypes': [
+                  {
+                    'name': 'File',
+                    'controlType': {
+                      'name': 'file',
+                    },
+                    'display': 'required',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            'name': 'Additional Files',
+            'tableTypes': [
+              {
+                'name': 'File',
+                'description': 'List the additional data files for the experiment.',
+                'icon': 'fa-file',
+                'uniqueCols': true,
+                'allowImport': true,
+                'rowAsSection': true,
+                'columnTypes': [
+                  {
+                    'name': 'File',
+                    'controlType': {
+                      'name': 'file',
+                    },
+                    'display': 'required',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            'name': 'MAGE-TAB Files',
+            'tableTypes': [
+              {
+                'name': 'File',
+                'description': 'List the MAGE-TAB files for the experiment.',
+                'icon': 'fa-file',
+                'uniqueCols': true,
+                'allowImport': true,
+                'rowAsSection': true,
+                'columnTypes': [
+                  {
+                    'name': 'File',
+                    'controlType': {
+                      'name': 'file',
+                    },
+                    'display': 'required',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            'name': 'Array Designs',
+            'tableTypes': [
+              {
+                'name': 'File',
+                'description': 'List the MAGE-TAB files for the experiment.',
+                'icon': 'fa-file',
+                'uniqueCols': true,
+                'allowImport': true,
+                'rowAsSection': true,
+                'columnTypes': [
+                  {
+                    'name': 'File',
+                    'controlType': {
+                      'name': 'file',
+                    },
+                    'display': 'required',
+                  },
+                ],
+              },
+              {
+                'name': 'Link',
+                'icon': 'fa-link',
+                'uniqueCols': true,
+                'allowImport': true,
+                'rowAsSection': true,
+                'columnTypes': [
+                  {
+                    'name': 'Link',
+                    'controlType': {
+                      'name': 'idlink',
+                    },
+                    'display': 'required',
+                  },
+                  {
+                    'name': 'Description',
+                    'controlType': {
+                      'name': 'text',
+                    },
+                    'display': 'desirable',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        'name': 'MINSEQE Score',
+        'icon': 'fa-sliders-h',
+        'singleRow': true,
+        'allowImport': false,
+        'displayAnnotations': true,
+      },
+      {
+        'name': 'MIAME Score',
+        'icon': 'fa-sliders-h',
+        'singleRow': true,
+        'allowImport': false,
+        'displayAnnotations': true,
+      },
+      {
+        name: 'Author',
+        display: 'hidden',
+        description: 'Actual data container for Contacts',
+        fieldTypes: [
+          {
+            'name': 'Name',
+            'controlType': { 'name': 'text' },
+          },
+          {
+            'name': 'Email',
+            'controlType': { 'name': 'text' },
+          },
+          {
+            'name': 'Organisation',
+            'controlType': {
+              'name': 'org',
+              'multiple': true,
+            },
+          },
+          {
+            'name': 'Role',
+            'controlType': { 'name': 'text' },
+          },
+          {
+            'name': 'ORCID',
+            'controlType': { 'name': 'orcid' },
+          },
+        ],
+      },
+      {
+        name: 'Organization',
+        display: 'hidden',
+        description: 'Actual data container for Contacts organizations',
+        fieldTypes: [
+          {
+            'name': 'Name',
+            'display': 'required',
+            'controlType': { 'name': 'text' },
+          },
+          {
+            'name': 'Address',
+            'controlType': { 'name': 'text' },
+          },
+          {
+            'name': 'RORID',
+            'controlType': { 'name': 'text' },
+          },
+        ],
+      },
+    ],
+  },
+} as Template.TemplateDefinition;

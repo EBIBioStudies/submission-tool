@@ -1,39 +1,54 @@
-<script setup>
-import { computed, inject, nextTick, ref } from 'vue';
+<script setup lang="ts">
+import { computed, inject, nextTick, provide, ref, Ref, watchEffect } from 'vue';
 import draggable from 'vuedraggable';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Attribute from '@/components/Attribute.vue';
 import utils from '@/utils';
+import { PageTab } from '@/models/PageTab.model.ts';
+import { Template } from '@/models/Template.model.ts';
+import { AttributeExpose, ControlError, SectionExpose } from '@/components/expose.model.ts';
+import Multiselect from '@vueform/multiselect';
 
-const props = defineProps([
-  'rows',
-  'depth',
-  'sectionType',
-  'sectionSubType',
-  'parent',
-  'startCollapsed',
-  'title',
-]);
-const emits = defineEmits([
-  'rowAdded',
-  'rowsReordered',
-  'columnUpdated',
-  'columnsReordered',
-  'delete',
-  'deleteRow',
-  'deleteOrg',
-  'createOrg',
-  'refreshSection',
-]);
+
+const props = defineProps<{
+  rows: PageTab.BuildingSection[],
+  depth: number,
+  sectionType: Template.TableType,
+  sectionSubType?: string,
+  parent?: PageTab.BuildingSection,
+  startCollapsed?: boolean,
+  fixedFirstColumn?: boolean,
+  title?: string,
+}>();
+
+
+const emits = defineEmits<{
+  rowAdded: [row: PageTab.BuildingSection]
+  rowsReordered: [{ newIndex: number, oldIndex: number; }]
+  columnUpdated: [{ old: string, new: string, index: number }]
+  columnsReordered: []
+  delete: []
+  deleteRow: [index: number]
+  deleteAttribute: [index: number]
+  deleteOrg: [PageTab.Organisation]
+  createOrg: [PageTab.Organisation]
+  refreshSection: [index: number]
+}>();
+
+
 const thisSection = ref(props.rows);
 const rowSectionType =
   props.rows && props.rows[0]?.type ? '' + props.rows[0].type : '';
 const tableType = ref(props.title || props.sectionSubType || rowSectionType);
 const theseRows = ref(Array.isArray(props.rows) ? props.rows : props.rows[0]);
 const headerMap = new Map();
-const parentDisplayType = inject('parentDisplayType');
-const collectionName = inject('collectionName');
-const subSections = ref(props?.parent?.subsections);
+
+if (props.sectionType?.overrideReadonly) provide('parentDisplayType', props.sectionType?.display);
+const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
+
+const readonly = computed(() => parentDisplayType?.value === 'readonly' && !props.sectionType?.overrideReadonly);
+
+const subSections = ref(props.parent!.subsections as PageTab.BuildingSection[]); // Important to keep the same reference as we delete from there
 
 if (tableType.value === 'File') {
   headerMap.set('File', []);
@@ -50,12 +65,12 @@ const keys = ['', ...headerMap.keys(), ''];
 const headers = ref(keys);
 const sectionsRefreshKey = ref(0);
 
-const getFieldType = (attribute) => {
-  let name =
-    attribute?.type?.toLowerCase() === 'file' ||
-    attribute.hasOwnProperty('path')
+const getFieldType = (section: PageTab.BuildingSection): Template.FieldType | undefined => {
+  let name: string =
+    section?.type?.toLowerCase() === 'file' ||
+    section.hasOwnProperty('path')
       ? 'File'
-      : attribute?.name || attribute;
+      : section?.name || section as unknown as string; //TODO how can section be a string
   // override affiliation
   if (name === 'affiliation') {
     let fieldType = props.sectionType?.columnTypes?.find(
@@ -63,8 +78,7 @@ const getFieldType = (attribute) => {
     );
     if (fieldType) return { ...fieldType, ...{ name: 'Organisation' } };
   }
-  name =
-    attribute.hasOwnProperty('url') || attribute.name === 'url' ? 'Link' : name;
+  name = (section.hasOwnProperty('url') || section.name === 'url') ? 'Link' : name;
   // return the column type. Expects either an object or a column name (for use in draggable)
   let fieldType = props.sectionType?.columnTypes?.find(
     (f) => f.name?.toLowerCase() === name?.toLowerCase(),
@@ -83,7 +97,7 @@ const getFieldType = (attribute) => {
 };
 
 // Add all column to the first row. We will use it to control column dragging
-const getCell = (row, col) => {
+const getCell = (row: PageTab.BuildingSection, col: string): PageTab.BuildingSection => {
   if (!row.attributes) row.attributes = [];
   let attribute = row?.attributes?.find(
     (att) => att?.name?.toLowerCase() === col?.toLowerCase(),
@@ -99,21 +113,25 @@ const getCell = (row, col) => {
     attribute = { name: col, value: '' };
     row.attributes.push(attribute);
   }
-  return attribute;
+  return attribute as PageTab.BuildingSection;
 };
 
-const reorderColumns = (event) => {
-  const atts = theseRows.value[0].attributes;
+const reorderColumns = () => {
+  const atts = theseRows.value[0].attributes!;
   headers.value.forEach((header, i) => {
     if (header === '') return;
     const index = atts.findIndex((a) => a.name === header);
-    const deleted = atts.splice(index, 1);
-    atts.splice(i - 1, 0, deleted[0]);
+    theseRows.value.forEach(row => {
+      if (!row.attributes) return;
+      const deleted = row.attributes.splice(index, 1);
+      row.attributes.splice(i - 1, 0, deleted[0]);
+    });
+
   });
   emits('columnsReordered');
 };
 
-const areObjectsEqual = (obj1, obj2) => {
+const areObjectsEqual = (obj1: any, obj2: any) => {
   const keys1 = Object.keys(obj1);
   const keys2 = Object.keys(obj2);
 
@@ -130,20 +148,9 @@ const areObjectsEqual = (obj1, obj2) => {
   return true;
 };
 
-const readOnly = () => {
-  return (
-    parentDisplayType.value === 'readonly' &&
-    !(
-      collectionName.value === 'ArrayExpress' &&
-      rowSectionType.toLowerCase() === 'publication'
-    )
-  );
-};
 
-const addColumn = (event) => {
-  if (readOnly()) {
-    return;
-  }
+const addColumn = () => {
+  if (readonly.value) return;
   const columnName = 'Column ' + (headers.value.length - 1);
   headers.value.splice(-1, 0, columnName);
   const rows = subSections.value.filter(
@@ -156,20 +163,15 @@ const addColumn = (event) => {
   theseRows.value = rows;
 };
 
-const addRow = (event) => {
-  if (readOnly()) {
-    return;
-  }
-  const row = {};
+const addRow = () => {
+  if (readonly.value) return;
+
+  const row = { attributes: [] as PageTab.Attribute[] } as PageTab.BuildingSection;
   row.type = rowSectionType;
   if (tableType.value === 'File') {
-    row.path = null;
-    row.attributes = [];
+    row.path = '';
   } else if (tableType.value === 'Link') {
     row.url = '';
-    row.attributes = [];
-  } else {
-    row.attributes = [];
   }
   headers.value.forEach((header, i) => {
     if (
@@ -178,24 +180,19 @@ const addRow = (event) => {
       ((tableType.value === 'File' || tableType.value === 'Link') && i === 1)
     )
       return;
-    row.attributes.push({ name: header, value: '' });
+    row.attributes!.push({ name: header, value: '' });
   });
   subSections.value.push(row);
-  const rows = subSections.value.filter(
+  theseRows.value = subSections.value.filter(
     (item) => item?.type?.toLowerCase() === tableType.value.toLowerCase(),
   );
-  theseRows.value = rows;
   // emits('rowAdded', row); // Needed only for Authors component
 };
 
-const deleteRow = async (index) => {
-  if (readOnly()) {
-    return;
-  }
+const deleteRow = async (index: number) => {
+  if (readonly.value) return;
   const removedItem = theseRows.value[index];
-  const delIndex = subSections.value.findIndex((item) =>
-    areObjectsEqual(item, removedItem),
-  );
+  const delIndex = subSections.value.findIndex((item) => areObjectsEqual(item, removedItem));
   if (delIndex !== -1) {
     subSections.value.splice(delIndex, 1); // Only mutate the source
   }
@@ -213,13 +210,11 @@ const deleteRow = async (index) => {
   }
 };
 
-const deleteColumn = (index) => {
-  if (readOnly()) {
-    return;
-  }
+const deleteColumn = (index: number) => {
+  if (readonly.value) return;
   theseRows.value.forEach((row) => {
-    row.attributes.splice(
-      row.attributes.findIndex((attr) => attr.name === headers.value[index]),
+    row.attributes!.splice(
+      row.attributes!.findIndex((attr) => attr.name === headers.value[index]),
       1,
     );
   });
@@ -227,37 +222,21 @@ const deleteColumn = (index) => {
   sectionsRefreshKey.value += 1;
 };
 
-// const deleteRow = (index) => {
-//   if(parentDisplayType.value === 'readonly')
-//     return;
-//   const removedItem = theseRows.value[index];
-//   const delIndex = subSections.value.findIndex(item => areObjectsEqual(item, removedItem));
-//   if(delIndex!=-1)
-//     subSections.value.splice(delIndex, 1);
-//   const rows = subSections.value.filter(item => item?.type?.toLowerCase() === tableType.value.toLowerCase());
-//   theseRows.value = rows;
-//   // emits('deleteRow', index); // Needed only for Authors component
-// };
-
-// const deleteColumn = (index) => {
-//   if(parentDisplayType.value === 'readonly')
-//     return;
-//   theseRows.value.forEach((row) => {
-//     row.attributes.splice(row.attributes.findIndex(attr => attr.name === headers.value[index]), 1);
-//   });
-//   headers.value.splice(index, 1);
-// };
-
-const updateColumnName = (event, index) => {
-  if (readOnly()) {
-    return;
-  }
+const updateColumnName = (newValue: string, index: number) => {
+  if (readonly.value) return;
   if (index === headers.value.length - 1) return;
   const oldValue = headers.value[index];
-  const newValue = event.target.value;
   if (headers.value.find((n) => n === newValue)) return;
   emits('columnUpdated', { old: oldValue, new: newValue, index: index });
 };
+
+const columnTypes = props?.sectionType?.columnTypes || [];
+
+const columnOptions = computed(() => columnTypes
+  .filter(col => col.display !== 'required')
+  .filter(col => !headers.value.includes(col.name))
+  .map(col => col.name),
+);
 
 const isCollapsed = ref(
   props.startCollapsed === undefined
@@ -266,23 +245,23 @@ const isCollapsed = ref(
 );
 const toggle = () => (isCollapsed.value = !isCollapsed.value);
 
-const attributeRefs = ref([]);
-const headerComponent = ref([]);
+const attributeRefs = ref<AttributeExpose[]>([]);
+const headerComponent = ref<HTMLInputElement[]>([]);
 
 const errors = computed(() => {
-  const _errors = [];
+  const _errors: ControlError[] = [];
   attributeRefs?.value.forEach((a) => {
     const err = a.errors;
     if (err)
       _errors.push({
         errorMessage: err,
         control: a,
-        element: document.getElementById(a.attributeId),
+        element: document.getElementById(a.attributeId)!,
       });
   });
   return _errors;
 });
-const showHelp = (header) => {
+const showHelp = (header: Template.FieldType) => {
   if (!header) return; // Ensure header is defined to avoid runtime errors
 
   utils.confirm(
@@ -295,11 +274,7 @@ const showHelp = (header) => {
   );
 };
 
-function log(message, obj) {
-  console.log(message);
-}
-
-defineExpose({ errors, thisSection });
+defineExpose<SectionExpose>({ errors, thisSection });
 </script>
 <template>
   <div class="section-block">
@@ -333,18 +308,17 @@ defineExpose({ errors, thisSection });
             placeholder="Enter table name"
             type="text"
             @click.stop=""
-            :disabled="parentDisplayType === 'readonly'"
+            :disabled="readonly"
           />
-          <font-awesome-icon
-            v-if="parentDisplayType !== 'readonly'"
-            class="icon ps-2"
-            icon="fa-trash"
-            role="button"
-            size="sm"
-            @click="$emit('delete')"
-            @click.stop=""
-          ></font-awesome-icon>
         </span>
+        <font-awesome-icon
+          v-if="!readonly && sectionType?.display !== 'required'"
+          class="icon ps-2"
+          icon="fa-trash"
+          role="button"
+          size="sm"
+          @click.stop="$emit('delete')"
+        />
       </span>
     </div>
     <div v-if="!isCollapsed" :key="sectionsRefreshKey" class="ps-3">
@@ -352,27 +326,30 @@ defineExpose({ errors, thisSection });
         <table class="table table-responsive">
           <thead>
           <draggable
-            :disabled="true"
             v-model="headers"
-            :item-key="(key) => key"
-            tag="tr"
+            :item-key="(key: any) => key"
+            tag="tr" handle=".handle"
             @end.stop="reorderColumns"
           >
             <template #item="{ element: header, index: i }">
               <th :class="{ fixed: i === 0 || i === headers?.length - 1 }">
                 <div
                   v-if="i > 0 && i < headers.length - 1"
-                  class="input-group input-group-sm align-items-center"
+                  class="input-group input-group-sm flex-nowrap"
                 >
                   <template v-if="!getFieldType(header)?.createdOnRender">
-                    <label class="input-group-text">
-                        <span class="form-control-sm"
-                        >{{ getFieldType(header).name }}
+                    <div class="input-group-text p-0 justify-content-center square h-100"
+                         v-if="!(fixedFirstColumn && i === 1)">
+                      <font-awesome-icon icon="fa-grip-horizontal" class="handle icon fa-sm" />
+                    </div>
+                    <label class="input-group-text flex-grow-1">
+                      <span class="form-control-sm"
+                      >{{ getFieldType(header)?.name }}
                           <span
                             class="text-danger"
                             v-if="
                               getFieldType(header)?.display === 'required' ||
-                              getFieldType(header)?.controlType?.minlength > 0
+                              (getFieldType(header)?.controlType?.minlength || 0) > 0
                             "
                           >*</span
                           >
@@ -382,32 +359,42 @@ defineExpose({ errors, thisSection });
                         :icon="['fas', 'circle-question']"
                         class="text-black-50 ps-1 small"
                         role="button"
-                        @click="showHelp(getFieldType(header))"
+                        @click="showHelp(getFieldType(header)!)"
                       />
-                      <font-awesome-icon
-                        v-if="!getFieldType(header)?.display"
-                        role="button"
-                        @click.prevent="deleteColumn(i)"
-                        class="icon fa-sm"
-                        icon="fa-trash"
-                      ></font-awesome-icon>
                     </label>
+                    <button class="btn btn-outline-secondary icon square h-100"
+                            v-if="getFieldType(header)?.display !== 'required' && !readonly"
+                            @click.stop="deleteColumn(i)">
+                      <font-awesome-icon class="fa-sm" icon="fa-trash"></font-awesome-icon>
+                    </button>
                   </template>
                   <template v-else>
-                    <input
-                      ref="headerComponent"
-                      :value="header"
-                      class="form-control"
-                      :disabled="
-                          readOnly() ||
-                          getFieldType(header)?.display
-                        "
-                      type="text"
-                      @change.stop="(e) => updateColumnName(e, i)"
-                    />
+                    <div class="input-group-text p-0 justify-content-center square h-100"
+                         v-if="!(fixedFirstColumn && i === 1)">
+                      <font-awesome-icon icon="fa-grip-horizontal" class="handle icon fa-sm" />
+                    </div>
+                    <input v-if="columnOptions.length === 0" ref="headerComponent"
+                           :value="header" class="form-control h-100"
+                           :disabled="readonly || getFieldType(header)?.display === 'readonly'" type="text"
+                           @change.stop="(e) => updateColumnName((e.target as HTMLInputElement).value, i)">
+
+                    <Multiselect v-else
+                                 ref="headerComponent"
+                                 :allow-absent="true"
+                                 label="value"
+                                 :value="header"
+                                 class="form-control h-100 pe-0"
+                                 :searchable="true"
+                                 :options="columnOptions"
+                                 :disabled="readonly || getFieldType(header)?.display === 'readonly'"
+                                 :allow-empty="false"
+                                 :append-to-body="true"
+                                 :create-option="true"
+                                 @input="updateColumnName( $event, i)"
+                                 @remove="updateColumnName( $event, i)" />
                     <button
                       v-if="!getFieldType(header)?.display"
-                      class="btn btn-outline-secondary icon"
+                      class="btn btn-outline-secondary icon square h-100"
                       type="button"
                       @click.prevent="deleteColumn(i)"
                     >
@@ -423,32 +410,31 @@ defineExpose({ errors, thisSection });
           </draggable>
           </thead>
           <draggable
-            :disabled="true"
             v-model="theseRows"
             item-key="name"
-            tag="tbody"
-            @end="(e) => emits('rowsReordered', e)"
+            tag="tbody" handle=".handle"
+            @end="(e: any) => emits('rowsReordered', {oldIndex: e.oldIndex, newIndex: e.newIndex})"
           >
             <template #item="{ element: row, index: index }">
               <tr>
                 <td class="grip">
-                  <font-awesome-icon icon="fa-solid fa-grip-vertical" />
+                  <font-awesome-icon icon="fa-solid fa-grip-vertical" class="handle" />
                 </td>
                 <td
                   v-for="(col, j) in [...headers].filter(
-                    (v, i) => i > 0 && i < headers.length - 1,
+                    (_v, i) => i > 0 && i < headers.length - 1,
                   )"
                   :key="j"
                 >
                   <Attribute
                     :key="index"
                     ref="attributeRefs"
-                    :attribute="getCell(row, col)"
+                    :attribute="getCell(row, col)!"
                     :row="row"
                     :field-type="getFieldType(getCell(row, col))"
                     :isTableAttribute="true"
                     :parent="row.attributes"
-                    @deleteAttribute="(v) => emits('deleteAttribute', index)"
+                    @deleteAttribute="() => emits('deleteAttribute', index)"
                     @deleteOrg="
                       (v) =>
                         emits('deleteOrg', { ...v, ...{ authorIndex: index } })
@@ -463,7 +449,7 @@ defineExpose({ errors, thisSection });
                   <font-awesome-icon
                     v-if="
                       !(index === 0 && sectionType?.display === 'required') &&
-                      !readOnly()
+                      !readonly
                     "
                     class="fa-sm"
                     icon="fa-trash"
@@ -476,7 +462,7 @@ defineExpose({ errors, thisSection });
           </draggable>
         </table>
       </div>
-      <div v-if="!readOnly()">
+      <div v-if="!readonly">
         <button class="btn btn-outline-secondary btn-sm" @click="addRow">
           Add Row
         </button>
@@ -492,15 +478,29 @@ defineExpose({ errors, thisSection });
 </template>
 
 <style scoped>
-.grip {
-  color: #cccccc;
+.input-group {
+  height: 41px;
+}
+
+input[type="text"].form-control {
+  min-width: 100px;
+}
+
+.square {
+  aspect-ratio: 1;
 }
 
 .grip {
+  color: #cccccc;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.handle {
   cursor: grab;
 }
 
-.grip:active {
+.handle:active {
   cursor: grabbing;
 }
 
