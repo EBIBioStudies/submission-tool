@@ -307,7 +307,7 @@ const deleteSubSection = async (someSubSections: (PageTab.BuildingSection | Page
     return;
 
   thisSection.value.subsections = someSubSections.filter((_v, i) => i !== index);
-  await refreshSection()
+  await refreshSection();
 };
 
 const refreshSection = async () => {
@@ -382,6 +382,7 @@ const rowsReordered = <T>(event: {
 
 const columnsReordered = () => {
   sectionsRefreshKey.value += 1;
+};
 
 
 const canUpdateColumnName = (type?: Template.Type) => {
@@ -510,7 +511,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
         v-if="depth === 0"
         class="float-end text-secondary"
         style="font-size: 8pt; padding-top: 35px"
-        >* Required</span
+      >* Required</span
       >
     </div>
     <!-- section content -->
