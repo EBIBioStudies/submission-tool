@@ -78,7 +78,7 @@ const readonly = computed(() => parentDisplayType?.value === 'readonly' && !sect
 const isRemovable = computed(() => sectionType.value?.display !== 'required' || thisSection.value.accno?.includes('-removable'));
 const isRenamable = computed(() => sectionType.value?.allowRename || thisSection.value.accno?.includes('-custom'));
 
-const deleteTag = (msg: PageTab.IndexedTag) => deleteAttribute(msg);
+const deleteTag = (msg: PageTab.IndexedTag) => deleteAttribute([msg]);
 // if (props?.sectionType?.display) {
 //   provide('parentDisplayType', props?.sectionType?.display)
 // }
@@ -334,12 +334,12 @@ const addAttribute = async (name?: string = '') => {
   added.focus();
 };
 
-const deleteAttribute = async (del: PageTab.DetailedAttribute) => {
+const deleteAttribute = async (del: PageTab.IndexedTag[]) => {
   if (parentDisplayType!.value === 'readonly' && !sectionType.value.overrideReadonly) return;
-  const index = thisSection.value.attributes?.findIndex(att => att.name === del.name && att.value === del.value);
-  if (index !== undefined && index >= 0) {
-    thisSection.value.attributes?.splice(index, 1);
-  }
+  del.map((d) => d.index)
+    .filter((i) => i !== undefined && i >= 0)
+    .sort((a, b) => b - a)
+    .forEach((i) => thisSection.value.attributes?.splice(i, 1));
   attributesRefreshKey.value += 1;
 };
 

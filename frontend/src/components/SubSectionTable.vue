@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, nextTick, provide, ref, Ref, watchEffect } from 'vue';
+import { computed, inject, nextTick, provide, ref, Ref } from 'vue';
 import draggable from 'vuedraggable';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Attribute from '@/components/Attribute.vue';
@@ -29,7 +29,7 @@ const emits = defineEmits<{
   columnsReordered: []
   delete: []
   deleteRow: [index: number]
-  deleteAttribute: [index: number]
+  deleteAttribute: [attribute : PageTab.IndexedTag[]]
   deleteOrg: [PageTab.Organisation]
   createOrg: [PageTab.Organisation]
   refreshSection: [index: number]

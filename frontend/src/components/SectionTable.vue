@@ -29,7 +29,7 @@ const emits = defineEmits<{
   columnsReordered: []
   delete: []
   deleteRow: [index: number]
-  deleteAttribute: [index: number]
+  deleteAttribute: [attributes: PageTab.IndexedTag[]]
   deleteOrg: [PageTab.Organisation]
   createOrg: [PageTab.Organisation]
   refreshSection: [index: number]

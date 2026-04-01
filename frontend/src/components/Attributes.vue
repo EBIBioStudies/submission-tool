@@ -16,7 +16,7 @@ const props = defineProps<{
   isSectionAttribute?: boolean,
 }>();
 const emits = defineEmits<{
-  deleteAttribute: [attribute: PageTab.DetailedAttribute]
+  deleteAttribute: [attribute: PageTab.IndexedTag[]]
   createTag: [obj: PageTab.Tag]
   deleteTag: [obj: PageTab.IndexedTag]
   newAttribute: [type?: string]
@@ -100,7 +100,7 @@ addMissingAttributes();
           :parent="attributeList"
           @createTag="(v) => emits('createTag', v)"
           :isSectionAttribute="isSectionAttribute && isRegularAttribute(attribute)"
-          @deleteAttribute="() => emits('deleteAttribute', attribute)"
+          @deleteAttribute="(att) => emits('deleteAttribute', att)"
           @deleteTag="(v) => emits('deleteTag', v)"
         />
       </template>

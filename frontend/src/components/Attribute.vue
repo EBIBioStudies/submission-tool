@@ -29,7 +29,7 @@ const props = defineProps<{
 const emits = defineEmits<{
   createTag: [PageTab.Tag],
   deleteTag: [PageTab.IndexedTag],
-  deleteAttribute: [PageTab.Attribute],
+  deleteAttribute: [PageTab.IndexedTag[]],
   deleteOrg: [PageTab.Organisation],
   createOrg: [PageTab.Organisation],
 }>();
@@ -422,7 +422,7 @@ const showHelp = () => {
         class="icon fa-sm"
         role="button"
         icon="fa-trash"
-        @click="emits('deleteAttribute', attribute as PageTab.DetailedAttribute)"
+        @click="emits('deleteAttribute', thisMultiValuedAttribute as PageTab.IndexedTag[])"
       ></font-awesome-icon>
     </div>
   </div>
