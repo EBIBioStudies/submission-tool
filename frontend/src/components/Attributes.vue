@@ -49,8 +49,8 @@ const getFieldType = (attribute: PageTab.DetailedAttribute): Template.FieldType 
 
 const nonPresentAttributes = computed(() =>
   [
-    ...props.fieldTypes?.filter(f => !props.attributes?.some(a => a.name === f.name)) || [],
-    ...props.annotationsType?.columnTypes?.filter(f => !props.attributes?.some(a => a.name === f.name)) || [],
+    ...props.fieldTypes?.filter(f => !props.attributes?.some(a => a.name.toLowerCase() === f.name.toLowerCase())) || [],
+    ...props.annotationsType?.columnTypes?.filter(f => !props.attributes?.some(a => a.name.toLowerCase() === f.name.toLowerCase())) || [],
     ...props.allowNewAttribute ? [{ name: '' }] : [],
   ],
 );
