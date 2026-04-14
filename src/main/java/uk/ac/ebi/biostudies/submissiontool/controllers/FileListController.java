@@ -36,8 +36,8 @@ public class FileListController {
   @CrossOrigin(origins = "*")
   @GetMapping(value = "/filelist/{*path}", produces = MediaType.TEXT_PLAIN_VALUE)
   public Mono<Void> getFileList(@PathVariable String path,
-      @RequestHeader(SESSION_HEADER) String token,
-      ServerHttpResponse response) {
+                                @RequestHeader(SESSION_HEADER) String token,
+                                ServerHttpResponse response) {
     response.getHeaders().setContentType(MediaType.TEXT_PLAIN);
     response.getHeaders().setContentDisposition(
         ContentDisposition.attachment()
@@ -55,10 +55,10 @@ public class FileListController {
                 .onErrorResume(e -> {
                   log.error("Error generating filelist for path: {}", path, e);
                   return Flux.just(
-                          "Error generating filelist \t Please send this file to biostudies@ebi.ac.uk to help us fix the issue.",
-                          "Message \t "  + e.getMessage() + " [path=" + path + " ]",
-                          "Cause \t " +e.getCause().toString(),
-                          "Stacktrace \t " +Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.joining("\n\t"))
+                      "Error generating filelist \t Please send this file to biostudies@ebi.ac.uk to help us fix the issue.",
+                      "Message \t " + e.getMessage() + " [path=" + path + " ]",
+                      "Cause \t " + e.getCause().toString(),
+                      "Stacktrace \t " + Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.joining("\n\t"))
                   );
                 })
                 .map(line -> bufferFactory.wrap((line + "\n").getBytes(StandardCharsets.UTF_8))))
