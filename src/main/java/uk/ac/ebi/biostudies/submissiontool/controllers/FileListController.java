@@ -53,7 +53,8 @@ public class FileListController {
             getFilesReactive(path, token)
                 .doOnError(e -> log.error("Error generating filelist for path: {}", path, e))
                 .onErrorResume(e -> Flux.just(
-                    "[" + Instant.now().toString() + "] \t Error generating filelist for path: " + path + "\t Please send this file to biostudies@ebi.ac.uk to help us fix the issue."
+                    "[" + Instant.now().toString() + "]  Error generating filelist for path: " + path,
+                    "Please send this file to biostudies@ebi.ac.uk to help us fix the issue."
                 ))
                 .map(line -> bufferFactory.wrap((line + "\n").getBytes(StandardCharsets.UTF_8))))
         .as(response::writeWith);
