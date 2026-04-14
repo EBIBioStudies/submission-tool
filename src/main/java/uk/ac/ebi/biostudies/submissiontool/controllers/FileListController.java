@@ -29,7 +29,7 @@ public class FileListController {
   private static final Logger log = LoggerFactory.getLogger(FileListController.class);
 
   public static final String SESSION_HEADER = "x-session-token";
-  private final ObjectMapper objectMapper = new ObjectMapper();
+
   @Autowired
   private Environment environments;
 
@@ -85,15 +85,7 @@ public class FileListController {
         .contentType(MediaType.APPLICATION_JSON)
         .bodyValue(Collections.singletonMap("path", path))
         .retrieve()
-        .bodyToMono(String.class)
-        .flatMapMany(body -> {
-          try {
-            JsonNode[] files = objectMapper.readValue(body, JsonNode[].class);
-            return Flux.fromArray(files);
-          } catch (Exception e) {
-            return Flux.error(e);
-          }
-        })
+        .bodyToFlux(JsonNode.class)
         .flatMap(entry -> {
           String sanitizedPath = entry.get("path").asText() + "/" + entry.get("name").asText();
           if (sanitizedPath.startsWith("user/")) {
