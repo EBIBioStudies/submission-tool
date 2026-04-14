@@ -18,9 +18,8 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+import java.time.Instant;
 import java.util.Collections;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/biostudies/submissions")
@@ -54,10 +53,7 @@ public class FileListController {
             getFilesReactive(path, token)
                 .doOnError(e -> log.error("Error generating filelist for path: {}", path, e))
                 .onErrorResume(e -> Flux.just(
-                    "Error generating filelist \t Please send this file to biostudies@ebi.ac.uk to help us fix the issue.",
-                    "Message \t " + e.getMessage() + " [path=" + path + " ]",
-                    "Cause \t " + e.getCause().toString(),
-                    "Stacktrace \t " + Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.joining("\n\t"))
+                    "[" + Instant.now().toString() + "] \t Error generating filelist for path: " + path + "\t Please send this file to biostudies@ebi.ac.uk to help us fix the issue."
                 ))
                 .map(line -> bufferFactory.wrap((line + "\n").getBytes(StandardCharsets.UTF_8))))
         .as(response::writeWith);
