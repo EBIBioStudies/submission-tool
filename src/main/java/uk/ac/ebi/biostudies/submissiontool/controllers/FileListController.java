@@ -1,10 +1,8 @@
 package uk.ac.ebi.biostudies.submissiontool.controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -12,20 +10,23 @@ import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpResponse;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping("/biostudies/submissions")
 public class FileListController {
+
+  private static final Logger log = LoggerFactory.getLogger(FileListController.class);
 
   public static final String SESSION_HEADER = "x-session-token";
   private final ObjectMapper objectMapper = new ObjectMapper();
@@ -51,13 +52,17 @@ public class FileListController {
 
     return Flux.concat(initialFlux,
             getFilesReactive(path, token)
+                .onErrorResume(e -> {
+                  log.error("Error generating filelist for path: {}", path, e);
+                  return Flux.just(
+                          "Error generating filelist \t Please send this file to biostudies@ebi.ac.uk to help us fix the issue.",
+                          "Message \t "  + e.getMessage(),
+                          "Cause \t " +e.getCause().toString(),
+                          "Stacktrace \t " +Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.joining("\n\t"))
+                  );
+                })
                 .map(line -> bufferFactory.wrap((line + "\n").getBytes(StandardCharsets.UTF_8))))
-        .as(response::writeWith)
-        .onErrorResume(e -> {
-          DataBuffer errorBuffer = bufferFactory.wrap(
-              "Error generating filelist\n".getBytes(StandardCharsets.UTF_8));
-          return response.writeWith(Mono.just(errorBuffer));
-        });
+        .as(response::writeWith);
   }
 
   private Flux<String> getFilesReactive(String path, String token) {
