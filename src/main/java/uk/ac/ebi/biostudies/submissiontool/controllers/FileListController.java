@@ -52,15 +52,13 @@ public class FileListController {
 
     return Flux.concat(initialFlux,
             getFilesReactive(path, token)
-                .onErrorResume(e -> {
-                  log.error("Error generating filelist for path: {}", path, e);
-                  return Flux.just(
-                      "Error generating filelist \t Please send this file to biostudies@ebi.ac.uk to help us fix the issue.",
-                      "Message \t " + e.getMessage() + " [path=" + path + " ]",
-                      "Cause \t " + e.getCause().toString(),
-                      "Stacktrace \t " + Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.joining("\n\t"))
-                  );
-                })
+                .doOnError(e -> log.error("Error generating filelist for path: {}", path, e))
+                .onErrorResume(e -> Flux.just(
+                    "Error generating filelist \t Please send this file to biostudies@ebi.ac.uk to help us fix the issue.",
+                    "Message \t " + e.getMessage() + " [path=" + path + " ]",
+                    "Cause \t " + e.getCause().toString(),
+                    "Stacktrace \t " + Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.joining("\n\t"))
+                ))
                 .map(line -> bufferFactory.wrap((line + "\n").getBytes(StandardCharsets.UTF_8))))
         .as(response::writeWith);
   }
