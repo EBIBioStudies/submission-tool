@@ -56,7 +56,7 @@ public class FileListController {
                   log.error("Error generating filelist for path: {}", path, e);
                   return Flux.just(
                           "Error generating filelist \t Please send this file to biostudies@ebi.ac.uk to help us fix the issue.",
-                          "Message \t "  + e.getMessage(),
+                          "Message \t "  + e.getMessage() + " [path=" + path + " ]",
                           "Cause \t " +e.getCause().toString(),
                           "Stacktrace \t " +Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.joining("\n\t"))
                   );
