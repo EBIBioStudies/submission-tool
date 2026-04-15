@@ -113,6 +113,11 @@ const onDeleteTag = (newTag: PageTab.IndexedTag) => {
   return false; // ignore the event, it will be rendered by the parent
 };
 
+const updateMultivaluedName = () => {
+  if (!thisAttribute.value.name) return;
+  thisMultiValuedAttribute.value.forEach(a => props.parent![a.index].name = thisAttribute.value.name!);
+};
+
 const withinThreeYears = (date: Date): boolean => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -217,6 +222,7 @@ const showHelp = () => {
         type="text"
         class="form-control attribute-name"
         v-model="thisAttribute.name"
+        @change="updateMultivaluedName()"
         placeholder="Attribute name"
         :class="{'is-invalid':errors?.length}"
       />
