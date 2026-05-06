@@ -87,10 +87,23 @@
       {{ toastMessage }}
     </div>
 
-    <div class="table-responsive-sm position-relative">
+    <div
+      class="table-responsive-sm position-relative drop-zone"
+      :class="{ 'drag-over': isDragging }"
+      @dragenter.prevent="handleDragEnter"
+      @dragover.prevent="handleDragOver"
+      @dragleave.prevent="handleDragLeave"
+      @drop.prevent="handleDrop"
+    >
       <div v-if="loading" class="loading-overlay">
         <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+      <div v-if="isDragging" class="drop-overlay">
+        <div class="drop-message">
+          <font-awesome-icon icon="fa-solid fa-cloud-arrow-up" class="fa-3x mb-3"></font-awesome-icon>
+          <div>Drop files or folders here</div>
         </div>
       </div>
 
@@ -299,6 +312,8 @@ const sortedFiles = computed(() => files.value?.sort((a, b) => // sort on type b
 
 const toastMessage = ref('');
 const showToast = ref(false);
+const isDragging = ref(false);
+const dragCounter = ref(0);
 
 onBeforeUnmount(() => {
   fetchAbortController.value.abort();
@@ -450,6 +465,112 @@ const checkExtension = async (oldName: string, newName: string): Promise<boolean
   }
   return true;
 };
+
+const handleDragEnter = (e: DragEvent) => {
+  dragCounter.value++;
+  if (e.dataTransfer?.items && e.dataTransfer.items.length > 0) {
+    isDragging.value = true;
+  }
+};
+
+const handleDragOver = (e: DragEvent) => {
+  if (e.dataTransfer) {
+    e.dataTransfer.dropEffect = 'copy';
+  }
+};
+
+const handleDragLeave = (e: DragEvent) => {
+  dragCounter.value--;
+  if (dragCounter.value === 0) {
+    isDragging.value = false;
+  }
+};
+
+const handleDrop = async (e: DragEvent) => {
+  isDragging.value = false;
+  dragCounter.value = 0;
+
+  const items = e.dataTransfer?.items;
+  if (!items) return;
+
+  const files: File[] = [];
+  let hasFolder = false;
+  let rootFolderName = '';
+
+  // Check if any item is a folder
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (item.kind === 'file') {
+      const entry = item.webkitGetAsEntry?.();
+      if (entry?.isDirectory) {
+        hasFolder = true;
+        if (!rootFolderName) {
+          rootFolderName = entry.name;
+        }
+        break;
+      }
+    }
+  }
+
+  // Collect all files
+  const promises: Promise<void>[] = [];
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (item.kind === 'file') {
+      const entry = item.webkitGetAsEntry?.();
+      if (entry) {
+        if (entry.isDirectory) {
+          // For directories, include the folder name in the path
+          promises.push(traverseFileTree(entry, files, entry.name + '/'));
+        } else {
+          // For individual files, no prefix
+          promises.push(traverseFileTree(entry, files, ''));
+        }
+      }
+    }
+  }
+
+  await Promise.all(promises);
+
+  console.log(promises, files, hasFolder, rootFolderName, e);
+
+  if (files.length > 0) {
+    const fileList = createFileList(files);
+    await uploadFiles(fileList, hasFolder, e);
+  }
+};
+
+const traverseFileTree = async (item: any, files: File[], path: string): Promise<void> => {
+  return new Promise((resolve) => {
+    if (item.isFile) {
+      item.file((file: File) => {
+        // Preserve the full path for folder uploads
+        const fullPath = path + file.name;
+        Object.defineProperty(file, 'webkitRelativePath', {
+          value: fullPath,
+          writable: false
+        });
+        files.push(file);
+        resolve();
+      });
+    } else if (item.isDirectory) {
+      const dirReader = item.createReader();
+      dirReader.readEntries(async (entries: any[]) => {
+        const entryPromises = entries.map(entry =>
+          traverseFileTree(entry, files, path + item.name + '/')
+        );
+        await Promise.all(entryPromises);
+        resolve();
+      });
+    }
+  });
+};
+
+const createFileList = (files: File[]): FileList => {
+  const dataTransfer = new DataTransfer();
+  files.forEach(file => dataTransfer.items.add(file));
+  return dataTransfer.files;
+};
 </script>
 
 <style scoped>
@@ -508,5 +629,37 @@ const checkExtension = async (oldName: string, newName: string): Promise<boolean
   --bs-spinner-border-width: 0.75em;
   --bs-spinner-height: min(33cqmin, 5rem);
   --bs-spinner-width: min(33cqmin, 5rem);
+}
+
+.drop-zone {
+  min-height: 300px;
+  transition: background-color 0.2s ease;
+}
+
+.drop-zone.drag-over {
+  background-color: rgba(13, 110, 253, 0.05);
+}
+
+.drop-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(13, 110, 253, 0.1);
+  border: 3px dashed #0d6efd;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 15;
+  pointer-events: none;
+}
+
+.drop-message {
+  text-align: center;
+  color: #0d6efd;
+  font-size: 1.5rem;
+  font-weight: 500;
 }
 </style>
