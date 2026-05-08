@@ -6,7 +6,8 @@ import {
   getCurrentInstance,
   inject,
   nextTick,
-  onMounted, provide,
+  onMounted,
+  provide,
   ref,
   Ref,
   UnwrapRef,
@@ -31,6 +32,7 @@ const props = defineProps<{
   parentSectionType?: Template.TableType;
   depth: number;
   sectionTypeMap?: Map<string, Template.TableType>;
+  siblingCount?: number;
 }>();
 
 defineEmits<{
@@ -75,7 +77,7 @@ const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType')
 const isPublicSubmission = inject<ComputedRef<boolean>>('isPublicSubmission');
 
 const readonly = computed(() => parentDisplayType?.value === 'readonly' && !sectionType.value?.overrideReadonly || sectionType.value?.display === 'readonly');
-const isRemovable = computed(() => sectionType.value?.display !== 'required' || thisSection.value.accno?.includes('-removable'));
+const isRemovable = computed(() => sectionType.value?.display !== 'required' || (props.siblingCount ?? 1) > 1);
 const isRenamable = computed(() => sectionType.value?.allowRename || thisSection.value.accno?.includes('-custom'));
 
 const deleteTag = (msg: PageTab.IndexedTag) => deleteAttribute([msg]);
@@ -621,6 +623,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
                 :parentSectionType="inheritedSectionType"
                 :depth="props.depth + 1"
                 :sectionTypeMap="subSectionTypeMap"
+                :siblingCount="section.subsections!.filter(s => !Array.isArray(s) && s?.type?.toLowerCase() === subsection?.type?.toLowerCase()).length"
                 @delete="deleteSubSection(section.subsections!, i, subSectionTypeMap.get(subsection?.type?.toLowerCase()))"
                 @addTable="(msg) => addTable(msg.section, i, msg.instance)"
                 ref="errSecRefs"
