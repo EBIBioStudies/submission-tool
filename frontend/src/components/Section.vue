@@ -181,7 +181,18 @@ const addSubsection = async (aSection: PageTab.Section, _i: number, type?: Templ
     obj.accno = String(obj.accno) + '-custom';
   }
   obj.accno = String(obj.accno) + '-removable';
-  aSection.subsections.push(obj);
+  const typeName = obj.type?.toLowerCase();
+  const lastIdx = typeName
+    ? aSection.subsections.findLastIndex((s) => ensureArray(s)[0]?.type?.toLowerCase() === typeName)
+    : -1;
+  let insertedIdx: number;
+  if (lastIdx >= 0) {
+    aSection.subsections.splice(lastIdx + 1, 0, obj);
+    insertedIdx = lastIdx + 1;
+  } else {
+    aSection.subsections.push(obj);
+    insertedIdx = aSection.subsections.length - 1;
+  }
 
   // Make sure the map with subsections is updated
   updateSubSectionTypeMap();
@@ -190,10 +201,9 @@ const addSubsection = async (aSection: PageTab.Section, _i: number, type?: Templ
 
   // wait till the UI is updated and the focus the first attribute name
   await nextTick();
-  const added = [
-    ...(componentInstance?.refs?.sectionTablesRef as HTMLDivElement[] || []),
-    ...(componentInstance?.refs?.subsectionsRef as HTMLDivElement[] || []),
-  ].pop();
+  const tabRefs = componentInstance?.refs?.sectionTablesRef as HTMLDivElement[] || [];
+  const subsRefs = componentInstance?.refs?.subsectionsRef as HTMLDivElement[] || [];
+  const added = subsRefs[insertedIdx] ?? [...tabRefs, ...subsRefs].pop();
 
   added?.scrollIntoView();
   added?.querySelector('input')?.focus();
