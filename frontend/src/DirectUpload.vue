@@ -203,7 +203,7 @@ const doUploadRegularFile = (file: UploadingFile): Observable<UploadingFile> => 
 const doUploadStudyFile = (file: UploadingFile): Observable<UploadingFile> => {
   return new Observable((observer) => {
     const formData = new FormData();
-    if (selectedCollection.value.title) {
+    if (selectedCollection.value.title !== noneCollection.title) {
       const collection = { name: 'AttachTo', value: selectedCollection.value.title };
       formData.append('attributes', JSON.stringify(collection));
     }
