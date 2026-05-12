@@ -6,7 +6,7 @@ stages:
   - build
   - deploy
 
-build:
+.build-template: &build-template
   stage: build
   artifacts:
     paths:
@@ -16,8 +16,19 @@ build:
     - cp "$VITE_CONFIG" frontend/.env
     - echo "Using VITE config:"
     - cat frontend/.env
-
     - mvn clean package
+
+build-beta:
+  <<: *build-template
+  environment: beta
+  only:
+    - main
+
+build-prod:
+  <<: *build-template
+  environment: prod
+  only:
+    - main
 
 .deploy-template: &deploy-template
   stage: deploy
@@ -43,6 +54,8 @@ build:
 deploy-beta:
   <<: *deploy-template
   environment: beta
+  needs:
+    - build-beta
   only:
     - main
   when: manual
@@ -50,6 +63,8 @@ deploy-beta:
 deploy-prod:
   <<: *deploy-template
   environment: prod
+  needs:
+    - build-prod
   only:
     - main
   when: manual
