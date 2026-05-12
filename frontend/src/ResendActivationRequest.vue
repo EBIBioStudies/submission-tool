@@ -30,12 +30,12 @@
                                                         type="email">
                 <div v-if="email && !validEmail" class="invalid-feedback">Please enter a valid email</div>
               </div>
-              <button class="btn btn-primary my-2" :class="{'disabled': !validEmail}" type="submit">Send activation
-                link
-              </button>
               <vue-recaptcha v-if="!validCaptcha" :class="{'is-invalid': !validCaptcha}" :sitekey="captchaPublicKey"
                              class="captcha-root"
                              required @verify="onCaptchaVerified" />
+              <button class="btn btn-primary my-2" :class="{'disabled': !validEmail || !validCaptcha}" type="submit">Send activation
+                link
+              </button>
             </form>
           </div>
         </div>

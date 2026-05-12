@@ -23,9 +23,9 @@
                 <input type="email" id="email" name="email" autofocus required v-model="email" placeholder="Email" class="form-control" :class="{'is-invalid': email && !validEmail}">
                 <div v-if="email && !validEmail" class="invalid-feedback">Please enter a valid email</div>
               </div>
-              <button type="submit" :class="{disabled: !validEmail}" class="btn btn-primary my-2">Get reset link</button>
               <vue-recaptcha v-if="!validCaptcha" class="captcha-root" required :sitekey="captchaPublicKey" @verify="onCaptchaVerified" :class="{'is-invalid': !validCaptcha}"/>
               <div v-if="validEmail && !validCaptcha" class="invalid-feedback">Please select captcha</div>
+              <button type="submit" :class="{disabled: !validEmail || !validCaptcha}" class="btn btn-primary my-2">Get reset link</button>
             </form>
           </div>
         </div>

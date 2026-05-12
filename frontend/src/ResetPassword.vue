@@ -19,27 +19,32 @@
             <h4 class="card-title">Change your password</h4>
             <h6 class="card-subtitle mb-2 text-muted">Please provide a new password. All fields are required.</h6>
             <form id="pwdForm" name="pwdForm" @submit.prevent="resetPass">
+              <input type="email" name="email" style="display: none" autocomplete="email"/>
+
               <div class="form-group">
-                <label for="password1">Password</label>
+                <label for="password1">New password</label>
                 <input type="password" id="password1" v-model="form.password" minlength="6" required
+                       autocomplete="new-password"
                        class="form-control" :class="{'is-invalid': form.password && !validPassword1}">
-                <div v-if="form.password && !validPassword1" class="invalid-feedback">Password minimum length is 6
-                  characters
+                <div v-if="form.password && !validPassword1" class="invalid-feedback">
+                  Password minimum length is 6 characters
                 </div>
               </div>
               <div class="form-group">
-                <label for="password2">Re-enter password</label>
+                <label for="password2">Confirm new password</label>
                 <input type="password" id="password2" v-model="password2" minlength="6" required class="form-control"
+                       autocomplete="new-password"
                        :class="{'is-invalid':  !samePassword}">
-                <div v-if="password2 && !validPassword2" class="invalid-feedback">Password minimum length is 6
-                  characters
+                <div v-if="password2 && !validPassword2" class="invalid-feedback">
+                  Password minimum length is 6 characters
                 </div>
                 <div v-if="!samePassword" class="invalid-feedback">Please enter the same password as above</div>
               </div>
               <vue-recaptcha v-if="!validCaptcha" :class="{'is-invalid': !validCaptcha}" :sitekey="captchaPublicKey"
                              class="captcha-root"
                              required @verify="onCaptchaVerified" />
-              <button class="btn btn-primary my-2" type="submit">Reset
+              <button class="btn btn-primary my-2" type="submit" :class="{'disabled': !canSubmit}">
+                Reset
                 <font-awesome-icon v-if="isLoading" icon="cog" spin />
               </button>
             </form>
@@ -112,15 +117,22 @@ const resetPass = async () => {
   success.value = false;
   isLoading.value = true;
   form.value.activationKey = route.params.activationCode as string;
+  console.log(form.value);
   try {
     await axios.post(`/api/auth/password/change`, form.value);
     success.value = true;
+    console.log(success.value, 'success');
     redirectToExternalURL();
+    console.log('redirect');
   } catch (error: any) {
+    console.log('error');
+
     success.value = false;
     message.value = error?.response?.data?.log?.message || 'Unknown Error';
   }
   isLoading.value = false;
+  console.log('loading finished');
+
 };
 
 onMounted(() => {

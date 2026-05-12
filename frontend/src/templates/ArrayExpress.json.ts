@@ -175,7 +175,7 @@ export default {
             'controlType': {
               'name': 'text',
             },
-            'display': 'required',
+            'display': 'optional',
           },
           {
             'name': 'Volume',

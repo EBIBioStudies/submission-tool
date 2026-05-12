@@ -6,7 +6,8 @@ import {
   getCurrentInstance,
   inject,
   nextTick,
-  onMounted, provide,
+  onMounted,
+  provide,
   ref,
   Ref,
   UnwrapRef,
@@ -31,6 +32,7 @@ const props = defineProps<{
   parentSectionType?: Template.TableType;
   depth: number;
   sectionTypeMap?: Map<string, Template.TableType>;
+  siblingCount?: number;
 }>();
 
 defineEmits<{
@@ -75,7 +77,7 @@ const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType')
 const isPublicSubmission = inject<ComputedRef<boolean>>('isPublicSubmission');
 
 const readonly = computed(() => parentDisplayType?.value === 'readonly' && !sectionType.value?.overrideReadonly || sectionType.value?.display === 'readonly');
-const isRemovable = computed(() => sectionType.value?.display !== 'required' || thisSection.value.accno?.includes('-removable'));
+const isRemovable = computed(() => sectionType.value?.display !== 'required' || (props.siblingCount ?? 1) > 1);
 const isRenamable = computed(() => sectionType.value?.allowRename || thisSection.value.accno?.includes('-custom'));
 
 const deleteTag = (msg: PageTab.IndexedTag) => deleteAttribute([msg]);
@@ -181,7 +183,18 @@ const addSubsection = async (aSection: PageTab.Section, _i: number, type?: Templ
     obj.accno = String(obj.accno) + '-custom';
   }
   obj.accno = String(obj.accno) + '-removable';
-  aSection.subsections.push(obj);
+  const typeName = obj.type?.toLowerCase();
+  const lastIdx = typeName
+    ? aSection.subsections.findLastIndex((s) => ensureArray(s)[0]?.type?.toLowerCase() === typeName)
+    : -1;
+  let insertedIdx: number;
+  if (lastIdx >= 0) {
+    aSection.subsections.splice(lastIdx + 1, 0, obj);
+    insertedIdx = lastIdx + 1;
+  } else {
+    aSection.subsections.push(obj);
+    insertedIdx = aSection.subsections.length - 1;
+  }
 
   // Make sure the map with subsections is updated
   updateSubSectionTypeMap();
@@ -190,10 +203,9 @@ const addSubsection = async (aSection: PageTab.Section, _i: number, type?: Templ
 
   // wait till the UI is updated and the focus the first attribute name
   await nextTick();
-  const added = [
-    ...(componentInstance?.refs?.sectionTablesRef as HTMLDivElement[] || []),
-    ...(componentInstance?.refs?.subsectionsRef as HTMLDivElement[] || []),
-  ].pop();
+  const tabRefs = componentInstance?.refs?.sectionTablesRef as HTMLDivElement[] || [];
+  const subsRefs = componentInstance?.refs?.subsectionsRef as HTMLDivElement[] || [];
+  const added = subsRefs[insertedIdx] ?? [...tabRefs, ...subsRefs].pop();
 
   added?.scrollIntoView();
   added?.querySelector('input')?.focus();
@@ -611,6 +623,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
                 :parentSectionType="inheritedSectionType"
                 :depth="props.depth + 1"
                 :sectionTypeMap="subSectionTypeMap"
+                :siblingCount="section.subsections!.filter(s => !Array.isArray(s) && s?.type?.toLowerCase() === subsection?.type?.toLowerCase()).length"
                 @delete="deleteSubSection(section.subsections!, i, subSectionTypeMap.get(subsection?.type?.toLowerCase()))"
                 @addTable="(msg) => addTable(msg.section, i, msg.instance)"
                 ref="errSecRefs"
