@@ -1,7 +1,9 @@
 image: maven:3.9.5
-cache:
-  paths:
-    - target/
+# Commented out to make sure build-beta and build-prod are not conflicting one another
+#cache:
+#  paths:
+#    - target/
+
 stages:
   - build
   - deploy
