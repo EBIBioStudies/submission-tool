@@ -198,7 +198,8 @@ export namespace Template {
     description?: string;
     helpText?: string;
     helpLink?: string;
-    displayName?: string
+    displayName?: string;
+    icon?: string;
 
 
     /**

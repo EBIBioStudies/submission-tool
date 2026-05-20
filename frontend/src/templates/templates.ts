@@ -4,6 +4,7 @@ import Defaultv2 from '@/templates/Default.v2.json';
 import BioImagesv1 from '@/templates/BioImages.v1.json';
 import BioImagesv4 from '@/templates/BioImages.v4.json';
 import BioImagesv5 from '@/templates/BioImages.v5.json';
+import BioAIRepo from '@/templates/BioAIRepo.json.ts';
 import MicrobioRaman from '@/templates/MicrobioRaman.json';
 import BioImagesMIFAv1 from '@/templates/BioImages.MIFA.v1.json';
 import { PageTab } from '@/models/PageTab.model.ts';
@@ -19,6 +20,7 @@ export const allTemplates: Template.TemplateDefinition[] = [
   MicrobioRaman,
   ArrayExpress,
   BioImagesMIFAv1,
+  BioAIRepo,
   Default,
 ] as Template.TemplateDefinition[];
 
@@ -45,6 +47,7 @@ export const activeTemplates: Template.TemplateDefinition[] = [
   // Keep the same order that we want these templates to appear in the new submission dialogue
   // Higher versions should be kept on top
   BioImagesv5,
+  BioAIRepo,
   Defaultv2,
   MicrobioRaman,
   BioImagesMIFAv1,

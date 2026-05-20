@@ -136,9 +136,9 @@ onMounted(async () => {
                        :value="tmpl.name"
                 />
                 <label class="input-group" :for="`template_${i}`" :title="tmpl.name">
-                <span class="input-group-text p-4" style="width:70pt; height: 70pt">
-                  <img :alt="tmpl.displayName" style="width: 48px"
-                       :src="`${baseURL}images/template-icons/${tmpl.title||'Default'}.png`"
+                <span class="input-group-text p-4">
+                  <img :alt="tmpl.displayName" style="width: 48px; aspect-ratio: 1/1; object-fit: contain;"
+                       :src="`${baseURL}images/template-icons/${tmpl.icon|| (tmpl.title||'Default') + '.png'}`"
                        @error="(e) => (e.target as HTMLImageElement).src = `${baseURL}images/template-icons/Default.png`" />
                 </span>
                   <div class="form-control btn-group-vertical">
