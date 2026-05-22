@@ -150,7 +150,7 @@ const errors = computed(() => {
     ) {
       _errors.push(`Invalid ORCID value`);
     }
-  } else if (display.value === 'required' && props.fieldType?.name?.toLowerCase() !== 'file' && props.fieldType?.name?.toLowerCase() !== 'link' && (!thisAttribute.value?.value || thisAttribute?.value?.value?.trim() === '')) {
+  } else if (display.value === 'required' && props.fieldType?.name?.toLowerCase() !== 'file' && props.fieldType?.name?.toLowerCase() !== 'link' && (!thisAttribute.value?.value || !thisAttribute?.value?.value?.trim())) {
     if (!(thisMultiValuedAttribute?.value?.length > 0) && props.fieldType?.name?.toLowerCase() !== 'organisation' && props.fieldType?.name?.toLowerCase() !== 'file list')
       _errors.push(`${thisAttribute?.value?.name} required`);
     else if (props.fieldType?.name?.toLowerCase() === 'organisation') {

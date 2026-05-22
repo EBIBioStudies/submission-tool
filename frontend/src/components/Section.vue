@@ -26,13 +26,18 @@ import { PageTab } from '@/models/PageTab.model.ts';
 import { Template } from '@/models/Template.model.ts';
 import { SectionExpose } from '@/components/expose.model.ts';
 
+type SiblingInfo = {
+  count: number;
+  index: number;
+};
+
 const props = defineProps<{
   section: PageTab.Section;
   sectionType: Template.TableType | string;
   parentSectionType?: Template.TableType;
   depth: number;
   sectionTypeMap?: Map<string, Template.TableType>;
-  siblingCount?: number;
+  siblingInfo?: SiblingInfo;
 }>();
 
 defineEmits<{
@@ -77,8 +82,13 @@ const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType')
 const isPublicSubmission = inject<ComputedRef<boolean>>('isPublicSubmission');
 
 const readonly = computed(() => parentDisplayType?.value === 'readonly' && !sectionType.value?.overrideReadonly || sectionType.value?.display === 'readonly');
-const isRemovable = computed(() => sectionType.value?.display !== 'required' || (props.siblingCount ?? 1) > 1);
+const isRemovable = computed(() => sectionType.value?.display !== 'required' || (props.siblingInfo?.count ?? 1) > 1);
 const isRenamable = computed(() => sectionType.value?.allowRename || thisSection.value.accno?.includes('-custom'));
+const sectionCountLabel = computed(() =>
+  props.siblingInfo && props.siblingInfo.count > 1
+    ? `(${props.siblingInfo.index + 1})`
+    : '',
+);
 
 const deleteTag = (msg: PageTab.IndexedTag) => deleteAttribute([msg]);
 // if (props?.sectionType?.display) {
@@ -420,6 +430,26 @@ const canRender = (sec?: PageTab.BuildingSection | PageTab.BuildingSection[] | u
   return !NOT_RENDERABLE.has(sec?.type?.toLowerCase()!);
 };
 
+const getSiblingInfo = (
+  subsections: (PageTab.BuildingSection | PageTab.BuildingSection[])[],
+  subsection: PageTab.BuildingSection,
+  index: number,
+): SiblingInfo => {
+  const sameTypeSubsections = subsections.filter(
+    (s) =>
+      !Array.isArray(s) &&
+      s?.type?.toLowerCase() === subsection?.type?.toLowerCase(),
+  );
+  return {
+    count: sameTypeSubsections.length,
+    index: index - subsections.findIndex(
+      (s) =>
+        !Array.isArray(s) &&
+        s?.type?.toLowerCase() === subsection?.type?.toLowerCase(),
+    ),
+  };
+};
+
 const errors = computed(() => {
 
   const _errors = [
@@ -487,8 +517,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
           v-if="sectionType?.icon"
           class="icon"
           :icon="sectionType?.icon"
-        />{{ section.type }}</span
-        >
+        />{{ section.type }} <i v-if="sectionCountLabel">{{sectionCountLabel}}</i></span>
         <span v-else>
           <EditableLabel
             class="ms-2"
@@ -498,6 +527,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
             :is-editable="true"
             :data="thisSection"
           />
+          <i v-if="sectionCountLabel">{{sectionCountLabel}}</i>
         </span>
         <span class="text-danger"
               v-if="sectionType?.display==='required' || (sectionType?.minRequired || 0) > 0">*</span>
@@ -623,7 +653,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
                 :parentSectionType="inheritedSectionType"
                 :depth="props.depth + 1"
                 :sectionTypeMap="subSectionTypeMap"
-                :siblingCount="section.subsections!.filter(s => !Array.isArray(s) && s?.type?.toLowerCase() === subsection?.type?.toLowerCase()).length"
+                :siblingInfo="getSiblingInfo(section.subsections!, subsection, i)"
                 @delete="deleteSubSection(section.subsections!, i, subSectionTypeMap.get(subsection?.type?.toLowerCase()))"
                 @addTable="(msg) => addTable(msg.section, i, msg.instance)"
                 ref="errSecRefs"
