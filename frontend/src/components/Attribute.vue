@@ -363,7 +363,7 @@ const showHelp = () => {
 
     <!-- link -->
     <Link
-      v-else-if="fieldType?.controlType?.name === 'idlink'"
+      v-else-if="['idlink', 'link'].includes(fieldType?.controlType?.name)"
       ref="attributeControl"
       :row="curRow as PageTab.Link"
       :link="thisAttribute  as PageTab.Link"

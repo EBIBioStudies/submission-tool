@@ -19,7 +19,7 @@ export default {
   },
 
   sectionType: {
-    name: 'Submission',
+    name: 'Study',
     display: 'required',
     allowNewAttribute: false,
     disableCustomSubsection: true,
@@ -43,6 +43,19 @@ export default {
         controlType: { name: 'largetext' },
         helpContextual: {
           description: 'Scientific summary of the AI model, dataset, and biological objective.',
+        },
+      },
+      {
+        name: 'ReleaseDate',
+        title: 'Release Date',
+        icon: 'fa-calendar-alt',
+        display: 'required',
+        controlType: {
+          name: 'date',
+          allowPast: false,
+        },
+        helpContextual: {
+          description: 'The date at which your dataset should become publicly visible. This can be changed after submission if needed.',
         },
       },
       {
@@ -78,7 +91,7 @@ export default {
 
     tableTypes: [
       {
-        name: 'Authors',
+        name: 'Contact',
         display: 'required',
         rowAsSection: true,
         uniqueCols: true,
@@ -87,6 +100,11 @@ export default {
             name: 'Name',
             display: 'required',
             controlType: { name: 'text' },
+          },
+          {
+            name: 'E-mail',
+            display: 'required',
+            controlType: { name: 'email' },
           },
           {
             name: 'ORCID',
@@ -119,40 +137,76 @@ export default {
 
       {
         name: 'Publication',
+        description: 'Add the bibliography relevant to the study. Autofill is available when searching by <a target="_blank" href="https://www.ncbi.nlm.nih.gov/pubmed/">PubMed</a> identifier. For other IDs, you may use <a target="_blank" href="https://www.ncbi.nlm.nih.gov/pmc/pmctopmid/#converter">PubMed\'s converter</a>.',
+        icon: 'fa-book',
+        uniqueCols: true,
+        allowImport: false,
+        rowAsSection: false,
         display: 'desirable',
-        rowAsSection: true,
+        helpContextual: {},
         columnTypes: [
           {
-            name: 'DOI',
-            controlType: { name: 'text' },
+            name: 'PMID',
+            controlType: {
+              name: 'pubmedid',
+            },
+            display: 'desirable',
           },
           {
-            name: 'PubMed ID',
-            controlType: { name: 'pubmedid' },
+            name: 'Authors',
+            controlType: {
+              name: 'text',
+            },
+            display: 'required',
           },
           {
             name: 'Title',
-            controlType: { name: 'text' },
-          },
-        ],
-      },
-
-      {
-        name: 'External Links',
-        display: 'desirable',
-        rowAsSection: true,
-        columnTypes: [
-          {
-            name: 'GitHub',
-            controlType: { name: 'idlink' },
+            controlType: {
+              name: 'text',
+            },
+            display: 'required',
           },
           {
-            name: 'HuggingFace Dataset',
-            controlType: { name: 'idlink' },
+            name: 'Year',
+            controlType: {
+              name: 'text',
+            },
+            display: 'required',
           },
           {
-            name: 'HuggingFace Model',
-            controlType: { name: 'idlink' },
+            name: 'Volume',
+            controlType: {
+              name: 'text',
+            },
+            display: 'desirable',
+          },
+          {
+            name: 'Issue',
+            controlType: {
+              name: 'text',
+            },
+            display: 'desirable',
+          },
+          {
+            name: 'Type',
+            controlType: {
+              name: 'text',
+            },
+            display: 'optional',
+          },
+          {
+            name: 'Issn',
+            controlType: {
+              name: 'text',
+            },
+            display: 'optional',
+          },
+          {
+            name: 'DOI',
+            controlType: {
+              name: 'text',
+            },
+            display: 'optional',
           },
         ],
       },
@@ -188,7 +242,9 @@ export default {
             display: 'optional',
             controlType: {
               name: 'ontology',
-              ontology: ['MONDO', 'DOID'],
+              ontology: ['MONDO'],
+              multiple: true,
+
             },
           },
           {
@@ -238,7 +294,7 @@ export default {
           {
             name: 'Dataset',
             display: 'required',
-            rowAsSection: true,
+            rowAsSection: false,
             uniqueCols: true,
 
             columnTypes: [
@@ -250,18 +306,7 @@ export default {
               {
                 name: 'Source',
                 display: 'desirable',
-                controlType: {
-                  name: 'select',
-                  values: [
-                    'BioStudies',
-                    'HuggingFace',
-                    'GEO',
-                    'PRIDE',
-                    'ENA',
-                    'PDB',
-                    'Custom',
-                  ],
-                },
+                controlType: { name: 'link' },
               },
               {
                 name: 'Artifact',

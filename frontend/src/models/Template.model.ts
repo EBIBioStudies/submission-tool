@@ -9,6 +9,7 @@ export namespace Template {
     | 'largetext'
     | 'select'
     | 'idlink'
+    | 'link'
     | 'pubmedid'
     | 'reference'
     | 'filelist'
