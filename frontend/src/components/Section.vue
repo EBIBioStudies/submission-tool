@@ -357,6 +357,7 @@ const addAttribute = async (name?: string = '') => {
 };
 
 const deleteAttribute = async (del: PageTab.IndexedTag[]) => {
+  console.log(del, parentDisplayType, sectionType.value);
   if (parentDisplayType!.value === 'readonly' && !sectionType.value.overrideReadonly) return;
   del.map((d) => d.index)
     .filter((i) => i !== undefined && i >= 0)
