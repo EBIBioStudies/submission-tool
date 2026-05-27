@@ -222,11 +222,11 @@ export default {
           {
             name: 'Biological Question',
             display: 'required',
-            controlType: { name: 'largetext' },
+            controlType: { name: 'largetext', minlength: 20 },
           },
           {
             name: 'Intended Application',
-            display: 'required',
+            display: 'optional',
             controlType: { name: 'largetext' },
           },
           {
@@ -235,6 +235,7 @@ export default {
             controlType: {
               name: 'ontology',
               ontology: ['NCBITaxon'],
+              multiple: true,
             },
           },
           {
@@ -253,6 +254,7 @@ export default {
             controlType: {
               name: 'ontology',
               ontology: ['UBERON'],
+              multiple: true,
             },
           },
           {
@@ -261,14 +263,16 @@ export default {
             controlType: {
               name: 'ontology',
               ontology: ['CL'],
+              multiple: true,
             },
           },
           {
             name: 'Modality',
-            display: 'required',
+            display: 'optional',
             controlType: {
               name: 'ontology',
               ontology: ['EDAM'],
+              multiple: true,
             },
           },
         ],
@@ -279,7 +283,7 @@ export default {
       // =========================
       {
         name: 'Datasets',
-        display: 'required',
+        display: 'optional',
         displayAnnotations: false,
 
         fieldTypes: [
@@ -294,7 +298,7 @@ export default {
           {
             name: 'Dataset',
             display: 'required',
-            rowAsSection: false,
+            rowAsSection: true,
             uniqueCols: true,
 
             columnTypes: [
@@ -351,7 +355,7 @@ export default {
       // =========================
       {
         name: 'Optimization',
-        display: 'required',
+        display: 'optional',
 
         fieldTypes: [
           {
@@ -402,9 +406,14 @@ export default {
       // =========================
       {
         name: 'Model',
-        display: 'required',
+        display: 'optional',
 
         fieldTypes: [
+          {
+            name: 'Title',
+            display: 'required',
+            controlType: { name: 'text' },
+          },
           {
             name: 'Model Overview',
             display: 'required',
@@ -453,7 +462,7 @@ export default {
       // =========================
       {
         name: 'Evaluation',
-        display: 'required',
+        display: 'optional',
 
         fieldTypes: [
           {
@@ -466,20 +475,128 @@ export default {
         tableTypes: [
           {
             name: 'Metrics',
-            display: 'required',
+            display: 'optional',
             rowAsSection: true,
             columnTypes: [
               {
                 name: 'Metric Name',
-                controlType: { name: 'text' },
+                display: 'required',
+                controlType: {
+                  name: 'select',
+                  values: [
+                    // Classification
+                    'accuracy',
+                    'balanced_accuracy',
+                    'f1_score',
+                    'precision',
+                    'recall',
+                    'roc_auc',
+                    'pr_auc',
+                    'log_loss',
+                    'mcc',
+                    // Regression
+                    'mae',
+                    'mse',
+                    'rmse',
+                    'r2',
+                    // Ranking
+                    'ndcg',
+                    'map',
+                    'mrr',
+                    //segmentation
+                    'iou',
+                    'dice',
+                    //calibration
+                    'brier_score',
+                    'ece',
+                    //embeddings
+                    'ari',
+                    'silhouette',
+                    //bio-specific
+                    'gene_expression_corr',
+                    'pathway_enrichment_score'
+                  ],
+                },
               },
               {
                 name: 'Value',
+                display: 'required',
+                controlType: { name: 'text' },
+              },
+              {
+                name: 'Unit',
+                display: 'optional',
                 controlType: { name: 'text' },
               },
               {
                 name: 'Dataset',
-                controlType: { name: 'text' },
+                display: 'optional',
+                controlType: {
+                  name: 'reference',
+                  field_name: 'Name',
+                  section_type: 'Dataset',
+                },
+              },
+            ],
+          },
+          {
+            name: 'Evaluation Plot',
+            display: 'desirable',
+            rowAsSection: true,
+            columnTypes: [
+              {
+                name: 'Figure',
+                display: 'required',
+                controlType: {
+                  name: 'file',
+                },
+              },
+              {
+                name: 'Plot Type',
+                display: 'required',
+                controlType: {
+                  name: 'select',
+                  values: [
+                    'ROC curve',
+                    'Precision-recall curve',
+                    'Confusion matrix',
+                    'Calibration plot',
+                    'Loss curve',
+                    'Accuracy curve',
+                    'Embedding projection',
+                    'Attention map',
+                    'Feature importance',
+                    'Survival curve',
+                    'UMAP',
+                    't-SNE',
+                    'Other',
+                  ],
+                },
+              },
+              {
+                name: 'Description',
+                display: 'desirable',
+                controlType: {
+                  name: 'text',
+                },
+              },
+              {
+                name: 'Model evaluated',
+                display: 'required',
+                controlType: {
+                  name: 'reference',
+                  field_name: 'Title',
+                  section_type: 'Model',
+                },
+              },
+              {
+                name: 'Test dataset',
+                display: 'optional',
+                controlType: {
+                  name: 'reference',
+                  field_name: 'Name',
+                  section_type: 'Dataset',
+                },
               },
             ],
           },
@@ -496,7 +613,7 @@ export default {
         fieldTypes: [
           {
             name: 'Container Image',
-            controlType: { name: 'idlink' },
+            controlType: { name: 'link' },
           },
           {
             name: 'Environment',
