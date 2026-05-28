@@ -1,4 +1,5 @@
 import { Template } from '@/models/Template.model.ts';
+import { organismDefaultOptions } from '@/templates/organisms.ts';
 
 export default {
   'name': 'Default.v2',
@@ -75,6 +76,7 @@ export default {
           'name': 'ontology',
           'ontology': ['NCBITaxon'],
           'multiple': true,
+          'defaultOptions': organismDefaultOptions,
         },
       },
       {

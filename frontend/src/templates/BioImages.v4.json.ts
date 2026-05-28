@@ -1,4 +1,5 @@
 import { Template } from '@/models/Template.model.ts';
+import { organismDefaultOptions } from '@/templates/organisms.ts';
 
 export default {
   'name': 'BioImages.v4',
@@ -376,6 +377,7 @@ export default {
               'ontology': ['NCBITaxon'],
               'defaultAll': false,
               'multiple': false,
+              'defaultOptions': organismDefaultOptions,
             },
             'helpContextual': {
               'description': 'Species.',
