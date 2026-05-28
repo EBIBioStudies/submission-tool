@@ -43,6 +43,14 @@ const thisMultiValuedAttribute = ref(
     return { index: i, ...a };
   })?.filter(a => a.name === thisAttribute.value.name && a?.value) || [],
 );
+
+// Distinct from previous to support deleting empty values attributes
+const deletableMultivaluedAttribute = computed(() =>
+  props.parent?.map((a, i) => {
+    return { index: i, ...a };
+  })?.filter(a => a.name === thisAttribute.value.name)
+);
+
 const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
 const isManagerUser = inject<Ref<boolean>>('isManagerUser');
 
@@ -428,7 +436,7 @@ const showHelp = () => {
         class="icon fa-sm"
         role="button"
         icon="fa-trash"
-        @click="emits('deleteAttribute', thisMultiValuedAttribute as PageTab.IndexedTag[])"
+        @click="emits('deleteAttribute', deletableMultivaluedAttribute as PageTab.IndexedTag[])"
       ></font-awesome-icon>
     </div>
   </div>
