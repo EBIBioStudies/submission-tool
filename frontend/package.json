@@ -64,6 +64,6 @@
     "vue3-snapshot-serializer": "^2.13.0"
   },
   "engines": {
-    "node": ">=18.0.0 <=21.x"
+    "node": ">=22.x <=26.x"
   }
 }
