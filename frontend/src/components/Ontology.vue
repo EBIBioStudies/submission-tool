@@ -33,6 +33,25 @@ const olsWarning = 'Ontology search is temporarily unavailable. Enter the value 
 let lastQuery = '';
 let currentSearchAbortController: AbortController | undefined;
 const allOptions = ref<Option[]>([]);
+const toDefaultOption = (option: { name: string, id: string }): Option => ({
+  value: {
+    name: option.name, value: option.name, valqual: [
+      { name: 'Ontology', value: ontology.value![0] },
+      { name: 'TermId', value: option.id },
+    ],
+  },
+  label: option.name,
+});
+
+const filterDefaultOptions = (search: string) => {
+  const normalizedSearch = search.trim().toLocaleLowerCase();
+  if (!normalizedSearch) return defaultOptions.value.map(toDefaultOption);
+
+  return defaultOptions.value
+    .filter(option => option.name.toLocaleLowerCase().includes(normalizedSearch))
+    .map(toDefaultOption);
+};
+
 const updateOptions = async (search: string): Promise<Option[]> => {
   if (!search) {
     if (controlType.value?.defaultAll) search = '*';
@@ -57,7 +76,7 @@ const updateOptions = async (search: string): Promise<Option[]> => {
       exactMatch: controlType.value?.exact,
       includeObsoleteEntities: controlType.value?.obsoletes,
       isDefiningOntology: controlType.value?.local,
-    }, abortController.signal);
+    }, abortController.signal, 1000);
     if (currentSearchAbortController !== abortController) return allOptions.value;
 
     const data = result.elements.map(e => ({
@@ -82,15 +101,7 @@ const updateOptions = async (search: string): Promise<Option[]> => {
 
     olsUnavailable.value = true;
     totalPage.value = 0;
-    allOptions.value = defaultOptions.value.map(o => ({
-      value: {
-        name: o.name, value: o.name, valqual: [
-          { name: 'Ontology', value: ontology.value![0] },
-          { name: 'TermId', value: o.id },
-        ],
-      },
-      label: o.name
-    }));
+    allOptions.value = filterDefaultOptions(search === '*' ? '' : search);
   } finally {
     if (currentSearchAbortController === abortController) currentSearchAbortController = undefined;
   }

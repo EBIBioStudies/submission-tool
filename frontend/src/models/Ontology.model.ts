@@ -94,13 +94,14 @@ export namespace Ontology {
       return isComplexValue(value) ? value.value : value;
     }
 
-    export const search = async (query: Query, signal?: AbortSignal) => {
+    export const search = async (query: Query, signal?: AbortSignal, timeout = 1000) => {
       return axios.get<Results>(`${URL}`, {
         params: {
           ...query,
           type: ['class'],
         },
         signal,
+        timeout,
         paramsSerializer: params => qs.stringify(params, { arrayFormat: 'comma' }),
       }).then(res => res.data);
     };
