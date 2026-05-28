@@ -5,6 +5,8 @@ image: maven:3.9.5-eclipse-temurin-21
 #    - target/
 
 stages:
+  - test
+  - secret-detection
   - build
   - deploy
 
@@ -73,3 +75,22 @@ deploy-prod:
   only:
     - main
   when: manual
+
+include:
+  - template: Jobs/Dependency-Scanning.latest.gitlab-ci.yml
+  - template: Jobs/SAST.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+variables:
+  DS_ENFORCE_NEW_ANALYZER: 'true'
+  GITLAB_ADVANCED_SAST_ENABLED: 'true'
+sast:
+  stage: test
+  artifacts:
+    name: sast
+    paths:
+      - gl-sast-report.json
+    reports:
+      sast: gl-sast-report.json
+    when: always
+secret_detection:
+  stage: secret-detection
