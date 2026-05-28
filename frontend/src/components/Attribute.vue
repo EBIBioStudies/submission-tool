@@ -38,17 +38,24 @@ const attributeId = 'attribute-' + getCurrentInstance()!.uid;
 const thisAttribute = ref<PageTab.BuildingSection>(props.attribute);
 const curRow = ref<PageTab.BuildingSection>(props.row!);
 const attributeControl = ref<AttributeControlExpose>();
-const thisMultiValuedAttribute = ref(
-  props.parent?.map((a, i) => { // save the original index -- needed when deleting
-    return { index: i, ...a };
-  })?.filter(a => a.name === thisAttribute.value.name && a?.value) || [],
-);
 
-// Distinct from previous to support deleting empty values attributes
+const hasDisplayableValue = (attribute: Partial<PageTab.DetailedAttribute>) => {
+  if (typeof attribute.value === 'string') return attribute.value.trim().length > 0;
+  return attribute.value !== null && attribute.value !== undefined;
+};
+
+const getIndexedMultivaluedAttributes = (includeEmptyValues = false) =>
+  props.parent
+    ?.map((a, i) => ({ index: i, ...a })) // preserve original index for delete operations
+    .filter((a) =>
+      a.name === thisAttribute.value.name &&
+      (includeEmptyValues || hasDisplayableValue(a)),
+    ) || [];
+
+const thisMultiValuedAttribute = ref(getIndexedMultivaluedAttributes());
+
 const deletableMultivaluedAttribute = computed(() =>
-  props.parent?.map((a, i) => {
-    return { index: i, ...a };
-  })?.filter(a => a.name === thisAttribute.value.name)
+  getIndexedMultivaluedAttributes(true),
 );
 
 const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
