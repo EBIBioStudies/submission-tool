@@ -1,5 +1,6 @@
 <script setup lang="ts">
 
+import axios from 'axios';
 import { Template } from '@/models/Template.model.ts';
 import { computed, inject, Ref, ref, watch } from 'vue';
 import { Ontology } from '@/models/Ontology.model.ts';
@@ -30,6 +31,7 @@ const olsUnavailable = ref(false);
 const olsWarning = 'Ontology search is temporarily unavailable. Enter the value manually and try again later; the service should be restored soon.';
 
 let lastQuery = '';
+let currentSearchAbortController: AbortController | undefined;
 const allOptions = ref<Option[]>([]);
 const updateOptions = async (search: string): Promise<Option[]> => {
   if (!search) {
@@ -40,21 +42,24 @@ const updateOptions = async (search: string): Promise<Option[]> => {
     }
   }
 
-  if (lastQuery !== search) page.value = 0;
-  else page.value++;
+  const nextPage = lastQuery === search ? page.value + 1 : 0;
+  currentSearchAbortController?.abort();
+  const abortController = new AbortController();
+  currentSearchAbortController = abortController;
 
-  lastQuery = search;
   try {
     const result = await Ontology.OLS4.search({
       search,
       ontologyId: ontology.value,
       size: controlType.value?.pageSize ?? 10,
-      page: page.value,
+      page: nextPage,
       hierarchicalAncestor: controlType.value?.allChildrenOf,
       exactMatch: controlType.value?.exact,
       includeObsoleteEntities: controlType.value?.obsoletes,
       isDefiningOntology: controlType.value?.local,
-    });
+    }, abortController.signal);
+    if (currentSearchAbortController !== abortController) return allOptions.value;
+
     const data = result.elements.map(e => ({
         value: {
           name: props.fieldType.name, value: e.label[0], valqual: [
@@ -66,11 +71,15 @@ const updateOptions = async (search: string): Promise<Option[]> => {
         definition: Ontology.OLS4.extractValue(e.definition?.[0] || ''),
       }),
     );
+    lastQuery = search;
+    page.value = nextPage;
     olsUnavailable.value = false;
     totalPage.value = result.totalPages;
-    if (page.value > 0 && lastQuery === search) allOptions.value.push(...data);
+    if (nextPage > 0) allOptions.value.push(...data);
     else allOptions.value = data;
-  } catch {
+  } catch (error) {
+    if (axios.isCancel(error)) return allOptions.value;
+
     olsUnavailable.value = true;
     totalPage.value = 0;
     allOptions.value = defaultOptions.value.map(o => ({
@@ -82,6 +91,8 @@ const updateOptions = async (search: string): Promise<Option[]> => {
       },
       label: o.name
     }));
+  } finally {
+    if (currentSearchAbortController === abortController) currentSearchAbortController = undefined;
   }
   return allOptions.value;
 };
