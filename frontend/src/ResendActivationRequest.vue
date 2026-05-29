@@ -61,7 +61,6 @@ const errorMessage = ref(null);
 const success = ref(false);
 const recaptchaToken = ref('');
 const captchaPublicKey = window.config.recaptchaKey;
-const instanceKey = window.config.instanceKey; //backend needs this instanceKey
 
 
 const validEmail = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value));
@@ -75,7 +74,6 @@ const submitData = async () => {
       email: email.value,
       path: '/biostudies/submissions/activate',
       'recaptcha2-response': recaptchaToken.value,
-      'instanceKey': instanceKey,
     };
     try {
       await axios.post(`/api/auth/retryact`, parameters);

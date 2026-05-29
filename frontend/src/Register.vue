@@ -98,8 +98,6 @@ export default {
     const isCaptchaVerified = ref(false);
     const success = ref(false);
     const captchaPublicKey = window.config.recaptchaKey;
-    const instanceKey = window.config.instanceKey;
-
     const onCaptchaVerified = (response: any) => {
       form.value['recaptcha2-response'] = response;
       isCaptchaVerified.value = true;
@@ -138,7 +136,6 @@ export default {
       success.value = false;
       form.value['path'] = '/biostudies/submissions/activate';
       form.value['notificationsEnabled'] = true;
-      form.value['instanceKey'] = instanceKey;
       if (formValid.value) {
         try {
           await axios.post(`/api/auth/register`, form.value);

@@ -17,7 +17,6 @@ export default defineConfig(({ mode }) => {
             if (req.url === '/biostudies/submissions/config') {
               res.setHeader('Content-Type', 'application/json');
               res.end(JSON.stringify({
-                instanceKey: env.VITE_INSTANCE_KEY,
                 recaptchaKey: env.VITE_RECAPTCHA_KEY,
                 frontendUrl: env.VITE_FRONTEND_URL
               }));
@@ -42,6 +41,9 @@ export default defineConfig(({ mode }) => {
         '/biostudies/submissions/api': {
           target: env.VITE_BACKEND_URL,
           changeOrigin: true,
+          headers: {
+            'X-Instance-Key': env.VITE_INSTANCE_KEY,
+          },
           rewrite: (path) => path.replace(/^\/biostudies\/submissions\/api/, '')
         },
         '/biostudies/submissions/ror/organizations' : {
