@@ -51,8 +51,10 @@
         </ul>
       </div>
     </nav>
-    <div class="container p-4">
-      <router-view />
+    <div class="position-relative">
+      <div class="container p-4">
+        <router-view />
+      </div>
     </div>
     <ImpersonateModal />
   </template>

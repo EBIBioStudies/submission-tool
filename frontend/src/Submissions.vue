@@ -4,10 +4,8 @@
       <AnnouncementBanner />
     </div>
     <NewSubmission @select="(e: any) => console.log(e)"></NewSubmission>
-    <div class="d-flex justify-content-center">
-      <span class="ps-1" :class="{ invisible: !isLoading }"
-      ><font-awesome-icon class="fa-spin" icon="fa-solid fa-spinner"
-      /></span>
+    <div class="d-flex justify-content-center" :class="{ 'visually-hidden': !isLoading }">
+      <span class="ps-1"><font-awesome-icon class="fa-spin" icon="fa-solid fa-spinner"/></span>
     </div>
     <div
       v-if="serverListingSubsErrorMessage"
@@ -43,9 +41,9 @@
         <th>
           Title
         </th>
-        <th style="min-width: 120px">Release Date</th>
-        <th style="min-width: 120px">Last Modified</th>
-        <th style="min-width: 140px">Actions</th>
+        <th style="min-width: 120px" class="text-end">Release Date</th>
+        <th style="min-width: 120px" class="text-end">Last Modified</th>
+        <th style="width: 100px" class="text-center">Actions</th>
       </tr>
       </thead>
       <tbody>
@@ -75,40 +73,20 @@
         </td>
 
         <td>{{ submission.title }}</td>
-        <td>{{ moment(submission.rtime).format('DD MMM YYYY') }}</td>
-        <td>{{ moment(submission.mtime).format('DD MMM YYYY') }}</td>
+        <td class="text-end">{{ moment(submission.rtime).format('DD MMM YYYY') }}</td>
+        <td class="text-end">{{ moment(submission.mtime).format('DD MMM YYYY') }}</td>
         <td>
-          <button
-            v-if="submission.status === 'PROCESSED'"
-            class="btn btn-link text-primary"
-            @click.stop="open(submission.accno)"
-            v-tooltip="'Open in Biostudies'"
-          >
-            <font-awesome-icon
-              icon="fa-solid fa-arrow-up-right-from-square"
-            ></font-awesome-icon>
-          </button>
-          <button
-            v-if="
-                submission.status === 'PROCESSED' ||
-                submission.status === 'INVALID'
-              "
-            class="btn btn-link text-primary"
-            v-tooltip="'Edit submission'"
-            @click.stop="edit(submission.accno)"
-          >
-            <font-awesome-icon icon="fa-edit"></font-awesome-icon>
-          </button>
-          <button
-            v-if="canDelete(submission)"
-            class="btn btn-link text-danger"
-            v-tooltip="'Delete submission'"
-            @click.stop="deleteSubmission(submission.accno)"
-          >
-            <font-awesome-icon
-              icon="fa-regular fa-trash-alt"
-            ></font-awesome-icon>
-          </button>
+          <div>
+            <font-awesome-icon role="button" icon="fa-edit" class="text-primary ps-2 "
+                               v-tooltip="'Edit submission'" v-if="submission.status === 'PROCESSED' ||submission.status === 'INVALID'"
+                               @click.stop="edit(submission.accno)"></font-awesome-icon>
+            <font-awesome-icon role="button" icon="fa-arrow-up-right-from-square" class="text-primary ps-2"
+                               v-tooltip="'Open in Biostudies'" v-if="submission.status === 'PROCESSED'"
+                               @click.stop="open(submission.accno)"></font-awesome-icon>
+            <font-awesome-icon role="button" icon="fa-regular fa-trash-can" class="text-danger ps-2"
+                               v-tooltip="'Delete submission'" v-if="canDelete(submission)"
+                               @click.stop="deleteSubmission(submission.accno)"></font-awesome-icon>
+          </div>
         </td>
       </tr>
       </tbody>

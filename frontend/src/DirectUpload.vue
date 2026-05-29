@@ -333,16 +333,16 @@ onBeforeUnmount(() => {
     </div>
 
     <div class=" row">
-      <div class="col-2">
+      <div class="col-3">
         <div class="d-md-block sidebar sidebar-expanded border-right">
           <div class="sidebar-container">
-            <div v-if="loading" class="card">
+            <div v-if="loading" class="card sidebar-card">
               <div class="d-flex justify-content-center">
                 <font-awesome-icon :icon="['fas', 'spinner']" class="fa-spin fa-spinner fa-2x" />
               </div>
             </div>
 
-            <div v-else class="card">
+            <div v-else class="card sidebar-card">
               <div class="form-group mt-3 mx-3">
                 <div class="border-bottom mb-2 d-flex align-items-center justify-content-between">
                   <label class="m-0">Files</label>
@@ -354,10 +354,10 @@ onBeforeUnmount(() => {
                   <button @click="triggerFolderSelect" class="btn btn-primary  btn-sm  w-25  right-btn mx-1">Add
                     Folder
                   </button>
-                  <input type="file" ref="fileInput" @change="handleFileChange" style="display: none;" multiple>
-                  <input type="file" ref="folderInput" @change="handleFileChange" webkitdirectory directory
-                         style="display: none;">
                 </div>
+                <input type="file" ref="fileInput" @change="handleFileChange" style="display: none;" multiple>
+                <input type="file" ref="folderInput" @change="handleFileChange" webkitdirectory directory
+                       style="display: none;">
               </div>
 
               <div class="form-group mx-3">
@@ -500,7 +500,7 @@ onBeforeUnmount(() => {
             <div class="card-footer d-flex align-items-center">
               <div class="flex-grow-1">
                 <button v-if="file.hasStudyExtension" class="btn btn-link text-muted d-inline p-0">
-                  <label class="sr-only" :for="'is-study-checkbox-' + file.name">Is {{ file.name }} containing the study
+                  <label class="visually-hidden" :for="'is-study-checkbox-' + file.name">Is {{ file.name }} containing the study
                     information?</label>
                   <input type="checkbox" :id="'is-study-checkbox-' + file.name" v-model="file.isChecked"
                          @change="moveCheckedFileToTop(file)"> Study File
@@ -543,17 +543,31 @@ onBeforeUnmount(() => {
 
 .sidebar {
   background-color: #6d9fc1;
+  position: absolute;
   bottom: 0;
   left: 0;
-  padding: 64px 0 0;
-  position: fixed;
-  top: 80px;
+  top: 0;
   z-index: 9;
-  overflow: auto;
+  overflow: visible;
 }
 
 .sidebar-expanded {
   width: 260px
+}
+
+.sidebar-container {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.sidebar-card {
+  width: 100%;
+  overflow-y: auto;
+  max-height: calc(100vh - 32px);
 }
 
 .green-icon {

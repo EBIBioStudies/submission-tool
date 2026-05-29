@@ -3,8 +3,8 @@
     <NewSubmission @select="(e: any)=>console.log(e)"></NewSubmission>
     <table class="table table-responsive table-striped table-hover">
       <thead>
-      <th style="width: 180px">Draft Key</th>
-      <th>Title</th>
+      <th style="width: 180px" class="px-2">Draft Key</th>
+      <th class="px-2">Title</th>
       <th style="width: 75px">Actions</th>
       </thead>
       <tbody>
