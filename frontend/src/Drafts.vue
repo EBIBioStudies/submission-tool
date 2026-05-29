@@ -4,12 +4,14 @@
     <table class="table table-responsive table-striped table-hover">
       <thead>
       <th style="width: 180px" class="px-2">Draft Key</th>
+      <th class="px-2">Collection</th>
       <th class="px-2">Title</th>
       <th style="width: 75px">Actions</th>
       </thead>
       <tbody>
       <tr v-for="draft in drafts">
         <td>{{ getKeyToDisplay(draft) }}</td>
+        <td>{{ getCollection(draft) }}</td>
         <td>{{ getTitle(draft) }}</td>
         <td>
           <font-awesome-icon role="button" icon="fa-edit" class="text-primary fa-fw"
@@ -111,6 +113,10 @@ const getKeyToDisplay = (draft: Draft) => {
 const getTitle = (draft: Draft) => {
   return draft.content?.section?.attributes?.find(attr => attr.name === 'Title')?.value || draft.content?.attributes?.find(attr => attr.name === 'Title')?.value;
 };
+
+const getCollection = (draft: Draft) => {
+  return draft.content?.section?.attributes?.find(attr => attr.name === 'AttachTo')?.value || draft.content?.attributes?.find(attr => attr.name === 'AttachTo')?.value || 'General';
+}
 
 const editDraft = (accno: string) => {
   router.push(`/edit/${accno}`);
