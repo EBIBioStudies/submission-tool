@@ -67,5 +67,8 @@
   },
   "engines": {
     "node": ">=22.x <=26.x"
+  },
+  "overrides": {
+    "flatted": "^3.4.2"
   }
 }
