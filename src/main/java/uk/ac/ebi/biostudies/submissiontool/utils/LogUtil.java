@@ -1,4 +1,4 @@
-package uk.ac.ebi.biostudies.submissiontool;
+package uk.ac.ebi.biostudies.submissiontool.utils;
 
 public class LogUtil {
 

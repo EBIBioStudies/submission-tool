@@ -15,6 +15,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import uk.ac.ebi.biostudies.submissiontool.utils.LogUtil;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
