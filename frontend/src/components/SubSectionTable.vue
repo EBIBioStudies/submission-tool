@@ -234,7 +234,7 @@ const columnTypes = props?.sectionType?.columnTypes || [];
 
 const columnOptions = computed(() => columnTypes
   .filter(col => col.display !== 'required')
-  .filter(col => !headers.value.includes(col.name))
+  .filter(col => !headers.value.map(col => col.toLowerCase()).includes(col.name.toLowerCase()))
   .map(col => col.name),
 );
 

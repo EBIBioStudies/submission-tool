@@ -68,7 +68,7 @@ const keys = ['', ...headerMap.keys(), ''];
 const headers = ref(keys);
 const columnOptions = computed(() => columnTypes
   .filter(col => col.display !== 'required')
-  .filter(col => !headers.value.includes(col.name))
+  .filter(col => !headers.value.map(str => str.toLowerCase()).includes(col.name.toLowerCase()))
   .map(col => col.name),
 );
 
