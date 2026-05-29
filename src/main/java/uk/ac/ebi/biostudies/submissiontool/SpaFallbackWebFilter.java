@@ -59,7 +59,7 @@ public class SpaFallbackWebFilter implements WebFilter {
     }
 
     // For SPA routes, serve index.html
-    log.debug("Serving index.html for SPA route: {}", path);
+    log.debug("Serving index.html for SPA route: {}", LogUtil.sanitizeForLog(path));
     return serveIndexHtml(exchange);
   }
 
@@ -85,4 +85,5 @@ public class SpaFallbackWebFilter implements WebFilter {
       return exchange.getResponse().setComplete();
     }
   }
+
 }

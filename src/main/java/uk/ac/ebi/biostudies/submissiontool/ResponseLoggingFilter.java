@@ -20,13 +20,13 @@ public class ResponseLoggingFilter implements GlobalFilter, Ordered {
         .doOnSuccess(aVoid -> {
           log.info("Response for {} {}: Status={}",
               exchange.getRequest().getMethod(),
-              exchange.getRequest().getURI().getPath(),
+              LogUtil.sanitizeForLog(exchange.getRequest().getURI().getPath()),
               exchange.getResponse().getStatusCode());
         })
         .doOnError(error -> {
           log.error("Error during request {} {}: {}",
               exchange.getRequest().getMethod(),
-              exchange.getRequest().getURI().getPath(),
+              LogUtil.sanitizeForLog(exchange.getRequest().getURI().getPath()),
               error.getMessage(),
               error);
         });
@@ -36,4 +36,5 @@ public class ResponseLoggingFilter implements GlobalFilter, Ordered {
   public int getOrder() {
     return Ordered.LOWEST_PRECEDENCE;
   }
+
 }

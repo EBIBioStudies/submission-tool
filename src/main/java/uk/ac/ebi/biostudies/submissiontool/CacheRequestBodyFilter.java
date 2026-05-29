@@ -37,7 +37,7 @@ public class CacheRequestBodyFilter implements GlobalFilter, Ordered {
     // Skip file uploads and multipart
     if (path.contains("/upload") ||
         (contentType != null && contentType.contains("multipart/form-data"))) {
-      log.debug("Skipping body caching for file upload: {}", path);
+      log.debug("Skipping body caching for file upload: {}", LogUtil.sanitizeForLog(path));
       return chain.filter(exchange);
     }
 
@@ -46,7 +46,7 @@ public class CacheRequestBodyFilter implements GlobalFilter, Ordered {
     if (contentLengthStr != null) {
       long contentLength = Long.parseLong(contentLengthStr);
       if (contentLength > MAX_CACHEABLE_SIZE) {
-        log.debug("Skipping body caching for large request ({} bytes): {}", contentLength, path);
+        log.debug("Skipping body caching for large request ({} bytes): {}", contentLength, LogUtil.sanitizeForLog(path));
         return chain.filter(exchange);
       }
     }
@@ -77,4 +77,5 @@ public class CacheRequestBodyFilter implements GlobalFilter, Ordered {
   public int getOrder() {
     return Ordered.HIGHEST_PRECEDENCE;
   }
+
 }
