@@ -32,8 +32,8 @@ function getSectionCounts(root?: PageTab.Section) {
     const section = q.shift();
     if (!section) continue;
 
-    if (props.fieldType?.controlType?.section_type === section.type) {
-      counts.set(section.type, (counts.get(section.type) ?? 0) + 1);
+    if (props.fieldType?.controlType?.section_type?.toLowerCase() === section.type?.toLowerCase()) {
+      counts.set(section.type?.toLowerCase(), (counts.get(section.type?.toLowerCase()) ?? 0) + 1);
     }
     section.subsections?.flatMap(ensureArray)?.forEach((s) => q.push(s));
   }
@@ -49,12 +49,12 @@ function buildOptions() {
 
   while (q.length) {
     const section = q.shift()!;
-    if (props.fieldType?.controlType?.section_type === section.type) {
+    if (props.fieldType?.controlType?.section_type?.toLowerCase() === section.type?.toLowerCase()) {
       const att = section?.attributes?.find(
         (a) => a.name.toLowerCase() === props.fieldType?.controlType?.field_name?.toLowerCase(),
       );
       const key = section?.accno ?? `${section?.type}:${list.length}`;
-      const label = sectionCounts.get(section.type)! > 1
+      const label = sectionCounts.get(section.type?.toLowerCase())! > 1
         ? `${section.type} (${list.length + 1})`
         : section.type;
       const value = att?.value?.trim() ? att.value : undefined;

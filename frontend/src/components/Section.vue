@@ -343,7 +343,7 @@ const refreshSection = async () => {
   sectionsRefreshKey.value += 1;
 };
 
-const addAttribute = async (name?: string = '') => {
+const addAttribute = async (name: string = '') => {
   if (parentDisplayType?.value === 'readonly' && !sectionType.value.overrideReadonly) return;
   thisSection.value.attributes = thisSection.value.attributes || [];
   thisSection.value.attributes.push({ name, value: '' });
