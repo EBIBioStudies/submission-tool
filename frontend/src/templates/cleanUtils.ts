@@ -1,13 +1,15 @@
 import { PageTab } from '@/models/PageTab.model.ts';
 import { ensureArray } from '@/utils.ts';
 
+const isUsableAttribute = (attr: unknown): attr is PageTab.Attribute => {
+  return !!attr && typeof attr === 'object' && typeof (attr as PageTab.Attribute).name === 'string';
+};
+
 function cleanTopLevelAttributes(section: PageTab.Section) {
   if (Array.isArray(section.attributes)) {
     section.attributes = section.attributes.filter(attr => {
       return !(
-        attr &&
-        typeof attr === 'object' &&
-        'name' in attr &&
+        isUsableAttribute(attr) &&
         (
           !('value' in attr) ||
           attr.value === null ||
@@ -24,10 +26,8 @@ function cleanSubsectionAttributes(section: PageTab.Section) {
     section.subsections?.forEach(sub => {
       if (!Array.isArray(sub) && Array.isArray(sub.attributes)) {
         sub.attributes = sub.attributes.filter(attr => {
+          if (!isUsableAttribute(attr)) return false;
           return !(
-            attr &&
-            typeof attr === 'object' &&
-            'name' in attr &&
             (
               !('value' in attr) ||
               attr.value === null ||
@@ -66,10 +66,8 @@ function cleanStudyComponentAssociations(section: PageTab.Section) {
         sub.subsections?.flatMap(ensureArray)?.forEach(nested => {
           if (nested.type === 'Associations' && Array.isArray(nested.attributes)) {
             nested.attributes = nested.attributes.filter(attr => {
+              if (!isUsableAttribute(attr)) return false;
               return !(
-                attr &&
-                typeof attr === 'object' &&
-                'name' in attr &&
                 (
                   !('value' in attr) ||
                   attr.value === null ||
