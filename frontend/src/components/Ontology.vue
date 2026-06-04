@@ -8,6 +8,7 @@ import Multiselect from '@vueform/multiselect';
 import { Class, isDefined } from '@/utils.ts';
 import { PageTab } from '@/models/PageTab.model.ts';
 import Let from '@/components/Let.vue';
+import DetailedAttribute = PageTab.DetailedAttribute;
 
 const model = defineModel<PageTab.DetailedAttribute[]>({ default: [] });
 
@@ -18,7 +19,7 @@ const props = defineProps<{
 
 const emits = defineEmits<{
   deleteTerm: [PageTab.IndexedTag],
-  createTerm: [PageTab.Tag],
+  createTerm: [PageTab.IndexedTag],
 }>();
 
 const controlType = computed(() => props.fieldType.controlType);
@@ -52,24 +53,39 @@ const filterDefaultOptions = (search: string) => {
     .map(toDefaultOption);
 };
 
+const optionKey = (option: Option) =>
+  option.value.valqual?.find(qual => qual.name === 'TermId')?.value || option.label.toLocaleLowerCase();
+
+// merge keeping `primary` first, appending only entries of `secondary` not already present
+const mergeOptions = (primary: Option[], secondary: Option[]): Option[] => {
+  const seen = new Set(primary.map(optionKey));
+  return [...primary, ...secondary.filter(option => !seen.has(optionKey(option)))];
+};
+
 const updateOptions = async (search: string): Promise<Option[]> => {
   if (!search) {
     if (controlType.value?.defaultAll) search = '*';
     else {
-      allOptions.value = [];
+      // no query: still surface the (unfiltered) default options
+      lastQuery = '';
+      page.value = 0;
+      totalPage.value = 0;
+      allOptions.value = filterDefaultOptions('');
       return allOptions.value;
     }
   }
 
   const nextPage = lastQuery === search ? page.value + 1 : 0;
+  // default options matching the query, always merged in regardless of OLS status
+  const defaults = filterDefaultOptions(search === '*' ? '' : search);
   currentSearchAbortController?.abort();
   const abortController = new AbortController();
   currentSearchAbortController = abortController;
 
   try {
     const result = await Ontology.OLS4.search({
-      search,
-      ontologyId: ontology.value,
+      search: search === '*' ? '' : search,
+      ontologyId: ontology.value?.map(s => s?.toLowerCase()),
       size: controlType.value?.pageSize ?? 10,
       page: nextPage,
       hierarchicalAncestor: controlType.value?.allChildrenOf,
@@ -94,14 +110,16 @@ const updateOptions = async (search: string): Promise<Option[]> => {
     page.value = nextPage;
     olsUnavailable.value = false;
     totalPage.value = result.totalPages;
-    if (nextPage > 0) allOptions.value.push(...data);
-    else allOptions.value = data;
+    // first page: default options first, then OLS results; later pages only append new OLS results
+    allOptions.value = nextPage > 0
+      ? mergeOptions(allOptions.value, data)
+      : mergeOptions(defaults, data);
   } catch (error) {
     if (axios.isCancel(error)) return allOptions.value;
 
     olsUnavailable.value = true;
     totalPage.value = 0;
-    allOptions.value = filterDefaultOptions(search === '*' ? '' : search);
+    allOptions.value = defaults;
   } finally {
     if (currentSearchAbortController === abortController) currentSearchAbortController = undefined;
   }
@@ -119,12 +137,13 @@ type Option = { value: PageTab.DetailedAttribute, label: string, definition?: st
 const idToURL = (id: string) => `https://www.ebi.ac.uk/ols4/ontologies/${ontology.value}/classes?obo_id=${id.replace('_', ':')}`;
 
 const onSelect = async (e: any) => {
-  emits('createTerm', {...e.value, replace: !mulitple.value});
+  emits('createTerm', { ...e.value, replace: !mulitple.value });
   return false;
 };
 
-const onCreate = (e: any) => {
-  emits('createTerm', typeof e === 'string' ? { name: props.fieldType.name, value: e } : e.value);
+const onCreate = (e: string | DetailedAttribute) => {
+  const attribute = typeof e === 'string' ? { name: props.fieldType.name, value: e } : e;
+  emits('createTerm', { ...attribute, replace: !mulitple.value });
   return false;
 };
 
@@ -133,7 +152,7 @@ const page = ref(0);
 const totalPage = ref(0);
 
 
-const isLastPage = computed(() => page.value === totalPage.value - 1);
+const isLastPage = computed(() => page.value >= totalPage.value - 1);
 
 const infiniteTrigger = ref<HTMLElement | null>(null);
 watch(infiniteTrigger, el => new IntersectionObserver(([entry]) => {
@@ -150,7 +169,7 @@ watch(infiniteTrigger, el => new IntersectionObserver(([entry]) => {
                class="form-control form-control-sm org"
                :allow-empty="false"
                :class="props.class"
-               :create-option="(olsUnavailable && !defaultOptions.length) || (controlType?.enableValueAdd ?? false)"
+               :create-option="olsUnavailable || (controlType?.enableValueAdd ?? false)"
                :searchable="true"
                :allow-absent="true"
                :options="async (q: string) => await updateOptions(q)"

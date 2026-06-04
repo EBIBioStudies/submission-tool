@@ -393,6 +393,7 @@ export default {
               'defaultAll': false,
               'multiple': false,
               'defaultOptions': organismDefaultOptions,
+              'enableValueAdd': true
             },
             'helpContextual': {
               'description': 'Species.',
