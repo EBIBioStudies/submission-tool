@@ -343,7 +343,7 @@ const refreshSection = async () => {
   sectionsRefreshKey.value += 1;
 };
 
-const addAttribute = async (name?: string = '') => {
+const addAttribute = async (name: string = '') => {
   if (parentDisplayType?.value === 'readonly' && !sectionType.value.overrideReadonly) return;
   thisSection.value.attributes = thisSection.value.attributes || [];
   thisSection.value.attributes.push({ name, value: '' });
@@ -368,23 +368,39 @@ const deleteAttribute = async (del: PageTab.IndexedTag[]) => {
 
 const createTag = (msg: Omit<PageTab.IndexedTag, 'index'>) => {
   if (parentDisplayType!.value === 'readonly' && !sectionType.value.overrideReadonly) return;
-  thisSection.value.attributes = thisSection.value.attributes || [];
+  const attributes = thisSection.value.attributes = thisSection.value.attributes || [];
+
+  if (msg.replace) {
+    // single-value field: keep exactly one attribute with this name
+    const firstIndex = attributes.findIndex((a) => a.name === msg.name);
+    if (firstIndex === -1) {
+      attributes.push({ name: msg.name, value: msg.value, valqual: msg.valqual, nmqual: msg.nmqual });
+    } else {
+      const target = attributes[firstIndex];
+      target.value = msg.value;
+      target.valqual = msg.valqual;
+      target.nmqual = msg.nmqual;
+      // drop any stale duplicates left over from previous appends
+      for (let i = attributes.length - 1; i > firstIndex; i--) {
+        if (attributes[i].name === msg.name) attributes.splice(i, 1);
+      }
+    }
+    attributesRefreshKey.value += 1;
+    return;
+  }
+
   // insert next to the last attribute with the same name
   // just to keep the structure cleaner
-  let lastIndex = thisSection.value.attributes
-    .map((a) => a.name)
-    .lastIndexOf(msg.name);
-  lastIndex =
-    lastIndex === -1 ? thisSection.value.attributes.length : lastIndex;
+  const lastIndex = attributes.map((a) => a.name).lastIndexOf(msg.name);
 
   // fill in the value if it's the last tag -- add a new one otherwise
-  const lastAttribute = thisSection.value.attributes[lastIndex];
-  if (msg.replace || lastAttribute?.value === undefined || lastAttribute?.value === '') {
+  const lastAttribute = lastIndex === -1 ? undefined : attributes[lastIndex];
+  if (lastAttribute && (lastAttribute.value === undefined || lastAttribute.value === '')) {
     lastAttribute.value = msg.value;
     lastAttribute.valqual = msg.valqual;
     lastAttribute.nmqual = msg.nmqual;
   } else {
-    thisSection.value.attributes.splice(lastIndex + 1, 0, {
+    attributes.splice(lastIndex + 1, 0, {
       name: msg.name,
       value: msg.value,
       valqual: msg.valqual,

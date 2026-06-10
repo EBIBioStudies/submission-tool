@@ -49,6 +49,12 @@ const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType')
 const readonly = computed(() => parentDisplayType?.value === 'readonly' && !props.sectionType?.overrideReadonly);
 
 const subSections = ref(props.parent!.subsections as PageTab.BuildingSection[]); // Important to keep the same reference as we delete from there
+const hasOwn = (value: unknown, key: string): boolean =>
+  typeof value === 'object' &&
+  value !== null &&
+  Object.prototype.hasOwnProperty.call(value, key);
+const toLowerName = (value: unknown): string | undefined =>
+  typeof value === 'string' ? value.toLowerCase() : undefined;
 
 if (tableType.value === 'File') {
   headerMap.set('File', []);
@@ -57,6 +63,10 @@ if (tableType.value === 'File') {
 }
 theseRows?.value?.forEach((row) => {
   row?.attributes?.forEach((attr) => {
+    if (typeof attr?.name !== 'string') {
+      console.warn('Skipping table attribute with invalid name', { table: tableType.value, row, attr });
+      return;
+    }
     if (!headerMap.has(attr.name)) headerMap.set(attr.name, []);
     headerMap.get(attr.name).push(attr);
   });
@@ -66,11 +76,15 @@ const headers = ref(keys);
 const sectionsRefreshKey = ref(0);
 
 const getFieldType = (section: PageTab.BuildingSection): Template.FieldType | undefined => {
-  let name: string =
-    section?.type?.toLowerCase() === 'file' ||
-    section.hasOwnProperty('path')
+  let name: string | undefined =
+    toLowerName(section?.type) === 'file' ||
+    hasOwn(section, 'path')
       ? 'File'
-      : section?.name || section as unknown as string; //TODO how can section be a string
+      : typeof section?.name === 'string'
+        ? section.name
+        : typeof section === 'string'
+          ? section
+          : undefined; // TODO how can section be a string
   // override affiliation
   if (name === 'affiliation') {
     let fieldType = props.sectionType?.columnTypes?.find(
@@ -78,10 +92,10 @@ const getFieldType = (section: PageTab.BuildingSection): Template.FieldType | un
     );
     if (fieldType) return { ...fieldType, ...{ name: 'Organisation' } };
   }
-  name = (section.hasOwnProperty('url') || section.name === 'url') ? 'Link' : name;
+  name = (hasOwn(section, 'url') || section?.name === 'url') ? 'Link' : name;
   // return the column type. Expects either an object or a column name (for use in draggable)
   let fieldType = props.sectionType?.columnTypes?.find(
-    (f) => f.name?.toLowerCase() === name?.toLowerCase(),
+    (f) => toLowerName(f?.name) === toLowerName(name),
   );
   if (fieldType) return fieldType;
   if (!fieldType && name) {
@@ -100,7 +114,7 @@ const getFieldType = (section: PageTab.BuildingSection): Template.FieldType | un
 const getCell = (row: PageTab.BuildingSection, col: string): PageTab.BuildingSection => {
   if (!row.attributes) row.attributes = [];
   let attribute = row?.attributes?.find(
-    (att) => att?.name?.toLowerCase() === col?.toLowerCase(),
+    (att) => toLowerName(att?.name) === toLowerName(col),
   );
   if (
     !attribute &&
@@ -234,7 +248,10 @@ const columnTypes = props?.sectionType?.columnTypes || [];
 
 const columnOptions = computed(() => columnTypes
   .filter(col => col.display !== 'required')
-  .filter(col => !headers.value.includes(col.name))
+  .filter(col => !headers.value
+    .map(header => toLowerName(header))
+    .filter((header): header is string => Boolean(header))
+    .includes(col.name.toLowerCase()))
   .map(col => col.name),
 );
 

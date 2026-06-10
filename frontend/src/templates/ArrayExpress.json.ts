@@ -33,7 +33,8 @@ export default {
         'overrideReadonly': true,
         'controlType': {
           'name': 'date',
-          'allowPast': false,
+          limitDatePast: 'P0D',
+          limitDateFuture: 'P2Y',
         },
       },
       {

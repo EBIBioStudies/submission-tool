@@ -47,6 +47,12 @@ const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType')
 
 const readonly = computed(() => parentDisplayType?.value === 'readonly' && !props.sectionType?.overrideReadonly);
 const sectionsRefreshKey = ref(0);
+const hasOwn = (value: unknown, key: string): boolean =>
+  typeof value === 'object' &&
+  value !== null &&
+  Object.prototype.hasOwnProperty.call(value, key);
+const toLowerName = (value: unknown): string | undefined =>
+  typeof value === 'string' ? value.toLowerCase() : undefined;
 
 const columnTypes = props?.sectionType?.columnTypes || [];
 
@@ -60,6 +66,10 @@ if (tableType.value === 'File') {
 
 theseRows.value.forEach((row) => {
   row?.attributes?.forEach((attr) => {
+    if (typeof attr?.name !== 'string') {
+      console.warn('Skipping table attribute with invalid name', { table: tableType.value, row, attr });
+      return;
+    }
     if (!headerMap.has(attr.name)) headerMap.set(attr.name, []);
     headerMap.get(attr.name)!.push(attr);
   });
@@ -68,18 +78,29 @@ const keys = ['', ...headerMap.keys(), ''];
 const headers = ref(keys);
 const columnOptions = computed(() => columnTypes
   .filter(col => col.display !== 'required')
-  .filter(col => !headers.value.includes(col.name))
+  .filter(col => !headers.value
+    .map(header => toLowerName(header))
+    .filter((header): header is string => Boolean(header))
+    .includes(col.name.toLowerCase()))
   .map(col => col.name),
 );
 
 const getFieldType = (attribute: PageTab.BuildingSection): Template.FieldType => {
-  let name = attribute?.type?.toLowerCase() === 'file' || attribute.hasOwnProperty('path') ? 'File' : attribute?.name || attribute;
+  let name =
+    toLowerName(attribute?.type) === 'file' ||
+    hasOwn(attribute, 'path')
+      ? 'File'
+      : typeof attribute?.name === 'string'
+        ? attribute.name
+        : typeof attribute === 'string'
+          ? attribute
+          : undefined;
   if (name === 'affiliation') {
     let fieldType = props.sectionType?.columnTypes?.find((f) => f.name?.toLowerCase() === 'organisation');
     if (fieldType) return { ...fieldType, ...{ name: 'Organisation' } };
   }
-  name = attribute.hasOwnProperty('url') || attribute.name === 'url' ? 'Link' : name;
-  let fieldType = props.sectionType?.columnTypes?.find((f) => (typeof f?.name === 'string') && (typeof name === 'string') && (f?.name?.toLowerCase() === name?.toLowerCase()));
+  name = hasOwn(attribute, 'url') || attribute?.name === 'url' ? 'Link' : name;
+  let fieldType = props.sectionType?.columnTypes?.find((f) => toLowerName(f?.name) === toLowerName(name));
   if (fieldType) return fieldType;
   if (!fieldType && name && typeof name === 'string') {
     fieldType = {
@@ -95,7 +116,7 @@ const getFieldType = (attribute: PageTab.BuildingSection): Template.FieldType =>
 
 const getCell = (row: PageTab.Section, col: string): PageTab.BuildingSection => {
   let attribute = row?.attributes?.find(
-    (att) => (typeof att?.name === 'string') && (att?.name?.toLowerCase() === col?.toLowerCase()),
+    (att) => toLowerName(att?.name) === toLowerName(col),
   );
   if (!attribute && (
     (tableType.value === 'File' && col === 'File')

@@ -174,7 +174,7 @@ async function fetchResults(query: string) {
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
   width: auto;
-  //max-width: 600px; /* Limiting the maximum width */
+  /* max-width: 600px; Limiting the maximum width */
 }
 
 .modal-header {
@@ -231,4 +231,3 @@ table tr:nth-child(odd) {
   background-color: #f0f0f0; /* A slightly darker shade than the default */
 }
 </style>
-

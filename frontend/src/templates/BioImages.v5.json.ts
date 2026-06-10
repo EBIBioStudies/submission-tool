@@ -1,4 +1,5 @@
 import { Template } from '@/models/Template.model.ts';
+import { organismDefaultOptions } from '@/templates/organisms.ts';
 
 export default {
   'name': 'BioImages.v5',
@@ -58,7 +59,8 @@ export default {
         'display': 'required',
         'controlType': {
           'name': 'date',
-          'allowPast': false,
+          limitDatePast: 'P0D',
+          limitDateFuture: 'P2Y',
         },
         'helpContextual': {
           'description': 'The date at which your dataset should become publicly visible. This can be changed after submission if needed.',
@@ -391,6 +393,8 @@ export default {
               'ontology': ['NCBITaxon'],
               'defaultAll': false,
               'multiple': false,
+              'defaultOptions': organismDefaultOptions,
+              'enableValueAdd': true
             },
             'helpContextual': {
               'description': 'Species.',

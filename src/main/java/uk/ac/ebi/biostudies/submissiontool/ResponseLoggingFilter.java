@@ -8,6 +8,7 @@ import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+import uk.ac.ebi.biostudies.submissiontool.utils.LogUtil;
 
 @Component
 public class ResponseLoggingFilter implements GlobalFilter, Ordered {
@@ -20,13 +21,13 @@ public class ResponseLoggingFilter implements GlobalFilter, Ordered {
         .doOnSuccess(aVoid -> {
           log.info("Response for {} {}: Status={}",
               exchange.getRequest().getMethod(),
-              exchange.getRequest().getURI().getPath(),
+              LogUtil.sanitizeForLog(exchange.getRequest().getURI().getPath()),
               exchange.getResponse().getStatusCode());
         })
         .doOnError(error -> {
           log.error("Error during request {} {}: {}",
               exchange.getRequest().getMethod(),
-              exchange.getRequest().getURI().getPath(),
+              LogUtil.sanitizeForLog(exchange.getRequest().getURI().getPath()),
               error.getMessage(),
               error);
         });
@@ -36,4 +37,5 @@ public class ResponseLoggingFilter implements GlobalFilter, Ordered {
   public int getOrder() {
     return Ordered.LOWEST_PRECEDENCE;
   }
+
 }

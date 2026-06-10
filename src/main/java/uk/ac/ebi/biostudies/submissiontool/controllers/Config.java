@@ -25,7 +25,6 @@ public class Config {
     @ResponseBody
     public String getConfig() throws IOException {
         ObjectNode config = (new ObjectMapper()).createObjectNode();
-        config.put("instanceKey", environments.getProperty("backend.instance-key"));
         config.put("recaptchaKey", environments.getProperty("backend.recaptcha-key"));
         config.put("frontendUrl", environments.getProperty("frontend.url"));
         return config.toString();

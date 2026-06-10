@@ -1,10 +1,12 @@
-image: maven:3.9.5
+image: maven:3.9.5-eclipse-temurin-21
 # Commented out to make sure build-beta and build-prod are not conflicting one another
 #cache:
 #  paths:
 #    - target/
 
 stages:
+  - test
+  - secret-detection
   - build
   - deploy
 
@@ -13,6 +15,9 @@ stages:
   artifacts:
     paths:
       - target/*.jar
+  before_script:
+    - apt-get update
+    - apt-get install -y libatomic1
   script:
     # Copy VITE_CONFIG file variable into frontend/.env
     - cp "$VITE_CONFIG" frontend/.env
@@ -70,3 +75,22 @@ deploy-prod:
   only:
     - main
   when: manual
+
+include:
+  - template: Jobs/Dependency-Scanning.latest.gitlab-ci.yml
+  - template: Jobs/SAST.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+variables:
+  DS_ENFORCE_NEW_ANALYZER: 'true'
+  GITLAB_ADVANCED_SAST_ENABLED: 'true'
+sast:
+  stage: test
+  artifacts:
+    name: sast
+    paths:
+      - gl-sast-report.json
+    reports:
+      sast: gl-sast-report.json
+    when: always
+secret_detection:
+  stage: secret-detection

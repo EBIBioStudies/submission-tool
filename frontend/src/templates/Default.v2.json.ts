@@ -1,4 +1,5 @@
 import { Template } from '@/models/Template.model.ts';
+import { organismDefaultOptions } from '@/templates/organisms.ts';
 
 export default {
   'name': 'Default.v2',
@@ -47,7 +48,8 @@ export default {
         'display': 'required',
         'controlType': {
           'name': 'date',
-          'allowPast': false,
+          limitDatePast: 'P0D',
+          limitDateFuture: 'P2Y',
         },
         'helpContextual': {
           'description': 'The date (GMT) at which your dataset should become publicly visible. This can be changed after submission if needed.',
@@ -75,6 +77,7 @@ export default {
           'name': 'ontology',
           'ontology': ['NCBITaxon'],
           'multiple': true,
+          'defaultOptions': organismDefaultOptions,
         },
       },
       {

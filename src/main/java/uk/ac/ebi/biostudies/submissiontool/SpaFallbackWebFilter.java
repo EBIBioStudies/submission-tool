@@ -12,6 +12,7 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
+import uk.ac.ebi.biostudies.submissiontool.utils.LogUtil;
 
 import java.net.URI;
 
@@ -59,7 +60,7 @@ public class SpaFallbackWebFilter implements WebFilter {
     }
 
     // For SPA routes, serve index.html
-    log.debug("Serving index.html for SPA route: {}", path);
+    log.debug("Serving index.html for SPA route: {}", LogUtil.sanitizeForLog(path));
     return serveIndexHtml(exchange);
   }
 
@@ -85,4 +86,5 @@ public class SpaFallbackWebFilter implements WebFilter {
       return exchange.getResponse().setComplete();
     }
   }
+
 }

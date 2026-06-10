@@ -32,7 +32,8 @@ export default {
         'display': 'required',
         'controlType': {
           'name': 'date',
-          'allowPast': false,
+          limitDatePast: 'P0D',
+          limitDateFuture: 'P2Y',
         },
         'helpContextual': {
           'description': 'Desired release date (GMT), for example, to ensure compliance with a publication embargo',

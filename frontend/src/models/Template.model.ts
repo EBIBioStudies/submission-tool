@@ -77,6 +77,10 @@ export namespace Template {
      * Size of the page to query
      */
     pageSize?: number;
+    /**
+     * List of default options to show if OLS services are down
+     */
+    defaultOptions?: {name: string, id: string}[]
 
 
 

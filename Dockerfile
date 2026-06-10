@@ -1,6 +1,7 @@
 # Stage 1: Build JAR with Maven and Node
 FROM maven:3.9.5-eclipse-temurin-21 AS build
 WORKDIR /app
+RUN apt-get update && apt-get install -y libatomic1
 
 # Copy the pom.xml first for better caching
 COPY pom.xml .

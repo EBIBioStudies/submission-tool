@@ -1,5 +1,6 @@
 <script setup lang="ts">
 
+import axios from 'axios';
 import { Template } from '@/models/Template.model.ts';
 import { computed, inject, Ref, ref, watch } from 'vue';
 import { Ontology } from '@/models/Ontology.model.ts';
@@ -7,6 +8,7 @@ import Multiselect from '@vueform/multiselect';
 import { Class, isDefined } from '@/utils.ts';
 import { PageTab } from '@/models/PageTab.model.ts';
 import Let from '@/components/Let.vue';
+import DetailedAttribute = PageTab.DetailedAttribute;
 
 const model = defineModel<PageTab.DetailedAttribute[]>({ default: [] });
 
@@ -17,55 +19,110 @@ const props = defineProps<{
 
 const emits = defineEmits<{
   deleteTerm: [PageTab.IndexedTag],
-  createTerm: [PageTab.Tag],
+  createTerm: [PageTab.IndexedTag],
 }>();
 
 const controlType = computed(() => props.fieldType.controlType);
 const mulitple = computed(() => controlType.value?.multiple ?? false);
 const ontology = computed(() => controlType.value?.ontology);
+const defaultOptions = computed(() => controlType.value?.defaultOptions || []);
 const selectedEntries = ref<Option[] | Option | undefined>([]);
 const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
+const olsUnavailable = ref(false);
+const olsWarning = 'Ontology search is temporarily unavailable. Enter the value manually and try again later; the service should be restored soon.';
 
 let lastQuery = '';
+let currentSearchAbortController: AbortController | undefined;
 const allOptions = ref<Option[]>([]);
+const toDefaultOption = (option: { name: string, id: string }): Option => ({
+  value: {
+    name: option.name, value: option.name, valqual: [
+      { name: 'Ontology', value: ontology.value![0] },
+      { name: 'TermId', value: option.id },
+    ],
+  },
+  label: option.name,
+});
+
+const filterDefaultOptions = (search: string) => {
+  const normalizedSearch = search.trim().toLocaleLowerCase();
+  if (!normalizedSearch) return defaultOptions.value.map(toDefaultOption);
+
+  return defaultOptions.value
+    .filter(option => option.name.toLocaleLowerCase().includes(normalizedSearch))
+    .map(toDefaultOption);
+};
+
+const optionKey = (option: Option) =>
+  option.value.valqual?.find(qual => qual.name === 'TermId')?.value || option.label.toLocaleLowerCase();
+
+// merge keeping `primary` first, appending only entries of `secondary` not already present
+const mergeOptions = (primary: Option[], secondary: Option[]): Option[] => {
+  const seen = new Set(primary.map(optionKey));
+  return [...primary, ...secondary.filter(option => !seen.has(optionKey(option)))];
+};
+
 const updateOptions = async (search: string): Promise<Option[]> => {
   if (!search) {
     if (controlType.value?.defaultAll) search = '*';
     else {
-      allOptions.value = [];
+      // no query: still surface the (unfiltered) default options
+      lastQuery = '';
+      page.value = 0;
+      totalPage.value = 0;
+      allOptions.value = filterDefaultOptions('');
       return allOptions.value;
     }
   }
 
-  if (lastQuery !== search) page.value = 0;
-  else page.value++;
+  const nextPage = lastQuery === search ? page.value + 1 : 0;
+  // default options matching the query, always merged in regardless of OLS status
+  const defaults = filterDefaultOptions(search === '*' ? '' : search);
+  currentSearchAbortController?.abort();
+  const abortController = new AbortController();
+  currentSearchAbortController = abortController;
 
-  lastQuery = search;
-  const result = await Ontology.OLS4.search({
-    search,
-    ontologyId: ontology.value,
-    size: controlType.value?.pageSize ?? 10,
-    page: page.value,
-    hierarchicalAncestor: controlType.value?.allChildrenOf,
-    exactMatch: controlType.value?.exact,
-    includeObsoleteEntities: controlType.value?.obsoletes,
-    isDefiningOntology: controlType.value?.local,
-  });
-  const data = result.elements.map(e => ({
-      value: {
-        name: props.fieldType.name, value: e.label[0], valqual: [
-          { name: 'Ontology', value: e.ontologyId },
-          { name: 'TermId', value: e.shortForm },
-        ],
-      },
-      label: e.label[0],
-      definition: Ontology.OLS4.extractValue(e.definition?.[0] || ''),
-    }),
-  );
+  try {
+    const result = await Ontology.OLS4.search({
+      search: search === '*' ? '' : search,
+      ontologyId: ontology.value?.map(s => s?.toLowerCase()),
+      size: controlType.value?.pageSize ?? 10,
+      page: nextPage,
+      hierarchicalAncestor: controlType.value?.allChildrenOf,
+      exactMatch: controlType.value?.exact,
+      includeObsoleteEntities: controlType.value?.obsoletes,
+      isDefiningOntology: controlType.value?.local,
+    }, abortController.signal, 1000);
+    if (currentSearchAbortController !== abortController) return allOptions.value;
 
-  totalPage.value = result.totalPages;
-  if (page.value > 0 && lastQuery === search) allOptions.value.push(...data);
-  else allOptions.value = data;
+    const data = result.elements.map(e => ({
+        value: {
+          name: props.fieldType.name, value: e.label[0], valqual: [
+            { name: 'Ontology', value: e.ontologyId },
+            { name: 'TermId', value: e.shortForm },
+          ],
+        },
+        label: e.label[0],
+        definition: Ontology.OLS4.extractValue(e.definition?.[0] || ''),
+      }),
+    );
+    lastQuery = search;
+    page.value = nextPage;
+    olsUnavailable.value = false;
+    totalPage.value = result.totalPages;
+    // first page: default options first, then OLS results; later pages only append new OLS results
+    allOptions.value = nextPage > 0
+      ? mergeOptions(allOptions.value, data)
+      : mergeOptions(defaults, data);
+  } catch (error) {
+    if (axios.isCancel(error)) return allOptions.value;
+
+    olsUnavailable.value = true;
+    totalPage.value = 0;
+    allOptions.value = defaults;
+  } finally {
+    if (currentSearchAbortController === abortController) currentSearchAbortController = undefined;
+  }
   return allOptions.value;
 };
 
@@ -80,7 +137,13 @@ type Option = { value: PageTab.DetailedAttribute, label: string, definition?: st
 const idToURL = (id: string) => `https://www.ebi.ac.uk/ols4/ontologies/${ontology.value}/classes?obo_id=${id.replace('_', ':')}`;
 
 const onSelect = async (e: any) => {
-  emits('createTerm', {...e.value, replace: !mulitple.value});
+  emits('createTerm', { ...e.value, replace: !mulitple.value });
+  return false;
+};
+
+const onCreate = (e: string | DetailedAttribute) => {
+  const attribute = typeof e === 'string' ? { name: props.fieldType.name, value: e } : e;
+  emits('createTerm', { ...attribute, replace: !mulitple.value });
   return false;
 };
 
@@ -89,7 +152,7 @@ const page = ref(0);
 const totalPage = ref(0);
 
 
-const isLastPage = computed(() => page.value === totalPage.value - 1);
+const isLastPage = computed(() => page.value >= totalPage.value - 1);
 
 const infiniteTrigger = ref<HTMLElement | null>(null);
 watch(infiniteTrigger, el => new IntersectionObserver(([entry]) => {
@@ -101,12 +164,12 @@ watch(infiniteTrigger, el => new IntersectionObserver(([entry]) => {
 <template>
   <Multiselect ref="multiselect"
                :mode="controlType?.multiple ? 'tags' : 'single'"
-               no-options-text="Type+↵ to add"
+               :no-options-text="olsUnavailable ? 'OLS is unavailable. Type+↵ to add manually.' : 'Type+↵ to add'"
                v-model="selectedEntries"
                class="form-control form-control-sm org"
                :allow-empty="false"
                :class="props.class"
-               :create-option="controlType?.enableValueAdd ?? false"
+               :create-option="olsUnavailable || (controlType?.enableValueAdd ?? false)"
                :searchable="true"
                :allow-absent="true"
                :options="async (q: string) => await updateOptions(q)"
@@ -119,10 +182,15 @@ watch(infiniteTrigger, el => new IntersectionObserver(([entry]) => {
                :can-clear="false"
                :append-to-body="true"
                :classes="{dropdown: 'multiselect-dropdown ontology'}"
-               @create="controlType?.enableValueAdd && $emit('createTerm', $event.value)"
+               @create="onCreate"
                @deselect="$emit('deleteTerm', $event.value)"
                @select="onSelect"
   >
+    <template v-slot:beforelist>
+      <div v-if="olsUnavailable" class="alert alert-warning ontology-warning mb-0" role="alert">
+        {{ olsWarning }}
+      </div>
+    </template>
     <template v-slot:option="{option}">
       <Let :value="option.value.valqual?.find((qual: PageTab.Tag) => qual.name === 'TermId')?.value"
            v-slot="{ value: id }">
@@ -182,5 +250,8 @@ watch(infiniteTrigger, el => new IntersectionObserver(([entry]) => {
 .ontology {
   --ms-max-height: 15rem;
 }
-</style>
 
+.ontology-warning {
+  font-size: 0.875rem;
+}
+</style>

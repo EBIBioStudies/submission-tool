@@ -15,6 +15,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import uk.ac.ebi.biostudies.submissiontool.utils.LogUtil;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -49,11 +50,12 @@ public class FileListController {
     DataBuffer headerBuffer = bufferFactory.wrap("Files\n".getBytes(StandardCharsets.UTF_8));
     Flux<DataBuffer> initialFlux = Flux.just(headerBuffer);
 
+    String sanitizedPath = LogUtil.sanitizeForLog(path);
     return Flux.concat(initialFlux,
             getFilesReactive(path, token)
-                .doOnError(e -> log.error("Error generating filelist for path: {}", path, e))
+                .doOnError(e -> log.error("Error generating filelist for path: {}", sanitizedPath, e))
                 .onErrorResume(e -> Flux.just(
-                    "[" + Instant.now().toString() + "]  Error generating filelist for path: " + path,
+                    "[" + Instant.now().toString() + "]  Error generating filelist for path: " + sanitizedPath,
                     "Please send this file to biostudies@ebi.ac.uk to help us fix the issue."
                 ))
                 .map(line -> bufferFactory.wrap((line + "\n").getBytes(StandardCharsets.UTF_8))))
@@ -95,4 +97,5 @@ public class FileListController {
           }
         });
   }
+
 }
