@@ -15,6 +15,10 @@ import { Template } from '@/models/Template.model.ts';
 import { isFile } from '@/templates/templates.ts';
 import { AttributeControlExpose, AttributeExpose } from '@/components/expose.model.ts';
 import Ontology from '@/components/Ontology.vue';
+import moment from 'moment';
+import momentDurationFormat from 'moment-duration-format';
+
+momentDurationFormat(moment);
 
 const hasValidated = inject<Ref<boolean>>('hasValidated');
 
@@ -64,8 +68,8 @@ const isManagerUser = inject<Ref<boolean>>('isManagerUser');
 const display = computed(() => props?.fieldType?.display || (parentDisplayType?.value) || 'optional');
 
 const readonly = computed(() => (parentDisplayType?.value === 'readonly' && !props.fieldType?.overrideReadonly) || props.fieldType?.display === 'readonly');
-
-const minLength = computed(() => props?.fieldType?.controlType?.minlength || 0);
+const controlType = computed(() => props?.fieldType?.controlType);
+const minLength = computed(() => controlType.value?.minlength || 0);
 
 function isString(val: any): val is string {
   return val !== null && typeof val === 'string' || val instanceof String;
@@ -133,15 +137,24 @@ const updateMultivaluedName = () => {
   thisMultiValuedAttribute.value.forEach(a => props.parent![a.index].name = thisAttribute.value.name!);
 };
 
-const withinThreeYears = (date: Date): boolean => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
 
-  const in3years = new Date(today);
-  in3years.setFullYear(today.getFullYear() + 3);
+const insideDateRange = (date: Date): boolean => {
+  const referenceDate = controlType.value?.dateReferencePoint === 'local' ? moment() : moment().utc(false);
 
-  return date < today || date > in3years;
+  const limitPast = controlType.value?.limitDatePast ? moment.duration(controlType.value?.limitDatePast) : null;
+  const minDate = limitPast ? referenceDate.clone().subtract(limitPast) : null;
+
+  const limitFuture = controlType.value?.limitDateFuture ? moment.duration(controlType.value?.limitDateFuture): null;
+  const maxDate = limitFuture ? referenceDate.clone().add(limitFuture) : null;
+
+  const dateM = moment(date);
+  if (minDate && maxDate) return dateM.isBetween(minDate, maxDate, 'day', '[]');
+  if (minDate) return dateM.isSameOrAfter(minDate, 'day');
+  if (maxDate) return dateM.isSameOrBefore(maxDate, 'day');
+  return true;
 };
+
+const outsideDateRange = (date: Date) => !insideDateRange(date);
 
 const errors = computed(() => {
   const _errors: string[] = [];
@@ -357,7 +370,7 @@ const showHelp = () => {
       placeholder="Select date"
       format="YYYY-MM-DD"
       :disabled="readonly && !isManagerUser"
-      :disabledDate="withinThreeYears"
+      :disabledDate="outsideDateRange"
       :class="{'is-invalid':errors && hasValidated}"
     />
 
