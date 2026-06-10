@@ -52,7 +52,8 @@ export default {
         display: 'required',
         controlType: {
           name: 'date',
-          allowPast: false,
+          limitDatePast: 'P0D',
+          limitDateFuture: 'P2Y',
         },
         helpContextual: {
           description: 'The date at which your dataset should become publicly visible. This can be changed after submission if needed.',
