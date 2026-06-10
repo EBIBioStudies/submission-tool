@@ -18,12 +18,40 @@ spring:
           order: 1
 
         # API routes
+        - id: swagger-ui-root
+          uri: ${BACKEND_URL}
+          predicates:
+            - Path=/biostudies/submissions/api,/biostudies/submissions/api/
+          filters:
+            - SetPath=/docs/public
+            - SetRequestHeader=X-Forwarded-Prefix, /biostudies/submissions/api
+          order: 1
+
+        - id: swagger-ui
+          uri: ${BACKEND_URL}
+          predicates:
+            - Path=/biostudies/submissions/api/swagger-ui.html,/biostudies/submissions/api/swagger-ui,/biostudies/submissions/api/swagger-ui/**
+          filters:
+            - StripPrefix=3
+            - SetRequestHeader=X-Forwarded-Prefix, /biostudies/submissions/api
+          order: 1
+
+        - id: openapi-docs
+          uri: ${BACKEND_URL}
+          predicates:
+            - Path=/biostudies/submissions/api/v3/api-docs/public,/biostudies/submissions/api/v3/api-docs.yaml/public
+          filters:
+            - StripPrefix=3
+            - SetRequestHeader=X-Forwarded-Prefix, /biostudies/submissions/api
+          order: 1
+
         - id: auth
           uri: ${BACKEND_URL}
           predicates:
             - Path=/biostudies/submissions/api/auth,/biostudies/submissions/api/auth/**
           filters:
             - StripPrefix=3
+            - SetRequestHeader=X-Instance-Key, ${INSTANCE_KEY}
           order: 1
 
         - id: submission
