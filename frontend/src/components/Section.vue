@@ -552,8 +552,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
         v-if="
           isRemovable &&
           !readonly &&
-          sectionType?.name !== 'Study' &&
-          !isPublicSubmission
+          sectionType?.name !== 'Study'
         "
         class="mt-2 btn btn-sm btn-delete"
         role="button"
