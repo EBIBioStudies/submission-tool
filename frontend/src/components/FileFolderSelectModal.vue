@@ -1,6 +1,13 @@
 <script setup lang="ts">
-
-import { ComponentPublicInstance, computed, getCurrentInstance, inject, onMounted, Ref, ref } from 'vue';
+import {
+  ComponentPublicInstance,
+  computed,
+  getCurrentInstance,
+  inject,
+  onMounted,
+  Ref,
+  ref,
+} from 'vue';
 import FileTree from './FileTree.vue';
 import { Modal } from 'bootstrap';
 import axios from 'axios';
@@ -12,31 +19,35 @@ import { FileService, UploadProgress } from '@/services/FileService.ts';
 import { Template } from '@/models/Template.model.ts';
 
 const props = defineProps<{
-  file: PageTab.File | PageTab.Attribute,
-  class?: Class,
-  allowFolder?: boolean,
-  isFileList?: boolean,
-  row?: PageTab.Section
+  file: PageTab.File | PageTab.Attribute;
+  class?: Class;
+  allowFolder?: boolean;
+  isFileList?: boolean;
+  row?: PageTab.Section;
 }>();
 const emits = defineEmits<{ select: [PageTab.File | PageTab.Attribute] }>();
 const thisFile = ref(props.file);
 const isFileList = ref(props.isFileList);
-if (isFileList.value === undefined && (thisFile.value as PageTab.Attribute)?.name === 'File List') {
+if (
+  isFileList.value === undefined &&
+  (thisFile.value as PageTab.Attribute)?.name === 'File List'
+) {
   isFileList.value = true;
 }
 const allowFolder = !isFileList.value;
 const abortController = ref<AbortController>(new AbortController());
 const currentUpload = ref<UploadProgress | null>(null);
 
-
 const errorMessage = ref('');
 const route = useRoute();
-const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
+const parentDisplayType =
+  inject<Ref<Template.DisplayType>>('parentDisplayType');
 
 const path = [] as string[];
 
-
-const isAFileList = (_file: PageTab.File | PageTab.Attribute): _file is PageTab.Attribute => isFileList.value;
+const isAFileList = (
+  _file: PageTab.File | PageTab.Attribute,
+): _file is PageTab.Attribute => isFileList.value;
 
 defineExpose({ errorMessage });
 
@@ -44,20 +55,31 @@ let modal: Modal | null = null;
 const thisComponent = getCurrentInstance();
 const fileTree = ref<ComponentPublicInstance<typeof FileTree>>();
 onMounted(() => {
-  let elementById = document.getElementById('fileFolderSelectModal' + thisComponent!.uid);
+  let elementById = document.getElementById(
+    'fileFolderSelectModal' + thisComponent!.uid,
+  );
   if (elementById) modal = new Modal(elementById, { backdrop: 'static' });
 });
 
 const uploadFile = async (file: FileList, event: Event) => {
   try {
     const currentFiles = await FileService.fetchFiles(path);
-    const uploadedFileNames = await FileService.uploadFiles(file, false, [], currentFiles, currentUpload, abortController);
+    const uploadedFileNames = await FileService.uploadFiles(
+      file,
+      false,
+      [],
+      currentFiles,
+      currentUpload,
+      abortController,
+    );
     if (!uploadedFileNames.length) return;
     loadTree(); // Assuming refreshTree is a method in FileTree
     modal?.hide();
     //We are reusing this component for file and file list selection. File is using path in pagetab but FileList use value
     //this line is trying to set correct pageTab variable based on component usage
-    isAFileList(thisFile.value) ? thisFile.value.value = uploadedFileNames[0] : thisFile.value.path = uploadedFileNames[0]; // Update the input box with the file name
+    isAFileList(thisFile.value)
+      ? (thisFile.value.value = uploadedFileNames[0])
+      : (thisFile.value.path = uploadedFileNames[0]); // Update the input box with the file name
     if (isAFileList(thisFile.value)) {
       await validateFileListFile(file[0].name);
     }
@@ -80,17 +102,20 @@ const validateFileListFile = async (fileName: string) => {
     await axios.post(`/api/submissions/fileLists/validate`, formData);
     errorMessage.value = '';
   } catch (error: any) {
-    errorMessage.value = 'File list is not valid. ' + (error?.response?.data?.log?.message || '').substring(0, 200);
-    isAFileList(thisFile.value) ? thisFile.value.value = '' : thisFile.value.path = '';
+    errorMessage.value =
+      'File list is not valid. ' +
+      (error?.response?.data?.log?.message || '').substring(0, 200);
+    isAFileList(thisFile.value)
+      ? (thisFile.value.value = '')
+      : (thisFile.value.path = '');
   }
 };
-
 
 const select = async (node: Node) => {
   modal?.hide();
 
   // ✅ Use pre-computed normalized path from FileTree
-  const path = node.selectedPath ?? (node.path + '/' + node.name);
+  const path = node.selectedPath ?? node.path + '/' + node.name;
 
   if (isAFileList(thisFile.value)) {
     thisFile.value.value = path;
@@ -105,10 +130,11 @@ const select = async (node: Node) => {
   }
 };
 
-
 const fileModalModel = computed({
   get: () => {
-    return isAFileList(thisFile.value) ? thisFile.value.value! : thisFile.value.path;
+    return isAFileList(thisFile.value)
+      ? thisFile.value.value!
+      : thisFile.value.path;
   },
   set: (newValue) => {
     if (isAFileList(thisFile.value)) {
@@ -124,69 +150,120 @@ const loadTree = () => fileTree.value?.show();
 
 <template>
   <div class="form-control">
-    <div class="input-group input-group-sm" :class="props.class">
-      <input type="text" class="form-control bg-body-secondary" v-model="fileModalModel" readonly data-bs-toggle="modal"
-             :disabled="parentDisplayType==='readonly'"
-             :data-bs-target="'#fileFolderSelectModal'+thisComponent!.uid"
-             @click="loadTree()" :class="{'is-invalid': errorMessage}">
-      <button class="btn btn-secondary" type="button" data-bs-toggle="modal"
-              @click="loadTree()"
-              :disabled="parentDisplayType==='readonly'"
-              :data-bs-target="'#fileFolderSelectModal'+thisComponent!.uid">
+    <div class="input-group input-group-sm min-width" :class="props.class">
+      <input
+        v-model="fileModalModel"
+        type="text"
+        class="form-control bg-body-secondary"
+        readonly
+        data-bs-toggle="modal"
+        :disabled="parentDisplayType === 'readonly'"
+        :data-bs-target="'#fileFolderSelectModal' + thisComponent!.uid"
+        :class="{ 'is-invalid': errorMessage }"
+        @click="loadTree()"
+      />
+      <button
+        class="btn btn-secondary"
+        type="button"
+        data-bs-toggle="modal"
+        :disabled="parentDisplayType === 'readonly'"
+        :data-bs-target="'#fileFolderSelectModal' + thisComponent!.uid"
+        @click="loadTree()"
+      >
         Select File
       </button>
-      <div v-if="errorMessage" class="invalid-feedback">{{ errorMessage }}</div>
+      <div v-if="errorMessage" class="invalid-feedback">
+        {{ errorMessage }}
+      </div>
     </div>
   </div>
-  <div class="modal fade" :id="'fileFolderSelectModal'+thisComponent!.uid" tabindex="-1"
-       aria-labelledby="fileFolderSelectModal"
-       aria-hidden="true">
+  <div
+    :id="'fileFolderSelectModal' + thisComponent!.uid"
+    class="modal fade"
+    tabindex="-1"
+    aria-labelledby="fileFolderSelectModal"
+    aria-hidden="true"
+  >
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h4 class="modal-title">Select or upload file</h4>
-          <button type="button" data-bs-dismiss="modal" class="btn-close">
-          </button>
+          <button
+            type="button"
+            data-bs-dismiss="modal"
+            class="btn-close"
+          ></button>
         </div>
         <div class="modal-body">
           <h5>Select file{{ allowFolder ? ' / folder' : '' }}</h5>
           <div class="card bg-light mb-3">
-            <div class="card-body overflow-auto" style="max-height: 400px;">
-              <FileTree path="" ref="fileTree" :allowFolders="allowFolder" @select="(node:Node) => select(node)" />
+            <div class="card-body overflow-auto" style="max-height: 400px">
+              <FileTree
+                ref="fileTree"
+                :allow-folders="allowFolder"
+                path=""
+                @select="(node: Node) => select(node)"
+              />
             </div>
           </div>
           <h5>Upload File</h5>
           <div class="input-group">
             <div class="custom-file">
-              <input :id="'inputGroupFile'+thisComponent!.uid" type="file" class="custom-file-input"
-                     @change="uploadFile(($event.target as HTMLInputElement).files!, $event)">
-              <label :for="'inputGroupFile'+thisComponent!.uid" class="custom-file-label">
+              <input
+                :id="'inputGroupFile' + thisComponent!.uid"
+                type="file"
+                class="custom-file-input"
+                @change="
+                  uploadFile(($event.target as HTMLInputElement).files!, $event)
+                "
+              />
+              <label
+                :for="'inputGroupFile' + thisComponent!.uid"
+                class="custom-file-label"
+              >
                 Select file to upload
               </label>
             </div>
           </div>
           <div v-if="currentUpload !== null">
-            <div class="text-center pb-2">{{ currentUpload.progress === 100 ? 'Saving' : 'Uploading' }}
+            <div class="text-center pb-2">
+              {{ currentUpload.progress === 100 ? 'Saving' : 'Uploading' }}
               {{ currentUpload.name }} ...
             </div>
-            <div class="progress" aria-label="Example with label" role="progressbar" aria-valuemin="0"
-                 aria-valuemax="100" :aria-valuenow="currentUpload.progress">
-              <div class="progress-bar"
-                   :class="{'progress-bar-striped progress-bar-animated': currentUpload.progress === 100}"
-                   :style="{width: currentUpload.progress + '%'}"></div>
+            <div
+              class="progress"
+              aria-label="Example with label"
+              role="progressbar"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              :aria-valuenow="currentUpload.progress"
+            >
+              <div
+                class="progress-bar"
+                :class="{
+                  'progress-bar-striped progress-bar-animated':
+                    currentUpload.progress === 100,
+                }"
+                :style="{ width: currentUpload.progress + '%' }"
+              ></div>
             </div>
             <div class="text-center">{{ currentUpload.progress }}%</div>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" :id="'fileFolderSelectModal'+thisComponent!.uid" class="btn btn-outline-secondary"
-                  data-bs-dismiss="modal" @click.stop="abortController.abort()">Cancel
+          <button
+            :id="'fileFolderSelectModal' + thisComponent!.uid"
+            type="button"
+            class="btn btn-outline-secondary"
+            data-bs-dismiss="modal"
+            @click.stop="abortController.abort()"
+          >
+            Cancel
           </button>
         </div>
       </div>
     </div>
   </div>
-
 </template>
 
 <style scoped>
@@ -194,6 +271,10 @@ const loadTree = () => fileTree.value?.show();
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.min-width {
+  min-width: 20em;
 }
 
 .input-group > .custom-file {
@@ -227,7 +308,7 @@ const loadTree = () => fileTree.value?.show();
 }
 
 .custom-file-label:after {
-  content: "Browse";
+  content: 'Browse';
   position: absolute;
   top: 0;
   right: 0;
