@@ -6,6 +6,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -26,8 +27,9 @@ public class SpaFallbackWebFilter implements WebFilter {
     String path = exchange.getRequest().getURI().getPath();
     String method = exchange.getRequest().getMethod().name();
 
-    // Only handle GET requests
-    if (!"GET".equalsIgnoreCase(method)) {
+    // Only handle GET and HEAD requests for SPA entrypoints.
+    if (!HttpMethod.GET.name().equalsIgnoreCase(method) &&
+        !HttpMethod.HEAD.name().equalsIgnoreCase(method)) {
       return chain.filter(exchange);
     }
 
@@ -61,10 +63,10 @@ public class SpaFallbackWebFilter implements WebFilter {
 
     // For SPA routes, serve index.html
     log.debug("Serving index.html for SPA route: {}", LogUtil.sanitizeForLog(path));
-    return serveIndexHtml(exchange);
+    return serveIndexHtml(exchange, HttpMethod.HEAD.name().equalsIgnoreCase(method));
   }
 
-  private Mono<Void> serveIndexHtml(ServerWebExchange exchange) {
+  private Mono<Void> serveIndexHtml(ServerWebExchange exchange, boolean headOnly) {
     try {
       ClassPathResource indexHtml = new ClassPathResource("static/index.html");
       if (!indexHtml.exists()) {
@@ -74,6 +76,11 @@ public class SpaFallbackWebFilter implements WebFilter {
 
       exchange.getResponse().setStatusCode(HttpStatus.OK);
       exchange.getResponse().getHeaders().setContentType(MediaType.TEXT_HTML);
+      exchange.getResponse().getHeaders().setContentLength(indexHtml.contentLength());
+
+      if (headOnly) {
+        return exchange.getResponse().setComplete();
+      }
 
       DataBuffer buffer = exchange.getResponse().bufferFactory()
           .wrap(indexHtml.getInputStream().readAllBytes());
