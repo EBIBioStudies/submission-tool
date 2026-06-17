@@ -1,9 +1,11 @@
 import { Template } from '@/models/Template.model.ts';
+import { organismDefaultOptions } from '@/templates/organisms.ts';
 
 export default {
   name: 'BioAIrepo.v1',
   title: 'BioAIrepo',
-  description: 'FAIR archival submission for biological AI models, datasets, training pipelines, and evaluation results.',
+  description:
+    'FAIR archival submission for biological AI models, datasets, training pipelines, and evaluation results.',
   icon: 'BioAIRepo.svg',
   DOI: true,
 
@@ -11,7 +13,8 @@ export default {
     databaseName: 'BioAIRepo',
     citation: {
       authors: 'BioAIRepo Consortium',
-      title: 'BioAIRepo: FAIR archival infrastructure for biological AI models and datasets',
+      title:
+        'BioAIRepo: FAIR archival infrastructure for biological AI models and datasets',
       journal: 'TBD',
       year: '2026',
       doi: '',
@@ -42,7 +45,8 @@ export default {
         display: 'required',
         controlType: { name: 'largetext' },
         helpContextual: {
-          description: 'Scientific summary of the AI model, dataset, and biological objective.',
+          description:
+            'Scientific summary of the AI model, dataset, and biological objective.',
         },
       },
       {
@@ -56,7 +60,8 @@ export default {
           limitDateFuture: 'P2Y',
         },
         helpContextual: {
-          description: 'The date at which your dataset should become publicly visible. This can be changed after submission if needed.',
+          description:
+            'The date at which your dataset should become publicly visible. This can be changed after submission if needed.',
         },
       },
       {
@@ -138,7 +143,8 @@ export default {
 
       {
         name: 'Publication',
-        description: 'Add the bibliography relevant to the study. Autofill is available when searching by <a target="_blank" href="https://www.ncbi.nlm.nih.gov/pubmed/">PubMed</a> identifier. For other IDs, you may use <a target="_blank" href="https://www.ncbi.nlm.nih.gov/pmc/pmctopmid/#converter">PubMed\'s converter</a>.',
+        description:
+          'Add the bibliography relevant to the study. Autofill is available when searching by <a target="_blank" href="https://www.ncbi.nlm.nih.gov/pubmed/">PubMed</a> identifier. For other IDs, you may use <a target="_blank" href="https://www.ncbi.nlm.nih.gov/pmc/pmctopmid/#converter">PubMed\'s converter</a>.',
         icon: 'fa-book',
         uniqueCols: true,
         allowImport: false,
@@ -236,6 +242,7 @@ export default {
             controlType: {
               name: 'ontology',
               ontology: ['NCBITaxon'],
+              defaultOptions: organismDefaultOptions,
               multiple: true,
             },
           },
@@ -246,7 +253,6 @@ export default {
               name: 'ontology',
               ontology: ['MONDO'],
               multiple: true,
-
             },
           },
           {
@@ -323,7 +329,15 @@ export default {
                 display: 'required',
                 controlType: {
                   name: 'select',
-                  values: ['parquet', 'tsv', 'csv', 'h5ad', 'fasta', 'images', 'other'],
+                  values: [
+                    'parquet',
+                    'tsv',
+                    'csv',
+                    'h5ad',
+                    'fasta',
+                    'images',
+                    'other',
+                  ],
                 },
               },
               {
@@ -515,7 +529,7 @@ export default {
                     'silhouette',
                     //bio-specific
                     'gene_expression_corr',
-                    'pathway_enrichment_score'
+                    'pathway_enrichment_score',
                   ],
                 },
               },
