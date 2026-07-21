@@ -80,6 +80,7 @@ export default {
       {
         name: 'License',
         display: 'required',
+        icon: 'fa-copyright',
         controlType: {
           name: 'select',
           values: [
@@ -223,22 +224,26 @@ export default {
       {
         name: 'Biological Context',
         display: 'required',
+        icon: 'dna',
         displayAnnotations: false,
 
         fieldTypes: [
           {
             name: 'Biological Question',
             display: 'required',
+            icon: 'question',
             controlType: { name: 'largetext', minlength: 20 },
           },
           {
             name: 'Intended Application',
             display: 'optional',
+            icon: 'fa-rocket',
             controlType: { name: 'largetext' },
           },
           {
             name: 'Organism',
             display: 'required',
+            icon: 'fa-worm',
             controlType: {
               name: 'ontology',
               ontology: ['NCBITaxon'],
@@ -249,6 +254,7 @@ export default {
           {
             name: 'Disease',
             display: 'optional',
+            icon: 'fa-viruses',
             controlType: {
               name: 'ontology',
               ontology: ['MONDO'],
@@ -258,6 +264,7 @@ export default {
           {
             name: 'Tissue',
             display: 'optional',
+            icon: 'fa-lungs',
             controlType: {
               name: 'ontology',
               ontology: ['UBERON'],
@@ -267,6 +274,7 @@ export default {
           {
             name: 'Cell Type',
             display: 'optional',
+            icon: 'fa-circle-dot',
             controlType: {
               name: 'ontology',
               ontology: ['CL'],
@@ -276,10 +284,27 @@ export default {
           {
             name: 'Modality',
             display: 'optional',
+            icon: 'fa-layer-group',
+            helpContextual: {
+              description:
+                '',
+              examples: [
+                'Transcriptomics',
+                'Genomics',
+                'Proteomics',
+                'Metabolomics',
+                'Single-cell transcriptomics',
+                'Spatial transcriptomics',
+                'Microscopy imaging',
+                'Protein structure',
+                'Protein sequence',
+              ],
+            },
             controlType: {
-              name: 'ontology',
-              ontology: ['EDAM'],
-              multiple: true,
+              name: 'aggregate',
+              field_name: 'Modality',
+              section_type: 'Dataset',
+              type: 'table',
             },
           },
         ],
@@ -292,11 +317,13 @@ export default {
         name: 'Datasets',
         display: 'optional',
         displayAnnotations: false,
+        icon: 'fa-database',
 
         fieldTypes: [
           {
-            name: 'Dataset Overview',
-            display: 'required',
+            name: 'Datasets Overview',
+            display: 'desirable',
+            icon: 'fa-rectangle-list',
             controlType: { name: 'largetext' },
           },
         ],
@@ -305,28 +332,43 @@ export default {
           {
             name: 'Dataset',
             display: 'required',
-            rowAsSection: true,
+            icon: 'fa-table',
+            rowAsSection: false,
             uniqueCols: true,
 
             columnTypes: [
               {
-                name: 'Name',
-                display: 'required',
-                controlType: { name: 'text' },
+                name: 'Link',
+                display: 'optional',
+                helpText:
+                  'Link to the dataset, either the original source URL, or an access link to the dataset',
+                icon: 'fa-cloud-arrow-down',
+
+                helpContextual: {
+                  examples: [
+                    'https://huggingface.co/datasets/AllTheBacteria/ATB',
+                  ],
+                  description:
+                    'Link to the dataset, either the original source URL, or an access link to the dataset',
+                },
+                controlType: { name: 'link' },
               },
               {
-                name: 'Source',
-                display: 'desirable',
-                controlType: { name: 'link' },
+                name: 'Name',
+                display: 'required',
+                icon: 'fa-tag',
+                controlType: { name: 'text' },
               },
               {
                 name: 'Artifact',
                 display: 'required',
+                icon: 'fa-table',
                 controlType: { name: 'file' },
               },
               {
                 name: 'Format',
                 display: 'required',
+                icon: 'fa-file-excel',
                 controlType: {
                   name: 'select',
                   values: [
@@ -341,22 +383,56 @@ export default {
                 },
               },
               {
+                name: 'Modality',
+                display: 'optional',
+                icon: 'fa-layer-group',
+                helpContextual: {
+                  description:
+                    'Specify the biological data modality that the model consumes, produces, or was trained on. This describes the nature of the biological data rather than the experimental protocol or machine learning method. Multiple modalities may be selected for multimodal models.',
+                  examples: [
+                    'Transcriptomics',
+                    'Genomics',
+                    'Proteomics',
+                    'Metabolomics',
+                    'Single-cell transcriptomics',
+                    'Spatial transcriptomics',
+                    'Microscopy imaging',
+                    'Protein structure',
+                    'Protein sequence',
+                  ],
+                },
+                controlType: {
+                  name: 'ontology',
+                  ontology: ['EDAM'],
+                  allChildrenOf: [
+                    'http://edamontology.org/topic_3391', // OMICS
+                    'http://edamontology.org/topic_3382', // IMAGING
+                    'http://edamontology.org/topic_3070', // BIOLOGY
+                  ],
+                  multiple: false,
+                },
+              },
+              {
                 name: 'License',
                 display: 'required',
+                icon: 'fa-copyright',
                 controlType: { name: 'text' },
               },
               {
                 name: 'Train Split',
+                icon: 'fa-dumbbell',
                 display: 'optional',
                 controlType: { name: 'text' },
               },
               {
                 name: 'Validation Split',
+                icon: 'fa-clipboard-check',
                 display: 'optional',
                 controlType: { name: 'text' },
               },
               {
                 name: 'Test Split',
+                icon: 'fa-flask',
                 display: 'optional',
                 controlType: { name: 'text' },
               },
@@ -371,46 +447,55 @@ export default {
       {
         name: 'Optimization',
         display: 'optional',
-
+        icon: 'fa-wrench',
         fieldTypes: [
           {
             name: 'Training Overview',
             display: 'required',
+            icon: 'fa-rectangle-list',
             controlType: { name: 'largetext' },
           },
           {
             name: 'Optimizer',
             display: 'required',
+            icon: 'fa-arrows-to-circle',
             controlType: { name: 'text' },
           },
           {
             name: 'Loss Function',
             display: 'required',
+            icon: 'fa-arrow-trend-down',
             controlType: { name: 'text' },
           },
           {
             name: 'Learning Rate',
             display: 'desirable',
+            icon: 'fa-gauge-high',
             controlType: { name: 'text' },
           },
           {
             name: 'Batch Size',
             display: 'desirable',
+            icon: 'fa-ellipsis',
             controlType: { name: 'text' },
           },
           {
             name: 'Epochs',
             display: 'desirable',
+            icon: 'fa-repeat',
+
             controlType: { name: 'text' },
           },
           {
             name: 'Compute Hardware',
             display: 'desirable',
+            icon: 'fa-microchip',
             controlType: { name: 'text' },
           },
           {
             name: 'Training Duration',
             display: 'desirable',
+            icon: 'fa-hourglass-end',
             controlType: { name: 'text' },
           },
         ],
@@ -422,21 +507,24 @@ export default {
       {
         name: 'Model',
         display: 'optional',
-
+        icon: 'fa-gears',
         fieldTypes: [
           {
             name: 'Title',
             display: 'required',
+            icon: 'fa-header',
             controlType: { name: 'text' },
           },
           {
             name: 'Model Overview',
             display: 'required',
+            icon: 'fa-rectangle-list',
             controlType: { name: 'largetext' },
           },
           {
             name: 'Architecture Type',
             display: 'required',
+            icon: 'fa-pen-ruler',
             controlType: {
               name: 'select',
               values: [
@@ -452,21 +540,25 @@ export default {
           {
             name: 'Parameters Count',
             display: 'desirable',
+            icon: 'fa-hashtag',
             controlType: { name: 'text' },
           },
           {
             name: 'Input Description',
             display: 'required',
+            icon: 'fa-right-to-bracket',
             controlType: { name: 'largetext' },
           },
           {
             name: 'Output Description',
             display: 'required',
+            icon: 'fa-right-from-bracket',
             controlType: { name: 'largetext' },
           },
           {
             name: 'Weights',
             display: 'required',
+            icon: 'fa-weight-hanging',
             controlType: { name: 'filelist' },
           },
         ],
@@ -478,11 +570,13 @@ export default {
       {
         name: 'Evaluation',
         display: 'optional',
+        icon: 'fa-clipboard-check',
 
         fieldTypes: [
           {
             name: 'Evaluation Overview',
             display: 'required',
+            icon: 'fa-rectangle-list',
             controlType: { name: 'largetext' },
           },
         ],
@@ -492,6 +586,7 @@ export default {
             name: 'Metrics',
             display: 'optional',
             rowAsSection: true,
+            icon: 'fa-ruler-vertical',
             columnTypes: [
               {
                 name: 'Metric Name',
@@ -558,6 +653,7 @@ export default {
             name: 'Evaluation Plot',
             display: 'desirable',
             rowAsSection: true,
+            icon: 'fa-chart-line',
             columnTypes: [
               {
                 name: 'Figure',
@@ -624,19 +720,309 @@ export default {
       {
         name: 'Reproducibility',
         display: 'desirable',
+        icon: 'fa-repeat',
 
         fieldTypes: [
           {
-            name: 'Container Image',
-            controlType: { name: 'link' },
+            name: 'Level',
+            icon: 'fa-stairs',
+            controlType: {
+              name: 'select',
+              values: [
+                'Metadata only',
+                'Weights available',
+                'Inference reproducible',
+                'Training reproducible',
+                'Fully reproducible',
+              ],
+            },
+            display: 'required',
           },
           {
-            name: 'Environment',
-            controlType: { name: 'filelist' },
+            name: 'Comments',
+            controlType: { name: 'largetext' },
+            icon: 'fa-comment',
+            display: 'optional',
+          },
+        ],
+
+        sectionTypes: [
+          {
+            name: 'Inference requirements',
+            display: 'required',
+            icon: 'fa-play',
+
+            sectionTypes: [
+              {
+                name: 'Hardware',
+                display: 'required',
+                icon: 'fa-microchip',
+                fieldTypes: [
+                  {
+                    name: 'Execution platform',
+                    display: 'required',
+                    controlType: {
+                      name: 'select',
+                      values: ['CPU', 'GPU', 'TPU', 'NPU', 'Multi-node'],
+                    },
+                  },
+                  {
+                    name: 'Accelerator vendor',
+                    display: 'optional',
+                    controlType: {
+                      name: 'select',
+                      values: ['NVIDIA', 'AMD', 'Intel', 'Apple', 'Google'],
+                    },
+                  },
+                  {
+                    name: 'Accelerator model',
+                    display: 'optional',
+                    helpContextual: {
+                      examples: ['NVIDIA A100', 'RTX 4090', 'MI300X'],
+                    },
+                    controlType: {
+                      name: 'text',
+                    },
+                  },
+                  {
+                    name: 'Number of accelerators',
+                    display: 'optional',
+                    controlType: { name: 'number' }, // TODO implement
+                  },
+                  {
+                    name: 'Minimum RAM',
+                    display: 'optional',
+                    controlType: {
+                      name: 'number',
+                      unit: 'GB',
+                    },
+                  },
+                  {
+                    name: 'Recommended RAM',
+                    display: 'optional',
+                    controlType: {
+                      name: 'number',
+                      unit: 'GB',
+                    },
+                  },
+                  {
+                    name: 'Minimum vRAM',
+                    display: 'optional',
+                    controlType: {
+                      name: 'number',
+                      unit: 'GB',
+                    },
+                  },
+                  {
+                    name: 'Recommended vRAM',
+                    display: 'optional',
+                    controlType: {
+                      name: 'number',
+                      unit: 'GB',
+                    },
+                  },
+                  {
+                    name: 'Disk space',
+                    display: 'optional',
+                    controlType: {
+                      name: 'number',
+                      unit: 'GB',
+                    },
+                  },
+                ],
+              },
+              {
+                name: 'Software',
+                display: 'optional',
+                icon: 'fa-code',
+                fieldTypes: [
+                  {
+                    name: 'Accelerator API',
+                    display: 'required',
+                    controlType: {
+                      name: 'select',
+                      values: ['CUDA', 'ROCm', 'cuDNN', 'OpenCL'],
+                    },
+                  },
+                  {
+                    name: 'Accelerator API version',
+                    display: 'optional',
+                    controlType: {
+                      name: 'text',
+                    },
+                  },
+                ],
+              },
+            ],
           },
           {
-            name: 'Workflow Definition',
-            controlType: { name: 'filelist' },
+            name: 'Training requirements',
+            display: 'optional',
+            icon: 'fa-wrench',
+
+            sectionTypes: [
+              {
+                name: 'Hardware',
+                display: 'required',
+                icon: 'fa-microchip',
+                fieldTypes: [
+                  {
+                    name: 'Execution platform',
+                    display: 'required',
+                    controlType: {
+                      name: 'select',
+                      values: ['CPU', 'GPU', 'TPU', 'NPU', 'Multi-node'],
+                    },
+                  },
+                  {
+                    name: 'Accelerator vendor',
+                    display: 'optional',
+                    controlType: {
+                      name: 'select',
+                      values: ['NVIDIA', 'AMD', 'Intel', 'Apple', 'Google'],
+                    },
+                  },
+                  {
+                    name: 'Accelerator model',
+                    display: 'optional',
+                    helpContextual: {
+                      examples: ['NVIDIA A100', 'RTX 4090', 'MI300X'],
+                    },
+                    controlType: {
+                      name: 'text',
+                    },
+                  },
+                  {
+                    name: 'Number of accelerators',
+                    display: 'optional',
+                    controlType: { name: 'number' }, // TODO implement
+                  },
+                  {
+                    name: 'Minimum RAM',
+                    display: 'optional',
+                    controlType: {
+                      name: 'number',
+                      unit: 'GB',
+                    },
+                  },
+                  {
+                    name: 'Recommended RAM',
+                    display: 'optional',
+                    controlType: {
+                      name: 'number',
+                      unit: 'GB',
+                    },
+                  },
+                  {
+                    name: 'Minimum vRAM',
+                    display: 'optional',
+                    controlType: {
+                      name: 'number',
+                      unit: 'GB',
+                    },
+                  },
+                  {
+                    name: 'Recommended vRAM',
+                    display: 'optional',
+                    controlType: {
+                      name: 'number',
+                      unit: 'GB',
+                    },
+                  },
+                  {
+                    name: 'Disk space',
+                    display: 'optional',
+                    controlType: {
+                      name: 'number',
+                      unit: 'GB',
+                    },
+                  },
+                ],
+              },
+              {
+                name: 'Software',
+                display: 'optional',
+                icon: 'fa-code',
+                fieldTypes: [
+                  {
+                    name: 'Accelerator API',
+                    display: 'required',
+                    controlType: {
+                      name: 'select',
+                      values: ['CUDA', 'ROCm', 'cuDNN', 'OpenCL'],
+                    },
+                  },
+                  {
+                    name: 'Accelerator API version',
+                    display: 'optional',
+                    controlType: {
+                      name: 'text',
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+
+        tableTypes: [
+          {
+            name: 'Assets',
+            display: 'optional',
+            rowAsSection: true,
+            icon: 'fa-boxes-stacked',
+
+            columnTypes: [
+              {
+                name: 'Type',
+                controlType: {
+                  name: 'select',
+                  createOption: true,
+                  values: [
+                    'Container image',
+                    'Environment file',
+                    'Training script',
+                    'Inference script',
+                    'Workflow definition',
+                    'Notebook',
+                  ],
+                },
+              },
+              {
+                name: 'Asset',
+                icon: 'fa-box-open',
+                controlType: { name: 'file' },
+              },
+            ],
+          },
+          {
+            name: 'Links',
+            display: 'optional',
+            icon: 'fa-link',
+            rowAsSection: true,
+
+            columnTypes: [
+              {
+                name: 'Type',
+                controlType: {
+                  name: 'select',
+                  createOption: true,
+                  values: [
+                    'Container image',
+                    'Environment file',
+                    'Training script',
+                    'Inference script',
+                    'Workflow definition',
+                    'Notebook',
+                  ],
+                },
+              },
+              {
+                name: 'link',
+                icon: 'fa-link',
+                controlType: { name: 'link' },
+              },
+            ],
           },
         ],
       },

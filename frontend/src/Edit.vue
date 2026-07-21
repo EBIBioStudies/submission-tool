@@ -62,8 +62,7 @@
   </div>
   <div v-else>
     <div v-if="serverErrorMessage" class="alert alert-danger" role="alert">
-      <div class="card-body">
-        {{ serverErrorMessage }}
+      <div class="card-body" v-html="serverErrorMessage">
       </div>
     </div>
     <div v-else>
@@ -190,6 +189,7 @@ import { cleanAndReorderSubsections } from './templates/cleanUtils';
 import { PageTab } from '@/models/PageTab.model.ts';
 import { Template } from '@/models/Template.model.ts';
 import { ControlError, SectionExpose } from '@/components/expose.model.ts';
+import { validateAgainstTemplate } from '@/utils/pageTabTemplateValidator.ts';
 
 
 const props = defineProps<{ accession: string }>();

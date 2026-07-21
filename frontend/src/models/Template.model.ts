@@ -1,5 +1,6 @@
 import { PageTab } from '@/models/PageTab.model.ts';
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Template {
   export type DisplayType = 'required' | 'desirable' | 'optional' | 'readonly' | 'hidden';
 
@@ -38,8 +39,17 @@ export namespace Template {
 
     values?: (string | ValueObject)[];
     defaultValue?: string;
+    /**
+     * Reference attribute to display within the section_type
+     */
     field_name?: string;
+    /**
+     * Section referenced by a reference or aggregate ControlType, to be combined with field_name
+     */
     section_type?: string;
+    /**
+     * Whether the section referenced by a reference or aggregate ControlType is a section or a table
+     */
     type?: 'section' | 'table';
 
     minlength?: number;

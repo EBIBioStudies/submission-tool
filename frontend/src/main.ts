@@ -5,6 +5,7 @@ import router from './router';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
 import { far } from '@fortawesome/free-regular-svg-icons';
+import { fab } from '@fortawesome/free-brands-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 import { createApp } from 'vue';
@@ -17,6 +18,8 @@ import { vTooltip } from '@/directives/tooltip.directive.ts';
 const baseURL = import.meta.env.VITE_BASE_URL || '/';
 library.add(fas);
 library.add(far);
+library.add(fab);
+
 const app = createApp(App);
 app.directive('tooltip', vTooltip)
 app.use(router);
