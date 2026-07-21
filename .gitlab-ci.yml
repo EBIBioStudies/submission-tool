@@ -28,8 +28,6 @@ stages:
 build-beta:
   <<: *build-template
   environment: beta
-  only:
-    - main
 
 build-prod:
   <<: *build-template
