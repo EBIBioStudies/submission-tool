@@ -63,8 +63,6 @@ deploy-beta:
   environment: beta
   needs:
     - build-beta
-  only:
-    - main
   when: manual
 
 deploy-prod:
