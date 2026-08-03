@@ -448,7 +448,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
 <template>
   <div
     v-if="canRender(props.section)"
-    class="section-block pb-2"
+    class="section-block"
     :class="{ collapsed: isCollapsed }"
   >
     <div v-if="section?.type === 'Study'" :key="sectionsRefreshKey">
@@ -529,7 +529,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
     <!-- section content -->
     <transition name="slide">
       <div :class="{ 'visually-hidden': isCollapsed }">
-        <div class="has-child-section ms-3 slide-in">
+        <div class="has-child-section ms-4 slide-in">
           <!-- attributes (includes both regular attributes and annotations) -->
           <div ref="attributes">
             <Attributes :key="attributesRefreshKey"
