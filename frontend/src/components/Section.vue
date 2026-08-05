@@ -12,7 +12,6 @@ import {
   Ref,
   UnwrapRef,
 } from 'vue';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Attributes from '@/components/Attributes.vue';
 import SectionTable from '@/components/SectionTable.vue';
 import SubsectionMenu from '@/components/SubsectionMenu.vue';
@@ -74,7 +73,6 @@ const inheritedSectionType = computed(() => ({
 if (sectionType.value?.overrideReadonly) provide('parentDisplayType', sectionType.value.display);
 
 const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
-const isPublicSubmission = inject<ComputedRef<boolean>>('isPublicSubmission');
 
 const readonly = computed(() => parentDisplayType?.value === 'readonly' && !sectionType.value?.overrideReadonly || sectionType.value?.display === 'readonly');
 const isRemovable = computed(() => sectionType.value?.display !== 'required' || (props.siblingCount ?? 1) > 1);
@@ -333,7 +331,7 @@ const refreshSection = async () => {
   sectionsRefreshKey.value += 1;
 };
 
-const addAttribute = async (name?: string = '') => {
+const addAttribute = async (name: string = '') => {
   if (parentDisplayType?.value === 'readonly' && !sectionType.value.overrideReadonly) return;
   thisSection.value.attributes = thisSection.value.attributes || [];
   thisSection.value.attributes.push({ name, value: '' });
@@ -506,8 +504,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
         v-if="
           isRemovable &&
           !readonly &&
-          sectionType?.name !== 'Study' &&
-          !isPublicSubmission
+          sectionType?.name !== 'Study'
         "
         class="mt-2 btn btn-sm btn-delete"
         role="button"
