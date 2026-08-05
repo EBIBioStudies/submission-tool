@@ -12,7 +12,6 @@ import {
   Ref,
   UnwrapRef,
 } from 'vue';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Attributes from '@/components/Attributes.vue';
 import SectionTable from '@/components/SectionTable.vue';
 import SubsectionMenu from '@/components/SubsectionMenu.vue';
@@ -79,7 +78,6 @@ const inheritedSectionType = computed(() => ({
 if (sectionType.value?.overrideReadonly) provide('parentDisplayType', sectionType.value.display);
 
 const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
-const isPublicSubmission = inject<ComputedRef<boolean>>('isPublicSubmission');
 
 const readonly = computed(() => parentDisplayType?.value === 'readonly' && !sectionType.value?.overrideReadonly || sectionType.value?.display === 'readonly');
 const isRemovable = computed(() => sectionType.value?.display !== 'required' || (props.siblingInfo?.count ?? 1) > 1);
@@ -494,7 +492,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
 <template>
   <div
     v-if="canRender(props.section)"
-    class="section-block pb-2"
+    class="section-block"
     :class="{ collapsed: isCollapsed }"
   >
     <div v-if="section?.type === 'Study'" :key="sectionsRefreshKey">
@@ -574,7 +572,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
     <!-- section content -->
     <transition name="slide">
       <div :class="{ 'visually-hidden': isCollapsed }">
-        <div class="has-child-section ms-3 slide-in">
+        <div class="has-child-section ms-4 slide-in">
           <!-- attributes (includes both regular attributes and annotations) -->
           <div ref="attributes">
             <Attributes :key="attributesRefreshKey"
