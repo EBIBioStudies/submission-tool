@@ -122,6 +122,7 @@ export default {
             },
           ],
           'enableValueAdd': false,
+          'createOption': false
         },
         'helpContextual': {
           'description': 'The license under which the data are available.',
