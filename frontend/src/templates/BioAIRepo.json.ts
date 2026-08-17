@@ -77,23 +77,6 @@ export default {
           description: 'Search keywords for biological AI retrieval.',
         },
       },
-      {
-        name: 'License',
-        display: 'required',
-        icon: 'fa-copyright',
-        controlType: {
-          name: 'select',
-          values: [
-            { value: 'CC0' },
-            { value: 'CC BY 4.0' },
-            { value: 'Apache-2.0' },
-            { value: 'MIT' },
-          ],
-        },
-        helpContextual: {
-          description: 'License governing datasets and/or models.',
-        },
-      },
     ],
 
     tableTypes: [
@@ -286,8 +269,7 @@ export default {
             display: 'optional',
             icon: 'fa-layer-group',
             helpContextual: {
-              description:
-                '',
+              description: '',
               examples: [
                 'Transcriptomics',
                 'Genomics',
@@ -520,6 +502,23 @@ export default {
             display: 'required',
             icon: 'fa-rectangle-list',
             controlType: { name: 'largetext' },
+          },
+          {
+            name: 'License',
+            display: 'required',
+            icon: 'fa-copyright',
+            controlType: {
+              name: 'select',
+              values: [
+                { value: 'CC0' },
+                { value: 'CC BY 4.0' },
+                { value: 'Apache-2.0' },
+                { value: 'MIT' },
+              ],
+            },
+            helpContextual: {
+              description: 'License governing the model.',
+            },
           },
           {
             name: 'Architecture Type',
