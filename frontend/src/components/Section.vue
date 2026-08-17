@@ -16,7 +16,7 @@ import Attributes from '@/components/Attributes.vue';
 import SectionTable from '@/components/SectionTable.vue';
 import SubsectionMenu from '@/components/SubsectionMenu.vue';
 import { fillTemplate } from '@/templates/templates';
-import utils, { ensureArray, isElement, isString } from '@/utils';
+import utils, { ensureArray, isElement, isNotArray, isString } from '@/utils';
 import SubSectionTable from '@/components/SubSectionTable.vue';
 import EditableLabel from '@/components/EditableLabel.vue';
 import Authors from '@/components/Authors.vue';
@@ -193,7 +193,7 @@ const addSubsection = async (aSection: PageTab.Section, _i: number, type?: Templ
   obj.accno = String(obj.accno) + '-removable';
   const typeName = obj.type?.toLowerCase();
   const lastIdx = typeName
-    ? aSection.subsections.findLastIndex((s) => ensureArray(s)[0]?.type?.toLowerCase() === typeName)
+    ? aSection.subsections.findLastIndex((s) => isNotArray(s) && s?.type?.toLowerCase() === typeName)
     : -1;
   let insertedIdx: number;
   if (lastIdx >= 0) {

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, UnwrapRef } from 'vue';
+import { computed, defineExpose, defineProps, onMounted, ref, UnwrapRef } from 'vue';
 import SectionTable from '@/components/SectionTable.vue';
 import { addMissingAttributesGeneral } from '@/composables/useAttributesHelper';
 import { Template } from '@/models/Template.model.ts';
 import { PageTab } from '@/models/PageTab.model.ts';
-import { ensureArray } from '@/utils.ts';
+import { ensureArray, isNotArray } from '@/utils.ts';
 import { SectionExpose } from '@/components/expose.model.ts';
 
 const props = defineProps<{
@@ -70,9 +70,7 @@ const authors = computed(() => {
     thisSection?.value?.subsections
       ?.flatMap(ensureArray)
 
-      ?.filter(
-      (s) => s?.type?.toLowerCase() === 'author',
-    ) ?? []
+      ?.filter((s) => s?.type?.toLowerCase() === 'author') ?? []
   );
 });
 
@@ -102,12 +100,14 @@ const OnDeleteOrg = (o: PageTab.Organisation) => {
 };
 
 const orgWithAcc = (accno: string): PageTab.Organisation | undefined =>
-  thisSection?.value?.subsections?.flatMap(ensureArray)?.find(
-    (s) =>
-      (s?.type?.toLowerCase() === 'organisation' ||
-        s?.type?.toLowerCase() === 'organization') &&
-      s?.attributes?.some((a) => a.value === accno),
-  ) as PageTab.Organisation | undefined;
+  thisSection?.value?.subsections
+    ?.flatMap(ensureArray)
+    ?.find(
+      (s) =>
+        (s?.type?.toLowerCase() === 'organisation' ||
+          s?.type?.toLowerCase() === 'organization') &&
+        s?.attributes?.some((a) => a.value === accno),
+    ) as PageTab.Organisation | undefined;
 
 const OnCreateOrg = (o: PageTab.Organisation) => {
   let org = orgWithAcc(o.label!);
@@ -115,18 +115,17 @@ const OnCreateOrg = (o: PageTab.Organisation) => {
   // if org does not exist, create it
   if (!org) {
     // find the highest existing organisation number
-    const existingOrgNumbers = thisSection?.value?.subsections
-      ?.flatMap(ensureArray)
-
-      ?.filter(
-        (s) =>
-          s?.type?.toLowerCase() === 'organisation' ||
-          s?.type?.toLowerCase() === 'organization',
-      )
-      .map((s) => {
-        const match = s.accno?.match(/^o(\d+)$/);
-        return match ? parseInt(match[1], 10) : 0;
-      }) || [];
+    const existingOrgNumbers =
+      thisSection?.value?.subsections
+        ?.filter(
+          (s) =>
+            s?.type?.toLowerCase() === 'organisation' ||
+            s?.type?.toLowerCase() === 'organization',
+        )
+        .map((s) => {
+          const match = s.accno?.match(/^o(\d+)$/);
+          return match ? parseInt(match[1], 10) : 0;
+        }) || [];
 
     const maxOrgNumber =
       existingOrgNumbers.length > 0 ? Math.max(...existingOrgNumbers) : 0;
@@ -172,11 +171,11 @@ const OnCreateOrg = (o: PageTab.Organisation) => {
   return refresh();
 };
 
-const reorderAuthors = (event: {newIndex: number, oldIndex: number}) => {
+const reorderAuthors = (event: { newIndex: number; oldIndex: number }) => {
   const authorIndexMap: Record<number, number> = {}; // lookup for index in authors to index in subsections
   let authIndex = 0;
-  thisSection?.value?.subsections?.flatMap(ensureArray)?.forEach((section, i) => {
-    if (section?.type?.toLowerCase() === 'author') {
+  thisSection?.value?.subsections?.forEach((section, i) => {
+    if (isNotArray(section) && section?.type?.toLowerCase() === 'author') {
       authorIndexMap[authIndex++] = i;
     }
   });
@@ -197,8 +196,8 @@ const reorderAuthors = (event: {newIndex: number, oldIndex: number}) => {
 const OnDeleteRow = (index: number) => {
   const authorIndexMap: Record<number, number> = {}; // lookup for index in authors to index in subsections
   let authIndex = 0;
-  thisSection?.value?.subsections?.flatMap(ensureArray)?.forEach((section, i) => {
-    if (section?.type?.toLowerCase() === 'author') {
+  thisSection?.value?.subsections?.forEach((section, i) => {
+    if (isNotArray(section) && section?.type?.toLowerCase() === 'author') {
       authorIndexMap[authIndex++] = i;
     }
   });
@@ -211,12 +210,19 @@ const OnDeleteRow = (index: number) => {
 };
 
 const OnRowAdded = (row: PageTab.Section) => {
-  thisSection?.value?.subsections?.push(row);
+  const lastIndex = thisSection?.value?.subsections?.findLastIndex(
+    (s) => isNotArray(s) && s?.type?.toLowerCase() === 'author',
+  );
+  thisSection?.value?.subsections?.splice(
+    lastIndex < 0 ? thisSection?.value?.subsections.length - 1 : lastIndex + 1,
+    0,
+    row,
+  );
   return refresh();
 };
 
-const OnColumnUpdated = (row: { old: string, new: string, index: number }) => {
-  thisSection?.value?.subsections?.flatMap(ensureArray)?.forEach((section) => {
+const OnColumnUpdated = (row: { old: string; new: string; index: number }) => {
+  thisSection?.value?.subsections?.forEach((section) => {
     if (section?.type?.toLowerCase() !== 'author') return;
     section.attributes!.find((att) => att.name === row.old)!.name = row.new;
   });
