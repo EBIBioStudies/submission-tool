@@ -201,6 +201,7 @@ export default {
               'name': 'select',
               'enableValueAdd': true,
               'createOption': true,
+              'multiple': true,
               'values': [
                 'corresponding author',
                 'data steward',
