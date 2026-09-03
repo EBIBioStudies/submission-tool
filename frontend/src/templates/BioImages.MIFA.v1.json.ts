@@ -320,6 +320,9 @@ export default {
             'controlType': {
               'name': 'select',
               'defaultValue': '',
+              "createOption": false,
+              'enableValueAdd': false,
+              'multiple': true,
               'values': [
                 {
                   'value': 'class_labels',

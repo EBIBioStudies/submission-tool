@@ -745,6 +745,8 @@ export default {
               'name': 'select',
               'multiple': true,
               'defaultValue': '',
+              "createOption": false,
+              'enableValueAdd': false,
               'values': [
                 {
                   'value': 'class_labels',
