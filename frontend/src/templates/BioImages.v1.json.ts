@@ -145,8 +145,10 @@ export default {
             'name': 'Role',
             'controlType': {
               'name': 'select',
+              'multiple': true,
               'values': [
                 'corresponding author',
+                'data steward',
                 'data acquisition',
                 'data analyst',
                 'experiment performer',
