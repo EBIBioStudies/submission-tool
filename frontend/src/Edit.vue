@@ -482,9 +482,9 @@ watch(updatedSubmission, async (json) => {
     } catch (err) {
       console.error('Draft save failed:', err);
     } finally {
-      isSaving.value = false;
+      setTimeout( () => isSaving.value = false, 1000);
     }
-  }, 1002);
+  });
   lastUpdated = Date.now();
   document.getElementById('json')!.innerText = JSON.stringify(draft, null, 2);
 });
