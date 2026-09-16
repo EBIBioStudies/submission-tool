@@ -5,7 +5,7 @@
     </div>
     <NewSubmission @select="(e: any) => console.log(e)"></NewSubmission>
     <div class="d-flex justify-content-center" :class="{ 'visually-hidden': !isLoading }">
-      <span class="ps-1"><font-awesome-icon class="fa-spin" icon="fa-solid fa-spinner"/></span>
+      <span class="ps-1"><font-awesome-icon class="fa-spin" icon="fa-solid fa-spinner" /></span>
     </div>
     <div
       v-if="serverListingSubsErrorMessage"
@@ -78,14 +78,18 @@
         <td>
           <div>
             <font-awesome-icon role="button" icon="fa-edit" class="text-primary ps-2 "
-                               v-tooltip="'Edit submission'" v-if="submission.status === 'PROCESSED' ||submission.status === 'INVALID'"
-                               @click.stop="edit(submission.accno)"></font-awesome-icon>
+                               v-tooltip="'Edit submission'"
+                               v-if="submission.status === 'PROCESSED' ||submission.status === 'INVALID'"
+                               @click.stop="edit(submission.accno)"
+            ></font-awesome-icon>
             <font-awesome-icon role="button" icon="fa-arrow-up-right-from-square" class="text-primary ps-2"
                                v-tooltip="'Open in Biostudies'" v-if="submission.status === 'PROCESSED'"
-                               @click.stop="open(submission.accno)"></font-awesome-icon>
+                               @click.stop="open(submission.accno)"
+            ></font-awesome-icon>
             <font-awesome-icon role="button" icon="fa-regular fa-trash-can" class="text-danger ps-2"
                                v-tooltip="'Delete submission'" v-if="canDelete(submission)"
-                               @click.stop="deleteSubmission(submission.accno)"></font-awesome-icon>
+                               @click.stop="deleteSubmission(submission.accno)"
+            ></font-awesome-icon>
           </div>
         </td>
       </tr>
@@ -133,7 +137,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue';
+import { ref, watchEffect, computed } from 'vue';
 import AuthService from './services/AuthService';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import moment from 'moment';
@@ -154,6 +158,7 @@ export interface SubmissionSummary {
   errors: string[],
   newSubmission: boolean
 }
+
 //init ci/cd test
 const submissions = ref<SubmissionSummary[]>([]);
 const offset = ref(0);
@@ -200,6 +205,37 @@ const deleteSubmission = async (accno: string) => {
   }
 };
 
+const CHECK_PROCESSING_PERIOD = 1000; // Define the period between each check of processing submissions, until none is left
+
+
+const hasProcessingSubmissions = computed(() => submissions.value.some(submission => submission.status === 'PROCESSING'));
+
+/**
+ * Update the submission list until all visible submissions are no longer processing
+ */
+const checkProcessing = async () => {
+  if (hasProcessingSubmissions.value) {
+    await fetchSubmissions();
+    setTimeout(checkProcessing, CHECK_PROCESSING_PERIOD);
+  }
+};
+
+
+const fetchSubmissions = async () => {
+  const hasAccession = accessionToSearch.value.trim() !== '';
+  const response = await axios.get('/api/submissions', {
+    params: hasAccession
+      ? { accNo: accessionToSearch.value.trim() }
+      : {
+        offset: offset.value,
+        limit: pageLength.value + 1, // Ask for one more than needed to check if there's a next page
+      },
+  });
+
+  submissions.value = response.data.slice(0, pageLength.value); // Only render the actual page size
+  showNext.value = response.data.length === pageLength.value + 1; // There are more items if there is at least one more item than what is rendered
+};
+
 /**
  * Watches relevant reactive state for search criteria changes and user authentication.
  *
@@ -216,23 +252,13 @@ const deleteSubmission = async (accno: string) => {
 watchEffect(async () => {
   if (!AuthService.isAuthenticated()) return;
 
-  const hasAccession = accessionToSearch.value.trim() !== '';
-
   try {
     isLoading.value = true;
     serverListingSubsErrorMessage.value = null;
 
-    const response = await axios.get('/api/submissions', {
-      params: hasAccession
-        ? { accNo: accessionToSearch.value.trim() }
-        : {
-          offset: offset.value,
-          limit: pageLength.value + 1,
-        },
-    });
+    await fetchSubmissions();
 
-    submissions.value = response.data.slice(0, pageLength.value);
-    showNext.value = response.data.length === pageLength.value + 1;
+    setTimeout(checkProcessing, CHECK_PROCESSING_PERIOD);
 
   } catch (error: any) {
     serverListingSubsErrorMessage.value =
@@ -241,6 +267,7 @@ watchEffect(async () => {
     isLoading.value = false;
   }
 });
+
 
 const edit = (accno: string) => router.push(`/edit/${accno}`);
 
@@ -253,7 +280,7 @@ const searchAccession = async () => {
   accessionToSearch.value = await utils.prompt(
     'Search accession',
     `Please enter the accession to search`,
-    { okayLabel: 'Search' }
+    { okayLabel: 'Search' },
   );
 };
 
