@@ -224,7 +224,7 @@ const submissionComponent = ref<UnwrapRef<SectionExpose>>();
 
 let offCanvasErrors: Offcanvas | null = null;
 let offCanvasJson: Offcanvas | null = null;
-let validationErrors = ref<ControlError[]>([]);
+let validationErrors = computed(() => submissionComponent.value?.errors || []);
 
 const onSubmission = computed(() => ({
   ...Default.onSubmission,
@@ -233,6 +233,12 @@ const onSubmission = computed(() => ({
 
 
 const submitDraftPopUp = () => {
+  hasValidated.value = true;
+
+  if (validationErrors.value.length) {
+    offCanvasErrors!.show();
+    return;
+  }
 
   if (isSubmittedSubmission.value)
     showResubmitModal.value = true;
@@ -279,13 +285,6 @@ function collectMessages(node: MessageNode) {
 const finalSubmitDraft = async (option?: string) => {
   showResubmitModal.value = false;
   showSubmitModal.value = false;
-  hasValidated.value = true;
-  validationErrors.value = submissionComponent.value?.errors || [];
-
-  if (validationErrors.value.length) {
-    offCanvasErrors!.show();
-    return;
-  }
 
   offCanvasErrors!.hide();
   isLoading.value = true;
