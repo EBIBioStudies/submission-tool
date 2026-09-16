@@ -154,7 +154,7 @@
             All good to go!
           </div>
           <div class="text-center">
-            <button class="btn btn-primary text-center" type="button" @click="finalSubmitDraft()">Close and
+            <button class="btn btn-primary text-center" type="button" @click="submitDraftPopUp">Close and
               Submit
             </button>
           </div>
