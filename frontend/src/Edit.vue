@@ -103,8 +103,11 @@
         </button>
       </div>
     </div>
-    <div v-if="showModal" class="modal-overlay">
-      <ResubmitModal @hide="showModal = false" @resubmit="finalSubmitDraft" />
+    <div v-if="showResubmitModal" class="modal-overlay">
+      <ResubmitModal @hide="showResubmitModal = false" @resubmit="finalSubmitDraft" />
+    </div>
+    <div v-if="showSubmitModal" class="modal-overlay">
+      <SubmitModal @hide="showSubmitModal = false" @submit="finalSubmitDraft" />
     </div>
     <div class="row">
       <div class="col-1"></div>
@@ -178,6 +181,7 @@ import { computed, onMounted, provide, ref, UnwrapRef, watch, watchEffect } from
 import Default from '@/templates/Default.v2.json';
 import Submission from './components/Submission.vue';
 import ResubmitModal from './components/ResubmitModal.vue';
+import SubmitModal from './components/SubmitModal.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { allTemplates } from '@/templates/templates';
 import { Offcanvas } from 'bootstrap';
@@ -212,7 +216,8 @@ provide('collectionName', collectionName);
 
 const isSubmittedSubmission = ref(true);
 const { enableSubmission } = useFeatureFlags();
-const showModal = ref(false);
+const showSubmitModal = ref(false);
+const showResubmitModal = ref(false);
 isManagerUser.value = AuthService?.user?.value?.superuser == true;
 
 const submissionComponent = ref<UnwrapRef<SectionExpose>>();
@@ -230,9 +235,9 @@ const onSubmission = computed(() => ({
 const submitDraftPopUp = () => {
 
   if (isSubmittedSubmission.value)
-    showModal.value = true;
+    showResubmitModal.value = true;
   else
-    finalSubmitDraft('');
+    showSubmitModal.value = true;
 };
 
 const publicSubmission = computed(() => {
@@ -272,7 +277,8 @@ function collectMessages(node: MessageNode) {
 }
 
 const finalSubmitDraft = async (option?: string) => {
-  showModal.value = false;
+  showResubmitModal.value = false;
+  showSubmitModal.value = false;
   hasValidated.value = true;
   validationErrors.value = submissionComponent.value?.errors || [];
 
