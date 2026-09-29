@@ -243,6 +243,10 @@ const showHelp = (header: Template.SectionType) => {
   );
 };
 
+const deleteTag = (v,row) => {
+  const index = row.attributes?.findIndex(i => i.name === v.name && i.value === v.value);
+  row.attributes?.splice(index, 1);
+}
 
 defineExpose<SectionExpose>({ errors, thisSection });
 
@@ -369,6 +373,8 @@ defineExpose<SectionExpose>({ errors, thisSection });
                              :field-type="getFieldType(getCell(row, col))"
                              :isTableAttribute="true"
                              :parent="row.attributes"
+                             @createTag="(v) => row.attributes.push(v)"
+                             @deleteTag="v => deleteTag(v, row)"
                              @deleteAttribute="() => emits('deleteAttribute', index)"
                              @deleteOrg="(v) => emits('deleteOrg', {...v,...{'authorIndex':index}})"
                              @createOrg="(v) => emits('createOrg', {...v,...{'authorIndex':index}})"

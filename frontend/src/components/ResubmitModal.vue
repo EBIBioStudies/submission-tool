@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 const selectedOption = ref("noFilesUpdated"); // Default selected option
 
@@ -65,6 +66,11 @@ const stopPropagation = (event: Event) => {
           <label class="form-check-label" for="files-updated">
             Yes, one or more files have been updated
           </label>
+        </div>
+
+        <div v-if="selectedOption === 'filesUpdated'" class="bg-warning mt-3 p-2 rounded-3 lh-1">
+          <font-awesome-icon icon="fa-solid fa-triangle-exclamation" />
+          Please make sure to not modify your uploaded files or reorganize them while the submission is being processed
         </div>
 
         <div class="modal-footer">

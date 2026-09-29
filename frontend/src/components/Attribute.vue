@@ -275,11 +275,8 @@ const showHelp = () => {
 
     <!-- select  -->
     <Multiselect
-      v-else-if="
-      fieldType?.controlType?.name === 'select' &&
-      !fieldType?.controlType?.multiple
-    "
-      :allow-absent="fieldType?.controlType?.enableValueAdd ?? true"
+      v-else-if="controlType?.name === 'select' && !controlType?.multiple"
+      :allow-absent="controlType?.enableValueAdd ?? true"
       v-model="thisAttribute.value"
       label="value"
       class="form-control"
@@ -288,7 +285,7 @@ const showHelp = () => {
       :class="{'is-invalid':errors && hasValidated, 'form-control-sm':isTableAttribute}"
       :disabled="readonly"
       :allow-empty="false"
-      :create-option="fieldType?.controlType?.createOption ?? true"
+      :create-option="controlType?.createOption ?? true"
       :append-to-body="true"
       @change="onChangeSelect"
     >
@@ -328,8 +325,8 @@ const showHelp = () => {
       label="value"
       class="form-control"
       :searchable="true"
-      :createOption="fieldType?.controlType?.enableValueAdd ?? true"
-      :allowAbsent="fieldType?.controlType?.enableValueAdd ?? true"
+      :createOption="controlType?.createOption ?? true"
+      :allowAbsent="controlType?.enableValueAdd ?? true"
       :options="singleSelectValues"
       :can-clear="false"
       noOptionsText="Type and press ↵ to add"

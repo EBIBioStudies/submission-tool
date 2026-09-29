@@ -134,6 +134,7 @@ export default {
             },
           ],
           'enableValueAdd': false,
+          'createOption': false
         },
         'helpContextual': {
           'description': 'The license under which the data are available.',
@@ -200,6 +201,7 @@ export default {
               'name': 'select',
               'enableValueAdd': true,
               'createOption': true,
+              'multiple': true,
               'values': [
                 'corresponding author',
                 'data steward',
@@ -743,6 +745,8 @@ export default {
               'name': 'select',
               'multiple': true,
               'defaultValue': '',
+              "createOption": false,
+              'enableValueAdd': false,
               'values': [
                 {
                   'value': 'class_labels',

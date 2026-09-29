@@ -221,7 +221,7 @@ const doUploadStudyFile = (file: UploadingFile): Observable<UploadingFile> => {
       .catch((error) => {
         file.status = UploadStatus.FAILED;
         file.progress = 0;
-        file.message = formatErrorMessage(error.response?.data?.log || error || {message: 'Unknown error'});
+        file.message = formatErrorMessage(error.response?.data?.log || error || { message: 'Unknown error' });
         errorMessage.value = error?.response?.data?.log?.message || error?.message || 'Unknown Error';
         observer.next(file);
         observer.complete();
@@ -357,7 +357,8 @@ onBeforeUnmount(() => {
                 </div>
                 <input type="file" ref="fileInput" @change="handleFileChange" style="display: none;" multiple>
                 <input type="file" ref="folderInput" @change="handleFileChange" webkitdirectory directory
-                       style="display: none;">
+                       style="display: none;"
+                >
               </div>
 
               <div class="form-group mx-3">
@@ -369,7 +370,8 @@ onBeforeUnmount(() => {
                   <div v-for="col in collections" :key="col.accno" class="ng-star-inserted">
                     <label>
                       <input type="radio" name="project" class="ng-untouched ng-pristine ng-valid" :value="col"
-                             v-model="selectedCollection">
+                             v-model="selectedCollection"
+                      >
                       {{ col.title }}
                     </label>
                   </div>
@@ -422,6 +424,15 @@ onBeforeUnmount(() => {
                 The extension of the file containing the study information should be <strong>.json, .xml, .tsv or
                 .xlsx</strong>
               </p>
+              <section>
+                <strong>Terms of Use</strong>
+                <p>
+                  By uploading your submission, you confirm that, to the best of your knowledge, the data being submitted
+                  are not subject to any restrictions that prohibit their open sharing and are submitted in compliance
+                  with applicable national and international access and benefit-sharing obligations, in accordance with
+                  the <a href="https://www.ebi.ac.uk/about/terms-of-use/">Terms of Use</a>
+                </p>
+              </section>
             </div>
           </div>
           <div v-if="errorMessage" class="alert">
@@ -466,7 +477,8 @@ onBeforeUnmount(() => {
 
             <strong> <a href="http://europepmc.org/abstract/MED/26700850" target="_blank"> Citing the BioStudies
               database <i
-                class="fa fa-fw fa-external-link-square"></i> </a> </strong>
+                class="fa fa-fw fa-external-link-square"
+              ></i> </a> </strong>
             <p>
               Sarkans U, Gostev M, Athar A, et al. <a href="http://doi.org/10.1093/nar/gkx965">The BioStudies
               database-one
@@ -478,16 +490,20 @@ onBeforeUnmount(() => {
 
         <div class="st-direct-upload-files-grid mt-3">
           <div v-for="file in selectedFiles" :key="file.name + file.size" class="card h-100 panel-default"
-               style="cursor: default;" :class="{'study-file': file.isChecked}">
+               style="cursor: default;" :class="{'study-file': file.isChecked}"
+          >
             <div class="card-body">
               <div class="card-title d-flex align-items-center">
                 <div>
                   <font-awesome-icon v-if="file.status==UploadStatus.UPLOADING" :icon="['fas', 'plus']"
-                                     class="fa-1x st-panel-description-icon green-icon" />
+                                     class="fa-1x st-panel-description-icon green-icon"
+                  />
                   <font-awesome-icon v-if="file.status==UploadStatus.SUCCESS" :icon="['fas', 'check-circle']"
-                                     class="fa-1x st-panel-description-icon green-icon" />
+                                     class="fa-1x st-panel-description-icon green-icon"
+                  />
                   <font-awesome-icon v-if="file.status==UploadStatus.FAILED" :icon="['fas', 'times-circle']"
-                                     class="fa-1x st-panel-description-icon error-icon" />
+                                     class="fa-1x st-panel-description-icon error-icon"
+                  />
                 </div>
                 <h5 class="st-direct-submit-file-name m-0">{{ file.name }}</h5>
               </div>
@@ -500,15 +516,18 @@ onBeforeUnmount(() => {
             <div class="card-footer d-flex align-items-center">
               <div class="flex-grow-1">
                 <button v-if="file.hasStudyExtension" class="btn btn-link text-muted d-inline p-0">
-                  <label class="visually-hidden" :for="'is-study-checkbox-' + file.name">Is {{ file.name }} containing the study
+                  <label class="visually-hidden" :for="'is-study-checkbox-' + file.name">Is {{ file.name }} containing
+                    the study
                     information?</label>
                   <input type="checkbox" :id="'is-study-checkbox-' + file.name" v-model="file.isChecked"
-                         @change="moveCheckedFileToTop(file)"> Study File
+                         @change="moveCheckedFileToTop(file)"
+                  > Study File
                 </button>
               </div>
               <button type="button" class="btn btn-outline-danger btn-sm d-flex align-items-center"
                       :aria-label="'Delete file ' + file.name" :title="'Delete file ' + file.name"
-                      @click="removeFile(file)">
+                      @click="removeFile(file)"
+              >
                 <font-awesome-icon :icon="['fas', 'trash-alt']" class="fa-fw" />
               </button>
             </div>

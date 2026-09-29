@@ -39,7 +39,7 @@ const createNewSubmission = async () => {
   }
 
   const tmpl = thisTemplate.sectionType;
-  draft.section = { type: tmpl.name } ;
+  draft.section = { type: tmpl.name };
   fillTemplate(draft.section, tmpl);
   const author = {
     accno: 'author-1-init',
@@ -97,12 +97,14 @@ onMounted(async () => {
         New Submission
       </button>
       <button type="button" class="btn btn-success dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
-              aria-expanded="false">
+              aria-expanded="false"
+      >
         <span class="visually-hidden">Toggle Dropdown</span>
       </button>
       <ul class="dropdown-menu">
         <li><span role="button" class="dropdown-item" data-bs-toggle="modal"
-                  data-bs-target="#NewSubmission">Submit Form</span></li>
+                  data-bs-target="#NewSubmission"
+        >Submit Form</span></li>
         <li>
           <router-link to="direct_upload" style="text-decoration: none" role="button" class="dropdown-item">Submit
             PageTab
@@ -125,7 +127,8 @@ onMounted(async () => {
           <p>
             Imaging datasets must be submitted using the "BioImages" template. Submissions that do not do so may have
             their release delayed. For further details please see the <a
-            href="https://www.ebi.ac.uk/bioimage-archive/help-images-at-ebi" target="_blank"> EMBL-EBI policy on imaging
+            href="https://www.ebi.ac.uk/bioimage-archive/help-images-at-ebi" target="_blank"
+          > EMBL-EBI policy on imaging
             data submissions</a>.</p>
 
           <div v-for="(tmpl, i) in allowedTemplates">
@@ -153,14 +156,23 @@ onMounted(async () => {
           <div class="text-center">
             <button v-if="allowedTemplates.length>4 && !showMoreWasPressed" type="button"
                     class="btn btn-link text-decoration-none"
-                    @click="showMoreWasPressed=true">show more collections...
+                    @click="showMoreWasPressed=true"
+            >show more collections...
             </button>
           </div>
         </div>
         <div class="modal-footer">
+          <section class="pe-2">
+            By continuing, you confirm that, to the best of your knowledge, the data being submitted are not subject to
+            any restrictions that prohibit their open sharing and are submitted in compliance with applicable national
+            and international access and benefit-sharing obligations, in accordance with the <a
+            href="https://www.ebi.ac.uk/about/terms-of-use/"
+          >Terms of Use</a>
+          </section>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
           <button @click="createNewSubmission" :disabled="selectedTemplate==null" type="button" class="btn btn-primary"
-                  data-bs-dismiss="modal">Add
+                  data-bs-dismiss="modal"
+          >Add
           </button>
         </div>
       </div>
@@ -179,6 +191,12 @@ label {
   border-radius: 5pt;
 }
 
+.modal-footer > section {
+  flex: 1;
+  text-align: justify;
+  line-height: normal;
+  padding-right: 1rem;
+}
 
 .icon span {
   display: block;

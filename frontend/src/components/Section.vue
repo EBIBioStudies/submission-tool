@@ -12,12 +12,11 @@ import {
   Ref,
   UnwrapRef,
 } from 'vue';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Attributes from '@/components/Attributes.vue';
 import SectionTable from '@/components/SectionTable.vue';
 import SubsectionMenu from '@/components/SubsectionMenu.vue';
 import { fillTemplate } from '@/templates/templates';
-import utils, { ensureArray, isElement, isString } from '@/utils';
+import utils, { ensureArray, isElement, isNotArray, isString } from '@/utils';
 import SubSectionTable from '@/components/SubSectionTable.vue';
 import EditableLabel from '@/components/EditableLabel.vue';
 import Authors from '@/components/Authors.vue';
@@ -79,7 +78,6 @@ const inheritedSectionType = computed(() => ({
 if (sectionType.value?.overrideReadonly) provide('parentDisplayType', sectionType.value.display);
 
 const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
-const isPublicSubmission = inject<ComputedRef<boolean>>('isPublicSubmission');
 
 const readonly = computed(() => parentDisplayType?.value === 'readonly' && !sectionType.value?.overrideReadonly || sectionType.value?.display === 'readonly');
 const isRemovable = computed(() => sectionType.value?.display !== 'required' || (props.siblingInfo?.count ?? 1) > 1);
@@ -195,7 +193,7 @@ const addSubsection = async (aSection: PageTab.Section, _i: number, type?: Templ
   obj.accno = String(obj.accno) + '-removable';
   const typeName = obj.type?.toLowerCase();
   const lastIdx = typeName
-    ? aSection.subsections.findLastIndex((s) => ensureArray(s)[0]?.type?.toLowerCase() === typeName)
+    ? aSection.subsections.findLastIndex((s) => isNotArray(s) && s?.type?.toLowerCase() === typeName)
     : -1;
   let insertedIdx: number;
   if (lastIdx >= 0) {
@@ -495,7 +493,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
 <template>
   <div
     v-if="canRender(props.section)"
-    class="section-block pb-2"
+    class="section-block"
     :class="{ collapsed: isCollapsed }"
   >
     <div v-if="section?.type === 'Study'" :key="sectionsRefreshKey">
@@ -553,8 +551,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
         v-if="
           isRemovable &&
           !readonly &&
-          sectionType?.name !== 'Study' &&
-          !isPublicSubmission
+          sectionType?.name !== 'Study'
         "
         class="mt-2 btn btn-sm btn-delete"
         role="button"
@@ -576,7 +573,7 @@ defineExpose<SectionExpose>({ errors, thisSection });
     <!-- section content -->
     <transition name="slide">
       <div :class="{ 'visually-hidden': isCollapsed }">
-        <div class="has-child-section ms-3 slide-in">
+        <div class="has-child-section ms-4 slide-in">
           <!-- attributes (includes both regular attributes and annotations) -->
           <div ref="attributes">
             <Attributes :key="attributesRefreshKey"
