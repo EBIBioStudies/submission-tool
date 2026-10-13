@@ -57,7 +57,7 @@
                 Notice</a> and <a target="_blank" href="https://www.ebi.ac.uk/about/terms-of-use">Terms of Use</a>,
                 including the limited processing of personal data.</label>
             </div>
-            <button type="submit" :class="{disabled: !formValid}" class="btn btn-primary"> Register</button>
+            <button type="submit" :disabled="true" class="btn btn-primary">Register</button>
             <vue-recaptcha v-if="!isCaptchaVerified" required="" class="captcha-root" :sitekey="captchaPublicKey"
                            @verify="onCaptchaVerified"></vue-recaptcha>
           </form>
