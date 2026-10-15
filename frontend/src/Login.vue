@@ -29,7 +29,8 @@
             <div class="text-right"><router-link to="/activation">Resend activation email</router-link></div>
           </form>
         </div>
-       
+        <div class="card-footer text-muted"> Don't have an account? <router-link to="/signup">Register <font-awesome-icon :icon="['fas', 'chevron-circle-right']" /></router-link>
+        </div>
       </div>
       <div><AnnouncementBanner /></div>
     </div>
