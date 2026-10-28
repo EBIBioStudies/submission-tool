@@ -554,12 +554,35 @@ export default {
             icon: 'fa-right-from-bracket',
             controlType: { name: 'largetext' },
           },
-          {
-            name: 'Weights',
-            display: 'required',
-            icon: 'fa-weight-hanging',
-            controlType: { name: 'filelist' },
-          },
+          ],
+
+        tableTypes: [{
+          name: 'Model definition files',
+          display: 'required',
+          icon: 'fa-weight-hanging',
+          description: 'List and describe the data files associated with your study. It is possible to link entire directories, but note that for data consumers these will be served as zip files.',
+          uniqueCols: true,
+          hideColumns: true,
+          allowImport: true,
+          rowAsSection: true,
+          columnTypes: [
+            {
+              name: 'File',
+              controlType: { name: 'file' },
+              display: 'required',
+            },
+            {
+              name: 'Description',
+              controlType: { name: 'text' },
+              display: 'required',
+            },
+            {
+              name: 'Type',
+              controlType: { name: 'text' },
+              display: 'desirable',
+            },
+          ],
+        },
         ],
       },
 
