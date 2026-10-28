@@ -560,11 +560,8 @@ export default {
           name: 'Model definition files',
           display: 'required',
           icon: 'fa-weight-hanging',
-          description: 'List and describe the data files associated with your study. It is possible to link entire directories, but note that for data consumers these will be served as zip files.',
-          uniqueCols: true,
-          hideColumns: true,
-          allowImport: true,
           rowAsSection: true,
+          description: 'List and describe the model files needed to run your model, including weights and architecture. It is possible to link entire directories, but note that for data consumers these will be served as zip files.',
           columnTypes: [
             {
               name: 'File',
