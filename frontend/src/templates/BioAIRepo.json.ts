@@ -124,7 +124,18 @@ export default {
           },
         ],
       },
-
+      {
+        name: 'Distribution',
+        display: 'optional',
+        fieldTypes: [
+          {
+            name: 'GitHub or Repository URL',
+            icon: 'fa-link',
+            display: 'optional',
+            controlType: { name: 'link' },
+          },
+        ],
+      },
       {
         name: 'Publication',
         description:
@@ -320,10 +331,23 @@ export default {
 
             columnTypes: [
               {
+                name: 'Name',
+                display: 'required',
+                icon: 'fa-tag',
+                controlType: { name: 'text' },
+              },
+              {
+                name: 'Dataset',
+                display: 'desirable',
+                icon: 'fa-table',
+                controlType: { name: 'file' },
+                helpContextual: {
+                  description: 'The dataset file, if you cannot provide it directly because it requires restricted access or because you already uploaded it elsewhere, please use the link instead.',
+                },
+              },
+              {
                 name: 'Link',
-                display: 'optional',
-                helpText:
-                  'Link to the dataset, either the original source URL, or an access link to the dataset',
+                display: 'desirable',
                 icon: 'fa-cloud-arrow-down',
 
                 helpContextual: {
@@ -331,21 +355,9 @@ export default {
                     'https://huggingface.co/datasets/AllTheBacteria/ATB',
                   ],
                   description:
-                    'Link to the dataset, either the original source URL, or an access link to the dataset',
+                    'Link to the dataset, either the original source URL, or an access link to the dataset. Please prefer uploading the file rather than using a link in order to ensure long term availability',
                 },
                 controlType: { name: 'link' },
-              },
-              {
-                name: 'Name',
-                display: 'required',
-                icon: 'fa-tag',
-                controlType: { name: 'text' },
-              },
-              {
-                name: 'Artifact',
-                display: 'required',
-                icon: 'fa-table',
-                controlType: { name: 'file' },
               },
               {
                 name: 'Format',
@@ -404,19 +416,62 @@ export default {
                 name: 'Train Split',
                 icon: 'fa-dumbbell',
                 display: 'optional',
+                helpContextual: { description: 'Percentage of the dataset allocated to training' }, // TODO add number input and fraction input
                 controlType: { name: 'text' },
               },
               {
                 name: 'Validation Split',
                 icon: 'fa-clipboard-check',
                 display: 'optional',
+                helpContextual: { description: 'Percentage of the dataset allocated to validating the hyper-parameter of the model' }, // TODO add number input and fraction input
                 controlType: { name: 'text' },
               },
               {
                 name: 'Test Split',
                 icon: 'fa-flask',
                 display: 'optional',
+                helpContextual: { description: 'Percentage of the dataset allocated to test the model performance' }, // TODO add number input and fraction input
                 controlType: { name: 'text' },
+              },
+            ],
+          },
+          {
+            name: 'Dataset preparation',
+            display: 'optional',
+            icon: 'fa-microchip',
+            columnTypes: [
+              {
+                name: 'Script',
+                icon: 'fa-code',
+                display: 'desirable',
+                controlType: { name: 'file' },
+                helpContextual: { description: 'Script to process the raw dataset into something useful' },
+              },
+              {
+                name: 'Script link',
+                icon: 'fa-link',
+                display: 'optional',
+                controlType: { name: 'link' },
+                helpContextual: { description: 'Link to a script processing the raw dataset into something useful. Please prefer direct upload if possible' },
+              },
+              {
+                name: 'Description',
+                icon: 'fa-scroll',
+                display: 'optional',
+                controlType: { name: 'text' },
+                helpContextual: { description: 'What does the script do to the data and how to call it' },
+              },
+              {
+                name: 'Raw dataset',
+                icon: 'fa-sitemap',
+                display: 'optional',
+                helpContextual: {description: 'Which dataset(s) is being prepared by this script'},
+                controlType: {
+                  name: 'reference',
+                  field_name: 'Name',
+                  section_type: 'Dataset',
+                  // multiple: true // TODO enable multiple reference
+                },
               },
             ],
           },
@@ -453,6 +508,7 @@ export default {
             name: 'Learning Rate',
             display: 'desirable',
             icon: 'fa-gauge-high',
+            helpContextual: { description: 'Effective learning rate or strategy used to define it progressively. Can be a long text' },
             controlType: { name: 'text' },
           },
           {
@@ -554,7 +610,39 @@ export default {
             icon: 'fa-right-from-bracket',
             controlType: { name: 'largetext' },
           },
-          ],
+          {
+            name: 'Training set',
+            display: 'optional',
+            icon: 'fa-sitemap',
+            helpContextual: { description: 'Which dataset has been used to train this model. Only provide it if you have several datasets annotated' },
+            controlType: {
+              name: 'reference',
+              field_name: 'Name',
+              section_type: 'Dataset',
+            },
+          },
+          {
+            name: 'Optimization',
+            display: 'optional',
+            icon: 'fa-sitemap',
+            helpContextual: { description: 'Which optimization has been used to train this model. Only provide it if you have several optimization annotated' },
+            controlType: {
+              name: 'reference',
+              field_name: 'Name',
+              section_type: 'Optimization',
+            },
+          },
+          {
+            name: 'HuggingFace',
+            display: 'optional',
+
+            helpContextual: {
+              description:
+                'Link to the model card in hugging face if already described there',
+            },
+            controlType: { name: 'link' },
+          },
+        ],
 
         tableTypes: [{
           name: 'Model definition files',
@@ -564,7 +652,7 @@ export default {
           description: 'List and describe the model files needed to run your model, including weights and architecture. It is possible to link entire directories, but note that for data consumers these will be served as zip files.',
           columnTypes: [
             {
-              name: 'File',
+              name: 'Model file',
               controlType: { name: 'file' },
               display: 'required',
             },
@@ -658,12 +746,23 @@ export default {
                 controlType: { name: 'text' },
               },
               {
-                name: 'Dataset',
+                name: 'Test dataset',
                 display: 'optional',
+                helpContextual: { description: 'Which dataset has been used in the test to obtain this metric?' },
                 controlType: {
                   name: 'reference',
                   field_name: 'Name',
                   section_type: 'Dataset',
+                },
+              },
+              {
+                name: 'Model',
+                helpContextual: { description: 'Which model has been tested to obtain this metric' },
+                display: 'optional',
+                controlType: {
+                  name: 'reference',
+                  field_name: 'Name',
+                  section_type: 'Model',
                 },
               },
             ],
@@ -711,21 +810,27 @@ export default {
                 },
               },
               {
-                name: 'Model evaluated',
-                display: 'required',
-                controlType: {
-                  name: 'reference',
-                  field_name: 'Title',
-                  section_type: 'Model',
-                },
-              },
-              {
                 name: 'Test dataset',
-                display: 'optional',
+                display: 'required',
+                icon: 'fa-sitemap',
+                helpContextual: { description: 'Which dataset(s) has been used to obtain this plot?' },
                 controlType: {
                   name: 'reference',
                   field_name: 'Name',
                   section_type: 'Dataset',
+                  // multiple: true // TODO support multiple reference
+                },
+              },
+              {
+                name: 'Model',
+                display: 'required',
+                icon: 'fa-sitemap',
+                helpContextual: { description: 'Which model(s) has been tested to obtain this plot?' },
+                controlType: {
+                  name: 'reference',
+                  field_name: 'Title',
+                  section_type: 'Model',
+                  // multiple: true // TODO support multiple reference
                 },
               },
             ],
@@ -1011,6 +1116,7 @@ export default {
                 name: 'Asset',
                 icon: 'fa-box-open',
                 controlType: { name: 'file' },
+                display: 'required',
               },
             ],
           },
@@ -1037,8 +1143,9 @@ export default {
                 },
               },
               {
-                name: 'link',
+                name: 'Link',
                 icon: 'fa-link',
+                display: 'required',
                 controlType: { name: 'link' },
               },
             ],
