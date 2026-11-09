@@ -178,6 +178,11 @@ const errors = computed(() => {
     ) {
       _errors.push(`Invalid ORCID value`);
     }
+  } else if (['link', 'idlink'].includes(controlType.value?.name ?? '')) {
+    const value = thisAttribute.value.value ?? thisAttribute.value.url;
+    if (display.value === 'required' && !value?.trim()) {
+      _errors.push('Link url required');
+    }
   } else if (display.value === 'required' && props.fieldType?.name?.toLowerCase() !== 'file' && props.fieldType?.name?.toLowerCase() !== 'link' && (!thisAttribute.value?.value || !thisAttribute?.value?.value?.trim())) {
     if (!(thisMultiValuedAttribute?.value?.length > 0) && props.fieldType?.name?.toLowerCase() !== 'organisation' && props.fieldType?.name?.toLowerCase() !== 'file list')
       _errors.push(`${thisAttribute?.value?.name} required`);
@@ -191,9 +196,6 @@ const errors = computed(() => {
     }
   } else if (display.value === 'required' && props.fieldType?.name?.toLowerCase() === 'file' && !thisAttribute?.value?.path) {
     _errors.push('File path required');
-  } else if (display.value === 'required' && props.fieldType?.name?.toLowerCase() === 'link' && !thisAttribute?.value?.url) {
-    _errors.push('Link url required');
-
   }
   if (thisAttribute?.value?.name?.toLowerCase() === 'e-mail') {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -204,9 +206,7 @@ const errors = computed(() => {
   if (minLength.value > (`${thisAttribute?.value?.value}`.trim()?.length ?? 0)) {
     _errors.push(`Please enter at least ${minLength.value} characters. `);
   }
-  if (attributeControl?.value?.errors?.value) {
-    _errors.push(...attributeControl.value.errors.value);
-  }
+  _errors.push(...(attributeControl.value?.errors ?? []));
   return _errors.length ? _errors.join('. ').trim() : null;
 });
 
@@ -390,8 +390,8 @@ const showHelp = () => {
     <Link
       v-else-if="['idlink', 'link'].includes(fieldType?.controlType?.name)"
       ref="attributeControl"
-      :row="curRow as PageTab.Link"
-      :link="thisAttribute  as PageTab.Link"
+      :field-type="fieldType!"
+      :link="(thisAttribute as PageTab.Link | PageTab.Attribute)"
       :class="{'is-invalid':!!(errors && hasValidated)}"
       :placeholder="fieldType?.controlType?.placeholder"
     />

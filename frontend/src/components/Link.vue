@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, onMounted, Ref, ref, watch, watchEffect } from 'vue';
+import { computed, inject, Ref, ref, watchEffect } from 'vue';
 import { prefixToLinkMap, SearchLinks } from '@/templates/links';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { Template } from '@/models/Template.model.ts';
@@ -10,20 +10,59 @@ import { AttributeControlExpose } from '@/components/expose.model.ts';
 
 const props = defineProps<{
   fieldType: Template.FieldType,
-  link: PageTab.Link,
+  link: PageTab.Link | PageTab.Attribute,
   class?: Class,
   placeholder?: string,
-  row: PageTab.Link
 }>();
-const emits = defineEmits<{ change: [] }>();
-const thisLink = ref<string>('');
 const showSuggestions = ref(false);
-const row = ref(props.row);
 const filteredListItems = ref<string[]>([]);
 const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType');
+const linkType = computed(() => props.fieldType.controlType.name as 'link' | 'idlink');
+
+const isUrl = (value: string) => /^(http|https|ftp):\/\/.+$/.test(value);
+const isIdLink = (value: string) => /^([\w\s].+):([\w\W]+)$/.test(value);
+
+const thisLink = computed({
+  get: () => {
+    const link = props.link;
+    if ('name' in link) return link.value ?? '';
+
+    const url = link.url ?? '';
+    const type = link.attributes?.find(attribute => attribute.name === 'Type')?.value;
+    return linkType.value === 'idlink' && type && !isUrl(url) && !url.startsWith(`${type}:`)
+      ? `${type}:${url}`
+      : url;
+  },
+  set: (value: string) => {
+    const link = props.link;
+    // Named link fields are attributes; standalone Link rows store url and Type separately.
+    if ('name' in link) {
+      link.value = value;
+      return;
+    }
+
+    if (linkType.value === 'idlink' && isIdLink(value) && !isUrl(value)) {
+      const separator = value.indexOf(':');
+      const type = value.slice(0, separator);
+      link.url = value.slice(separator + 1).trim();
+      const typeAttribute = link.attributes?.find(attribute => attribute.name === 'Type');
+      if (typeAttribute) {
+        typeAttribute.value = type;
+      } else {
+        (link.attributes ??= []).push({ name: 'Type', value: type });
+      }
+    } else {
+      link.url = value;
+      if (linkType.value === 'idlink' && link.attributes) {
+        link.attributes = link.attributes.filter(attribute => attribute.name !== 'Type');
+      }
+    }
+  },
+});
 
 const errors = computed(() => getErrors());
 const getErrors: () => string[] = () => {
+  if (!thisLink.value.trim() && (props.fieldType.display ?? parentDisplayType?.value) !== 'required') return [];
   const _errors = [] as string[];
   if (!(thisIsValidIdLink.value || thisIsValidLink.value)) {
     _errors.push('Please enter a valid url or link');
@@ -48,42 +87,10 @@ const removeSuggestions = () => {
 const inputRef = ref<HTMLDivElement>();
 const dropdownRef = ref<HTMLDivElement>();
 const dropdown = computed(() => dropdownRef.value && bootstrap.Dropdown.getOrCreateInstance(dropdownRef.value, { popperConfig: { strategy: 'fixed' } }));
-const linkType = computed(() => props.fieldType?.controlType?.name as 'link' | 'idlink');
 
 watchEffect(() => linkType.value === 'idlink'
   ? showSuggestions.value ? dropdown.value?.show() : dropdown.value?.hide()
   : null);
-
-onMounted(async () => {
-  const attribute = row.value?.attributes?.find(att => att?.name === 'Type');
-  const type = attribute ? attribute.value : undefined;
-  let fullLink = type && (row?.value?.url !== (type + ':')) ? `${type}:${row?.value?.url}` : row?.value?.url;
-  thisLink.value = isIdLink(fullLink) ? fullLink : row?.value?.url;
-});
-
-watch(thisLink, (newValue) => {
-  row.value.url = newValue;
-  if (newValue && isIdLink(newValue)) {
-    let parts = newValue.split(':');
-    let urlType = parts[0];
-    if (urlType === 'http' || urlType === 'https') {
-      return;
-    }
-    row.value.url = parts[1]?.trim();
-    const typeAttribute = row.value?.attributes?.find(attr => attr.name === 'Type');
-    if (typeAttribute) {
-      typeAttribute.value = urlType;
-    } else {
-      if (!row.value?.attributes)
-        row.value.attributes = [];
-      row.value?.attributes.push({
-        name: 'Type',
-        value: urlType,
-      });
-    }
-  }
-
-});
 
 const selectItem = (item: string) => {
   // Set the user input to the selected item and hide suggestions
@@ -93,18 +100,16 @@ const selectItem = (item: string) => {
 
 const linkUrl = computed(() => {
   if (thisIsPureIdLink.value) {
-    let parts = thisLink.value.split(':');
-    let url = prefixToLinkMap[parts[0]];
-    if (url && url.length > 0 && parts[1])
-      return url.replace('{0}', parts[1]);
+    const separator = thisLink.value.indexOf(':');
+    const url = prefixToLinkMap[thisLink.value.slice(0, separator)];
+    const identifier = thisLink.value.slice(separator + 1);
+    if (url && identifier)
+      return url.replace('{0}', identifier);
   } else if (thisIsValidLink.value) {
     return thisLink.value;
   }
   return '';
 });
-
-const isUrl = ((value: string) => /^(http|https|ftp):\/\/.+$/.test(value));
-const isIdLink = ((value: string) => /^([\w\s].+):([\w\W]+)$/.test(value));
 
 const thisIsValidLink = computed(() => isUrl(thisLink.value));
 const thisIsValidIdLink = computed(() => linkType.value === 'idlink' && isIdLink(thisLink.value));
