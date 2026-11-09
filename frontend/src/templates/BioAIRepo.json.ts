@@ -125,14 +125,24 @@ export default {
         ],
       },
       {
-        name: 'Distribution',
+        name: 'Link',
+        description: 'Links to the GitHub repository or other distribution locations for the study.',
+        icon: 'fa-link',
         display: 'optional',
-        fieldTypes: [
+        uniqueCols: true,
+        allowImport: true,
+        rowAsSection: true,
+        columnTypes: [
           {
-            name: 'GitHub or Repository URL',
+            name: 'Link',
             icon: 'fa-link',
-            display: 'optional',
+            display: 'required',
             controlType: { name: 'link' },
+          },
+          {
+            name: 'Description',
+            display: 'desirable',
+            controlType: { name: 'text' },
           },
         ],
       },
@@ -297,7 +307,7 @@ export default {
               name: 'aggregate',
               field_name: 'Modality',
               section_type: 'Dataset',
-              type: 'table',
+              type: 'section',
             },
           },
         ],
@@ -321,60 +331,19 @@ export default {
           },
         ],
 
-        tableTypes: [
+        sectionTypes: [
           {
             name: 'Dataset',
             display: 'required',
             icon: 'fa-table',
-            rowAsSection: false,
-            uniqueCols: true,
+            tableGroups: [['Link', 'File']],
 
-            columnTypes: [
+            fieldTypes: [
               {
                 name: 'Name',
                 display: 'required',
                 icon: 'fa-tag',
                 controlType: { name: 'text' },
-              },
-              {
-                name: 'Dataset',
-                display: 'desirable',
-                icon: 'fa-table',
-                controlType: { name: 'file' },
-                helpContextual: {
-                  description: 'The dataset file, if you cannot provide it directly because it requires restricted access or because you already uploaded it elsewhere, please use the link instead.',
-                },
-              },
-              {
-                name: 'Link',
-                display: 'desirable',
-                icon: 'fa-cloud-arrow-down',
-
-                helpContextual: {
-                  examples: [
-                    'https://huggingface.co/datasets/AllTheBacteria/ATB',
-                  ],
-                  description:
-                    'Link to the dataset, either the original source URL, or an access link to the dataset. Please prefer uploading the file rather than using a link in order to ensure long term availability',
-                },
-                controlType: { name: 'link' },
-              },
-              {
-                name: 'Format',
-                display: 'required',
-                icon: 'fa-file-excel',
-                controlType: {
-                  name: 'select',
-                  values: [
-                    'parquet',
-                    'tsv',
-                    'csv',
-                    'h5ad',
-                    'fasta',
-                    'images',
-                    'other',
-                  ],
-                },
               },
               {
                 name: 'Modality',
@@ -410,7 +379,18 @@ export default {
                 name: 'License',
                 display: 'required',
                 icon: 'fa-copyright',
-                controlType: { name: 'text' },
+                controlType: {
+                  name: 'select',
+                  values: [
+                    { value: 'CC0' },
+                    { value: 'CC BY 4.0' },
+                    { value: 'Apache-2.0' },
+                    { value: 'MIT' },
+                  ],
+                },
+                helpContextual: {
+                  description: 'License governing the model.',
+                },
               },
               {
                 name: 'Train Split',
@@ -434,26 +414,95 @@ export default {
                 controlType: { name: 'text' },
               },
             ],
+            tableTypes: [
+              {
+                name: 'File',
+                description: 'Upload the dataset files. If the dataset requires restricted access or is already hosted elsewhere, provide a link instead.',
+                display: 'desirable',
+                icon: 'fa-file',
+                uniqueCols: true,
+                hideColumns: true,
+                allowImport: true,
+                rowAsSection: true,
+                columnTypes: [
+                  {
+                    name: 'File',
+                    display: 'required',
+                    controlType: { name: 'file' },
+                  },
+                  {
+                    name: 'Format',
+                    display: 'required',
+                    icon: 'fa-file-excel',
+                    controlType: {
+                      name: 'select',
+                      values: [
+                        'parquet',
+                        'tsv',
+                        'csv',
+                        'h5ad',
+                        'fasta',
+                        'images',
+                        'other',
+                      ],
+                    },
+                  },
+                  {
+                    name: 'Description',
+                    display: 'desirable',
+                    controlType: { name: 'text' },
+                  },
+                ],
+              },
+              {
+                name: 'Link',
+                description: 'Links to the original dataset source or access location. Prefer uploading files when possible to ensure long term availability.',
+                display: 'desirable',
+                icon: 'fa-link',
+                uniqueCols: true,
+                allowImport: true,
+                rowAsSection: true,
+                columnTypes: [
+                  {
+                    name: 'Link',
+                    display: 'required',
+                    controlType: { name: 'link' },
+                    helpContextual: {
+                      examples: ['https://huggingface.co/datasets/AllTheBacteria/ATB'],
+                    },
+                  },
+                  {
+                    name: 'Format',
+                    display: 'required',
+                    icon: 'fa-file-excel',
+                    controlType: {
+                      name: 'select',
+                      values: [
+                        'parquet',
+                        'tsv',
+                        'csv',
+                        'h5ad',
+                        'fasta',
+                        'images',
+                        'other',
+                      ],
+                    },
+                  },
+                  {
+                    name: 'Description',
+                    display: 'desirable',
+                    controlType: { name: 'text' },
+                  },
+                ],
+              },
+            ],
           },
           {
             name: 'Dataset preparation',
             display: 'optional',
             icon: 'fa-microchip',
-            columnTypes: [
-              {
-                name: 'Script',
-                icon: 'fa-code',
-                display: 'desirable',
-                controlType: { name: 'file' },
-                helpContextual: { description: 'Script to process the raw dataset into something useful' },
-              },
-              {
-                name: 'Script link',
-                icon: 'fa-link',
-                display: 'optional',
-                controlType: { name: 'link' },
-                helpContextual: { description: 'Link to a script processing the raw dataset into something useful. Please prefer direct upload if possible' },
-              },
+            tableGroups: [['Link', 'File']],
+            fieldTypes: [
               {
                 name: 'Description',
                 icon: 'fa-scroll',
@@ -474,6 +523,51 @@ export default {
                 },
               },
             ],
+            tableTypes: [
+              {
+                name: 'File',
+                description: 'Scripts used to process the raw dataset.',
+                display: 'desirable',
+                icon: 'fa-file',
+                uniqueCols: true,
+                hideColumns: true,
+                allowImport: true,
+                rowAsSection: true,
+                columnTypes: [
+                  {
+                    name: 'File',
+                    display: 'required',
+                    controlType: { name: 'file' },
+                  },
+                  {
+                    name: 'Description',
+                    display: 'desirable',
+                    controlType: { name: 'text' },
+                  },
+                ],
+              },
+              {
+                name: 'Link',
+                description: 'Links to scripts processing the raw dataset. Prefer direct upload when possible.',
+                display: 'optional',
+                icon: 'fa-link',
+                uniqueCols: true,
+                allowImport: true,
+                rowAsSection: true,
+                columnTypes: [
+                  {
+                    name: 'Link',
+                    display: 'required',
+                    controlType: { name: 'link' },
+                  },
+                  {
+                    name: 'Description',
+                    display: 'desirable',
+                    controlType: { name: 'text' },
+                  },
+                ],
+              },
+            ],
           },
         ],
       },
@@ -486,6 +580,13 @@ export default {
         display: 'optional',
         icon: 'fa-wrench',
         fieldTypes: [
+          {
+            name: 'Name',
+            display: 'optional',
+            icon: 'fa-tag',
+            helpContextual: {description: 'A name to distinguish different optimizations when multiple exists'},
+            controlType: { name: 'text' },
+          },
           {
             name: 'Training Overview',
             display: 'required',
@@ -632,42 +733,57 @@ export default {
               section_type: 'Optimization',
             },
           },
-          {
-            name: 'HuggingFace',
-            display: 'optional',
-
-            helpContextual: {
-              description:
-                'Link to the model card in hugging face if already described there',
-            },
-            controlType: { name: 'link' },
-          },
         ],
 
-        tableTypes: [{
-          name: 'Model definition files',
-          display: 'required',
-          icon: 'fa-weight-hanging',
-          rowAsSection: true,
-          description: 'List and describe the model files needed to run your model, including weights and architecture. It is possible to link entire directories, but note that for data consumers these will be served as zip files.',
-          columnTypes: [
-            {
-              name: 'Model file',
-              controlType: { name: 'file' },
-              display: 'required',
-            },
-            {
-              name: 'Description',
-              controlType: { name: 'text' },
-              display: 'required',
-            },
-            {
-              name: 'Type',
-              controlType: { name: 'text' },
-              display: 'desirable',
-            },
-          ],
-        },
+        tableTypes: [
+          {
+            name: 'File',
+            display: 'required',
+            icon: 'fa-weight-hanging',
+            uniqueCols: true,
+            hideColumns: true,
+            allowImport: true,
+            rowAsSection: true,
+            description: 'List and describe the model files needed to run your model, including weights and architecture. It is possible to link entire directories, but note that for data consumers these will be served as zip files.',
+            columnTypes: [
+              {
+                name: 'File',
+                controlType: { name: 'file' },
+                display: 'required',
+              },
+              {
+                name: 'Description',
+                controlType: { name: 'text' },
+                display: 'required',
+              },
+              {
+                name: 'Type',
+                controlType: { name: 'text' },
+                display: 'desirable',
+              },
+            ],
+          },
+          {
+            name: 'Link',
+            description: 'Links to the model card on Hugging Face or another model repository.',
+            display: 'optional',
+            icon: 'fa-link',
+            uniqueCols: true,
+            allowImport: true,
+            rowAsSection: true,
+            columnTypes: [
+              {
+                name: 'Link',
+                display: 'required',
+                controlType: { name: 'link' },
+              },
+              {
+                name: 'Description',
+                display: 'desirable',
+                controlType: { name: 'text' },
+              },
+            ],
+          },
         ],
       },
 
@@ -768,13 +884,17 @@ export default {
             ],
           },
           {
-            name: 'Evaluation Plot',
+            name: 'File',
+            description: 'Evaluation plots and figures associated with the metrics.',
             display: 'desirable',
+            uniqueCols: true,
+            hideColumns: true,
+            allowImport: true,
             rowAsSection: true,
             icon: 'fa-chart-line',
             columnTypes: [
               {
-                name: 'Figure',
+                name: 'File',
                 display: 'required',
                 controlType: {
                   name: 'file',
@@ -1091,42 +1211,22 @@ export default {
 
         tableTypes: [
           {
-            name: 'Assets',
+            name: 'File',
+            description: 'Files needed to reproduce training or inference, including containers, environments, scripts, workflows, and notebooks.',
             display: 'optional',
+            uniqueCols: true,
+            hideColumns: true,
+            allowImport: true,
             rowAsSection: true,
             icon: 'fa-boxes-stacked',
 
             columnTypes: [
               {
-                name: 'Type',
-                controlType: {
-                  name: 'select',
-                  createOption: true,
-                  values: [
-                    'Container image',
-                    'Environment file',
-                    'Training script',
-                    'Inference script',
-                    'Workflow definition',
-                    'Notebook',
-                  ],
-                },
-              },
-              {
-                name: 'Asset',
+                name: 'File',
                 icon: 'fa-box-open',
                 controlType: { name: 'file' },
                 display: 'required',
               },
-            ],
-          },
-          {
-            name: 'Links',
-            display: 'optional',
-            icon: 'fa-link',
-            rowAsSection: true,
-
-            columnTypes: [
               {
                 name: 'Type',
                 controlType: {
@@ -1142,11 +1242,39 @@ export default {
                   ],
                 },
               },
+            ],
+          },
+          {
+            name: 'Link',
+            description: 'Links to resources needed to reproduce training or inference.',
+            display: 'optional',
+            icon: 'fa-link',
+            uniqueCols: true,
+            allowImport: true,
+            rowAsSection: true,
+
+            columnTypes: [
               {
                 name: 'Link',
                 icon: 'fa-link',
                 display: 'required',
                 controlType: { name: 'link' },
+              },
+              {
+                // Link rows reserve Type for compact identifier namespaces.
+                name: 'Resource Type',
+                controlType: {
+                  name: 'select',
+                  createOption: true,
+                  values: [
+                    'Container image',
+                    'Environment file',
+                    'Training script',
+                    'Inference script',
+                    'Workflow definition',
+                    'Notebook',
+                  ],
+                },
               },
             ],
           },

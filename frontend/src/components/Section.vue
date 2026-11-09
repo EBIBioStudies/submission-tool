@@ -97,12 +97,10 @@ const deleteTag = (msg: PageTab.IndexedTag) => deleteAttribute([msg]);
 const attributesRefreshKey = ref(0);
 const sectionsRefreshKey = ref(0);
 
-const subSectionTypeMap = props.sectionTypeMap
-  ? props.sectionTypeMap
-  : new Map<string, Template.TableType>();
+// File and Link definitions can differ between sections; keep overrides local.
+const subSectionTypeMap = new Map<string, Template.TableType>(props.sectionTypeMap);
 
-!isString(props.sectionType) &&
-props?.sectionType?.tableTypes?.forEach((tbType) => {
+sectionType.value?.tableTypes?.forEach((tbType) => {
   if (tbType && tbType.name)
     subSectionTypeMap.set(tbType?.name?.toLowerCase(), tbType);
 });
