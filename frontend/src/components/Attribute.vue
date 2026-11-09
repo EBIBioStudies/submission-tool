@@ -179,8 +179,7 @@ const errors = computed(() => {
       _errors.push(`Invalid ORCID value`);
     }
   } else if (['link', 'idlink'].includes(controlType.value?.name ?? '')) {
-    const value = thisAttribute.value.value ?? thisAttribute.value.url;
-    if (display.value === 'required' && !value?.trim()) {
+    if (display.value === 'required' && !thisAttribute.value.url?.trim()) {
       _errors.push('Link url required');
     }
   } else if (display.value === 'required' && props.fieldType?.name?.toLowerCase() !== 'file' && props.fieldType?.name?.toLowerCase() !== 'link' && (!thisAttribute.value?.value || !thisAttribute?.value?.value?.trim())) {
@@ -391,7 +390,7 @@ const showHelp = () => {
       v-else-if="['idlink', 'link'].includes(fieldType?.controlType?.name)"
       ref="attributeControl"
       :field-type="fieldType!"
-      :link="(thisAttribute as PageTab.Link | PageTab.Attribute)"
+      :link="thisAttribute as PageTab.Link"
       :class="{'is-invalid':!!(errors && hasValidated)}"
       :placeholder="fieldType?.controlType?.placeholder"
     />

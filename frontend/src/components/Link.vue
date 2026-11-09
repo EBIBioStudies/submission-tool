@@ -10,7 +10,7 @@ import { AttributeControlExpose } from '@/components/expose.model.ts';
 
 const props = defineProps<{
   fieldType: Template.FieldType,
-  link: PageTab.Link | PageTab.Attribute,
+  link: PageTab.Link,
   class?: Class,
   placeholder?: string,
 }>();
@@ -25,8 +25,6 @@ const isIdLink = (value: string) => /^([\w\s].+):([\w\W]+)$/.test(value);
 const thisLink = computed({
   get: () => {
     const link = props.link;
-    if ('name' in link) return link.value ?? '';
-
     const url = link.url ?? '';
     const type = link.attributes?.find(attribute => attribute.name === 'Type')?.value;
     return linkType.value === 'idlink' && type && !isUrl(url) && !url.startsWith(`${type}:`)
@@ -35,12 +33,6 @@ const thisLink = computed({
   },
   set: (value: string) => {
     const link = props.link;
-    // Named link fields are attributes; standalone Link rows store url and Type separately.
-    if ('name' in link) {
-      link.value = value;
-      return;
-    }
-
     if (linkType.value === 'idlink' && isIdLink(value) && !isUrl(value)) {
       const separator = value.indexOf(':');
       const type = value.slice(0, separator);
