@@ -209,7 +209,7 @@ const doUploadStudyFile = (file: UploadingFile): Observable<UploadingFile> => {
     }
     formData.append('submission', file.file);
 
-    axios.post('/api/submissions/async/direct', formData, {
+    axios.post('/api/submissions/direct', formData, {
       onUploadProgress: (progressEvent) => file.progress = Math.round((progressEvent.loaded * 100) / progressEvent.total!),
     })
       .then(() => {
