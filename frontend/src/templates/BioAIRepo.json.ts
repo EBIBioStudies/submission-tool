@@ -304,11 +304,21 @@ export default {
               ],
             },
             controlType: {
-              name: 'aggregate',
-              field_name: 'Modality',
-              section_type: 'Dataset',
-              type: 'section',
-            },
+              name: 'ontology',
+              ontology: ['EDAM'],
+              allChildrenOf: [
+                'http://edamontology.org/topic_3391', // OMICS
+                'http://edamontology.org/topic_3382', // IMAGING
+                'http://edamontology.org/topic_3070', // BIOLOGY
+              ],
+              multiple: true,
+            }
+            // controlType: { // TODO support aggregate field to pick from the different datasets
+            //   name: 'aggregate',
+            //   field_name: 'Modality',
+            //   section_type: 'Dataset',
+            //   type: 'section',
+            // },
           },
         ],
       },
@@ -877,7 +887,7 @@ export default {
                 display: 'optional',
                 controlType: {
                   name: 'reference',
-                  field_name: 'Name',
+                  field_name: 'Title',
                   section_type: 'Model',
                 },
               },
