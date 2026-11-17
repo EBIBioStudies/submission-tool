@@ -82,9 +82,13 @@ const parentDisplayType = inject<Ref<Template.DisplayType>>('parentDisplayType')
 const readonly = computed(() => parentDisplayType?.value === 'readonly' && !sectionType.value?.overrideReadonly || sectionType.value?.display === 'readonly');
 const isRemovable = computed(() => sectionType.value?.display !== 'required' || (props.siblingInfo?.count ?? 1) > 1);
 const isRenamable = computed(() => sectionType.value?.allowRename || thisSection.value.accno?.includes('-custom'));
+const attributeLabel = computed(() => (thisSection.value?.attributes || [])
+  .filter(att => ['name', 'title'].includes(att.name?.toLowerCase()))
+  [0]?.value
+);
 const sectionCountLabel = computed(() =>
   props.siblingInfo && props.siblingInfo.count > 1
-    ? `(${props.siblingInfo.index + 1})`
+    ? `(${attributeLabel.value || props.siblingInfo.index + 1})`
     : '',
 );
 
